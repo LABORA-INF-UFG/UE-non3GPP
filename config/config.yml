@@ -1,0 +1,7 @@
+ue:
+  supi: "imsi-2089300007487"
+  ranuengapid: 1
+  amfuengapid: 1
+  authenticationmanagementfield : "8000"
+logs:
+  level: 4
