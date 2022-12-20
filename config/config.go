@@ -19,6 +19,12 @@ type Config struct {
 		AuthenticationManagementField string `yaml: "authenticationmanagementfield"`
 	} `yaml:"ue"`
 
+	N3iwfInfo struct {
+		IPSecIfaceAddr     string `yaml: "ipsecifaceaddr"`
+		IPSecIfacePort     string `yaml: "ipsecifaceport"`
+		IPSecIfaceProtocol string `yaml: "ipsecifaceprotocol"`
+	} `yaml:"n3iwfinfo"`
+
 	Logs struct {
 		Level int `yaml: "level"`
 	} `yaml:"logs"`

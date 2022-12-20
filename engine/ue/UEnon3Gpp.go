@@ -10,6 +10,7 @@ import (
 	"github.com/free5gc/nas/security"
 	"github.com/free5gc/openapi/models"
 	log "github.com/sirupsen/logrus"
+	"net"
 )
 
 func UENon3GPPConnection() {
@@ -17,7 +18,7 @@ func UENon3GPPConnection() {
 	cfg, err := config.GetConfig()
 	if err != nil {
 		//return nil
-		log.Fatal("Error in get configuration")
+		log.Fatal("Could not resolve config file")
 	}
 
 	ue := util.NewRanUeContext(cfg.Ue.Supi, cfg.Ue.RanUeNgapId, security.AlgCiphering128NEA0, security.AlgIntegrity128NIA2,
@@ -33,8 +34,39 @@ func UENon3GPPConnection() {
 	// Used to save IPsec/IKE related data
 	n3ue := new(context.N3IWFUe)
 	n3ue.PduSessionList = make(map[int64]*context.PDUSession)
+	n3ue.N3IWFChildSecurityAssociation = make(map[uint32]*context.ChildSecurityAssociation)
+	n3ue.TemporaryExchangeMsgIDChildSAMapping = make(map[uint32]*context.ChildSecurityAssociation)
+	n3iwfUDPAddr, err := net.ResolveUDPAddr(cfg.N3iwfInfo.IPSecIfaceProtocol, cfg.N3iwfInfo.IPSecIfaceAddr+":"+cfg.N3iwfInfo.IPSecIfaceAddr)
+	if err != nil {
+		log.Fatal("Could not resolve UDP address " + cfg.N3iwfInfo.IPSecIfaceAddr + ":" + cfg.N3iwfInfo.IPSecIfacePort)
+	}
 
+	udpConnection, err := setupUDPSocket(cfg)
+
+	if err != nil {
+		log.Fatal("Setup UDP socket Fail: %+v", err)
+	}
+
+	fmt.Println(cfg.N3iwfInfo.IPSecIfacePort)
+	fmt.Println(cfg.N3iwfInfo.IPSecIfaceAddr)
+	fmt.Println(cfg.N3iwfInfo.IPSecIfaceProtocol)
+
+	fmt.Println(udpConnection)
+	fmt.Println(n3iwfUDPAddr)
 	fmt.Println(mobileIdentity5GS)
+}
+
+func setupUDPSocket(cfg config.Config) (*net.UDPConn, error) {
+	bindAddr := cfg.N3iwfInfo.IPSecIfaceAddr + ":" + cfg.N3iwfInfo.IPSecIfacePort
+	udpAddr, err := net.ResolveUDPAddr(cfg.N3iwfInfo.IPSecIfaceProtocol, bindAddr)
+	if err != nil {
+		return nil, fmt.Errorf("Resolve UDP address failed: %+v", err)
+	}
+	udpListener, err := net.ListenUDP("udp", udpAddr)
+	if err != nil {
+		return nil, fmt.Errorf("Resolve UDP address failed: %+v", err)
+	}
+	return udpListener, nil
 }
 
 func getAuthSubscription() (authSubs models.AuthenticationSubscription) {

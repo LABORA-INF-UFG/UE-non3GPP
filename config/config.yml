@@ -3,5 +3,11 @@ ue:
   ranuengapid: 1
   amfuengapid: 1
   authenticationmanagementfield : "8000"
+
+n3iwfinfo:
+  ipsecifaceaddr: "192.168.127.1"
+  ipsecifaceport: "500"
+  ipsecifaceprotocol: "udp"
+
 logs:
   level: 4
