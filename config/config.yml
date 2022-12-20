@@ -5,8 +5,8 @@ ue:
   authenticationmanagementfield : "8000"
 
 n3iwfinfo:
-  ipsecifaceaddr: "192.168.127.1"
-  ipsecifaceport: "500"
+  ipsecifaceaddr: "10.43.0.230"
+  ipsecifaceport: "31500"
   ipsecifaceprotocol: "udp"
 
 logs:
