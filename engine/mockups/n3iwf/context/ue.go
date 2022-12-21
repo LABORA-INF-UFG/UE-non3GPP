@@ -1,7 +1,7 @@
 package context
 
 import (
-	ike_message "github.com/LABORA-INF-UFG/UE-non3GPP/engine/mockups/n3iwf/ike/message"
+	ike_message "UE-non3GPP/engine/mockups/n3iwf/ike/message"
 	"github.com/free5gc/ngap/ngapType"
 	"github.com/vishvananda/netlink"
 	"github.com/wmnsk/go-gtp/gtpv1"

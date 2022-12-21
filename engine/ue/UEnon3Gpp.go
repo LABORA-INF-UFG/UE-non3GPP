@@ -1,11 +1,11 @@
 package ue
 
 import (
+	"UE-non3GPP/config"
+	context "UE-non3GPP/engine/mockups/n3iwf/context"
+	"UE-non3GPP/engine/mockups/test"
+	"UE-non3GPP/engine/util"
 	"fmt"
-	"github.com/LABORA-INF-UFG/UE-non3GPP/config"
-	context "github.com/LABORA-INF-UFG/UE-non3GPP/engine/mockups/n3iwf/context"
-	"github.com/LABORA-INF-UFG/UE-non3GPP/engine/mockups/test"
-	"github.com/LABORA-INF-UFG/UE-non3GPP/engine/util"
 	"github.com/free5gc/nas/nasType"
 	"github.com/free5gc/nas/security"
 	"github.com/free5gc/openapi/models"
