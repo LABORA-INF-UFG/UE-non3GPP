@@ -1,4 +1,4 @@
-module github.com/LABORA-INF-UFG/UE-non3GPP
+module UE-non3GPP
 
 go 1.14
 

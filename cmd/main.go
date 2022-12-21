@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/LABORA-INF-UFG/UE-non3GPP/config"
-	"github.com/LABORA-INF-UFG/UE-non3GPP/engine/ue"
+	"UE-non3GPP/config"
+	"UE-non3GPP/engine/ue"
 	"github.com/davecgh/go-spew/spew"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
