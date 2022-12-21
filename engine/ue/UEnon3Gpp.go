@@ -36,20 +36,17 @@ func UENon3GPPConnection() {
 	n3ue.PduSessionList = make(map[int64]*context.PDUSession)
 	n3ue.N3IWFChildSecurityAssociation = make(map[uint32]*context.ChildSecurityAssociation)
 	n3ue.TemporaryExchangeMsgIDChildSAMapping = make(map[uint32]*context.ChildSecurityAssociation)
-	n3iwfUDPAddr, err := net.ResolveUDPAddr(cfg.N3iwfInfo.IPSecIfaceProtocol, cfg.N3iwfInfo.IPSecIfaceAddr+":"+cfg.N3iwfInfo.IPSecIfaceAddr)
+	n3iwfUDPAddr, err := net.ResolveUDPAddr(cfg.N3iwfInfo.IPSecIfaceProtocol, cfg.N3iwfInfo.IPSecIfaceAddr+":"+cfg.N3iwfInfo.IPSecIfacePort)
 	if err != nil {
 		log.Fatal("Could not resolve UDP address " + cfg.N3iwfInfo.IPSecIfaceAddr + ":" + cfg.N3iwfInfo.IPSecIfacePort)
 	}
 
+	//udpConnection, err := net.ListenUDP("udp", n3iwfUDPAddr)
 	udpConnection, err := setupUDPSocket(cfg)
 
 	if err != nil {
 		log.Fatal("Setup UDP socket Fail: %+v", err)
 	}
-
-	fmt.Println(cfg.N3iwfInfo.IPSecIfacePort)
-	fmt.Println(cfg.N3iwfInfo.IPSecIfaceAddr)
-	fmt.Println(cfg.N3iwfInfo.IPSecIfaceProtocol)
 
 	fmt.Println(udpConnection)
 	fmt.Println(n3iwfUDPAddr)
@@ -62,10 +59,12 @@ func setupUDPSocket(cfg config.Config) (*net.UDPConn, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Resolve UDP address failed: %+v", err)
 	}
+
 	udpListener, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
 		return nil, fmt.Errorf("Resolve UDP address failed: %+v", err)
 	}
+	fmt.Println("aqui....!!")
 	return udpListener, nil
 }
 
