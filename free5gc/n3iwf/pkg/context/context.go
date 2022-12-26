@@ -10,7 +10,6 @@ import (
 
 	"git.cs.nctu.edu.tw/calee/sctp"
 	"github.com/sirupsen/logrus"
-	gtpv1 "github.com/wmnsk/go-gtp/gtpv1"
 	"golang.org/x/net/ipv4"
 
 	"UE-non3GPP/free5gc/n3iwf/internal/logger"
@@ -184,18 +183,18 @@ func (context *N3IWFContext) DeleteGTPConnection(upfAddr string) {
 	context.GTPConnectionWithUPF.Delete(upfAddr)
 }
 
-func (context *N3IWFContext) GTPConnectionWithUPFLoad(upfAddr string) (*gtpv1.UPlaneConn, bool) {
-	conn, ok := context.GTPConnectionWithUPF.Load(upfAddr)
-	if ok {
-		return conn.(*gtpv1.UPlaneConn), ok
-	} else {
-		return nil, ok
-	}
-}
+//func (context *N3IWFContext) GTPConnectionWithUPFLoad(upfAddr string) (*gtpv1.UPlaneConn, bool) {
+//	conn, ok := context.GTPConnectionWithUPF.Load(upfAddr)
+//	if ok {
+//		return conn.(*gtpv1.UPlaneConn), ok
+//	} else {
+//		return nil, ok
+//	}
+//}
 
-func (context *N3IWFContext) GTPConnectionWithUPFStore(upfAddr string, conn *gtpv1.UPlaneConn) {
-	context.GTPConnectionWithUPF.Store(upfAddr, conn)
-}
+//func (context *N3IWFContext) GTPConnectionWithUPFStore(upfAddr string, conn *gtpv1.UPlaneConn) {
+//	context.GTPConnectionWithUPF.Store(upfAddr, conn)
+//}
 
 func (context *N3IWFContext) NewInternalUEIPAddr(ue *N3IWFUe) net.IP {
 	var ueIPAddr net.IP

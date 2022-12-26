@@ -1,6 +1,8 @@
 package ue
 
 import (
+	"github.com/free5gc/nas/nasMessage"
+	"github.com/free5gc/nas/nasType"
 	"github.com/free5gc/nas/security"
 	"github.com/free5gc/openapi/models"
 )
@@ -46,7 +48,7 @@ type RanUeContext struct {
 //	Checksum += uint32(dst[0])<<8 | uint32(dst[1])
 //	Checksum += uint32(dst[2])<<8 | uint32(dst[3])
 //	return ^(Checksum&0xffff0000>>16 + Checksum&0xffff)
-//}
+//}GetUESecurityCapability
 //
 //func GetAuthSubscription(k, opc, op string) models.AuthenticationSubscription {
 //	var authSubs models.AuthenticationSubscription
@@ -413,36 +415,37 @@ type RanUeContext struct {
 //	copy(ue.KnasInt[:], kint[16:32])
 //}
 //
-//func (ue *RanUeContext) GetUESecurityCapability() (UESecurityCapability *nasType.UESecurityCapability) {
-//	UESecurityCapability = &nasType.UESecurityCapability{
-//		Iei:    nasMessage.RegistrationRequestUESecurityCapabilityType,
-//		Len:    2,
-//		Buffer: []uint8{0x00, 0x00},
-//	}
-//	switch ue.CipheringAlg {
-//	case security.AlgCiphering128NEA0:
-//		UESecurityCapability.SetEA0_5G(1)
-//	case security.AlgCiphering128NEA1:
-//		UESecurityCapability.SetEA1_128_5G(1)
-//	case security.AlgCiphering128NEA2:
-//		UESecurityCapability.SetEA2_128_5G(1)
-//	case security.AlgCiphering128NEA3:
-//		UESecurityCapability.SetEA3_128_5G(1)
-//	}
-//
-//	switch ue.IntegrityAlg {
-//	case security.AlgIntegrity128NIA0:
-//		UESecurityCapability.SetIA0_5G(1)
-//	case security.AlgIntegrity128NIA1:
-//		UESecurityCapability.SetIA1_128_5G(1)
-//	case security.AlgIntegrity128NIA2:
-//		UESecurityCapability.SetIA2_128_5G(1)
-//	case security.AlgIntegrity128NIA3:
-//		UESecurityCapability.SetIA3_128_5G(1)
-//	}
-//
-//	return
-//}
+func (ue *RanUeContext) GetUESecurityCapability() (UESecurityCapability *nasType.UESecurityCapability) {
+	UESecurityCapability = &nasType.UESecurityCapability{
+		Iei:    nasMessage.RegistrationRequestUESecurityCapabilityType,
+		Len:    2,
+		Buffer: []uint8{0x00, 0x00},
+	}
+	switch ue.CipheringAlg {
+	case security.AlgCiphering128NEA0:
+		UESecurityCapability.SetEA0_5G(1)
+	case security.AlgCiphering128NEA1:
+		UESecurityCapability.SetEA1_128_5G(1)
+	case security.AlgCiphering128NEA2:
+		UESecurityCapability.SetEA2_128_5G(1)
+	case security.AlgCiphering128NEA3:
+		UESecurityCapability.SetEA3_128_5G(1)
+	}
+
+	switch ue.IntegrityAlg {
+	case security.AlgIntegrity128NIA0:
+		UESecurityCapability.SetIA0_5G(1)
+	case security.AlgIntegrity128NIA1:
+		UESecurityCapability.SetIA1_128_5G(1)
+	case security.AlgIntegrity128NIA2:
+		UESecurityCapability.SetIA2_128_5G(1)
+	case security.AlgIntegrity128NIA3:
+		UESecurityCapability.SetIA3_128_5G(1)
+	}
+
+	return
+}
+
 //
 //func (ue *RanUeContext) Get5GMMCapability() (capability5GMM *nasType.Capability5GMM) {
 //	return &nasType.Capability5GMM{

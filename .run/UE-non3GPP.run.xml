@@ -1,0 +1,12 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="UE-non3GPP" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="UE-non3GPP" />
+    <working_directory value="$PROJECT_DIR$" />
+    <parameters value="ue" />
+    <kind value="PACKAGE" />
+    <package value="UE-non3GPP/cmd" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$/cmd/main.go" />
+    <method v="2" />
+  </configuration>
+</component>
