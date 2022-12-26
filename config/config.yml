@@ -2,11 +2,12 @@ ue:
   supi: "imsi-2089300007487"
   ranuengapid: 1
   amfuengapid: 1
-  authenticationmanagementfield : "8000"
+  ipudpconnection : "192.168.1.103"
+  portudpconnection : "500"
 
 n3iwfinfo:
-  ipsecifaceaddr: "10.43.0.230"
-  ipsecifaceport: "31500"
+  ikebindaddress: "146.190.119.235"
+  ikebindport: "500"
   ipsecifaceprotocol: "udp"
 
 logs:

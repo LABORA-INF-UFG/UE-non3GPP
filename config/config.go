@@ -17,11 +17,13 @@ type Config struct {
 		RanUeNgapId                   int64  `yaml: "ranuengapid"`
 		AmfUeNgapId                   int64  `yaml: "amfuengapid"`
 		AuthenticationManagementField string `yaml: "authenticationmanagementfield"`
+		IpUDPConnection               string `yaml: "ipudpconnection"`
+		PortUDPConnection             string `yaml: "portudpconnection"`
 	} `yaml:"ue"`
 
 	N3iwfInfo struct {
-		IPSecIfaceAddr     string `yaml: "ipsecifaceaddr"`
-		IPSecIfacePort     string `yaml: "ipsecifaceport"`
+		IKEBindAddress     string `yaml: "ikebindaddress"`
+		IKEBindPort        string `yaml: "ikebindport"`
 		IPSecIfaceProtocol string `yaml: "ipsecifaceprotocol"`
 	} `yaml:"n3iwfinfo"`
 
