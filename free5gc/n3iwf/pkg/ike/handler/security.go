@@ -11,6 +11,7 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
+	log "github.com/sirupsen/logrus"
 	"hash"
 	"io"
 	"math/big"
@@ -198,9 +199,6 @@ func VerifyIKEChecksum(key []byte, originData []byte, checksum []byte, algorithm
 		}
 		checksumOfMessage := integrityFunction.Sum(nil)[:12]
 
-		ikeLog.Tracef("Calculated checksum:\n%s\nReceived checksum:\n%s",
-			hex.Dump(checksumOfMessage), hex.Dump(checksum))
-
 		return hmac.Equal(checksumOfMessage, checksum), nil
 	default:
 		ikeLog.Errorf("Unsupported integrity function: %d", algorithmType)
@@ -267,16 +265,16 @@ func DecryptMessage(key []byte, cipherText []byte, algorithmType uint16) ([]byte
 		cbcBlockMode := cipher.NewCBCDecrypter(block, initializationVector)
 		cbcBlockMode.CryptBlocks(plainText, encryptedMessage)
 
-		ikeLog.Tracef("Decrypted content:\n%s", hex.Dump(plainText))
+		log.Info("Decrypted content: " + hex.Dump(plainText))
 
 		padding := int(plainText[len(plainText)-1]) + 1
 		plainText = plainText[:len(plainText)-padding]
 
-		ikeLog.Tracef("Decrypted content with out padding:\n%s", hex.Dump(plainText))
+		log.Info("Decrypted content with out padding: " + hex.Dump(plainText))
 
 		return plainText, nil
 	default:
-		ikeLog.Errorf("Unsupported encryption algorithm: %d", algorithmType)
+		log.Errorf("Unsupported encryption algorithm: %d", algorithmType)
 		return nil, errors.New("Unsupported algorithm")
 	}
 }

@@ -5,11 +5,13 @@ import (
 	"UE-non3GPP/free5gc/n3iwf/pkg/context"
 	"UE-non3GPP/free5gc/n3iwf/pkg/ike/handler"
 	"UE-non3GPP/free5gc/n3iwf/pkg/ike/message"
+	"UE-non3GPP/test"
 	"UE-non3GPP/test/consumerTestdata/UDM/TestGenAuthData"
 	"UE-non3GPP/test/nasTestpacket"
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"github.com/free5gc/nas"
 	"github.com/free5gc/nas/nasMessage"
 	"github.com/free5gc/nas/nasType"
 	"github.com/free5gc/nas/security"
@@ -26,9 +28,10 @@ func UENon3GPPConnection() {
 	if err != nil {
 		//return nil
 		log.Fatal("Could not resolve config file")
+		return
 	}
 
-	ue := NewRanUeContext(cfg.Ue.Supi, 1, security.AlgCiphering128NEA0, security.AlgIntegrity128NIA2,
+	ue := test.NewRanUeContext(cfg.Ue.Supi, 1, security.AlgCiphering128NEA0, security.AlgIntegrity128NIA2,
 		models.AccessType_NON_3_GPP_ACCESS)
 	ue.AmfUeNgapId = cfg.Ue.AmfUeNgapId
 	ue.AuthenticationSubs = getAuthSubscription(cfg)
@@ -79,6 +82,7 @@ func UENon3GPPConnection() {
 	factor, ok := new(big.Int).SetString(handler.Group14PrimeString, 16)
 	if !ok {
 		log.Fatal("Generate key exchange datd failed")
+		return
 	}
 	secert := handler.GenerateRandomNumber()
 	localPublicKeyExchangeValue := new(big.Int).Exp(generator, secert, factor).Bytes()
@@ -94,9 +98,11 @@ func UENon3GPPConnection() {
 	ikeMessageData, err := ikeMessage.Encode()
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 	if _, err := udpConnection.WriteToUDP(ikeMessageData, n3iwfUDPAddr); err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	// Receive N3IWF reply
@@ -109,6 +115,7 @@ func UENon3GPPConnection() {
 	err = ikeMessage.Decode(buffer[:n])
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	var sharedKeyExchangeData []byte
@@ -149,6 +156,7 @@ func UENon3GPPConnection() {
 
 	if err := generateKeyForIKESA(ikeSecurityAssociation); err != nil {
 		log.Fatalf("Generate key for IKE SA failed: %+v", err)
+		return
 	}
 
 	n3ue.N3IWFIKESecurityAssociation = ikeSecurityAssociation
@@ -185,15 +193,18 @@ func UENon3GPPConnection() {
 
 	if err := encryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage); err != nil {
 		log.Fatalf("Encrypting IKE message failed: %+v", err)
+		return
 	}
 
 	// Send to N3IWF
 	ikeMessageData, err = ikeMessage.Encode()
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 	if _, err := udpConnection.WriteToUDP(ikeMessageData, n3iwfUDPAddr); err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	n3ue.CreateHalfChildSA(n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID, binary.BigEndian.Uint32(inboundSPI))
@@ -202,21 +213,25 @@ func UENon3GPPConnection() {
 	n, _, err = udpConnection.ReadFromUDP(buffer)
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 	ikeMessage.Payloads.Reset()
 	err = ikeMessage.Decode(buffer[:n])
 	if err != nil {
 		log.Fatal(err)
+		return
 	}
 
 	encryptedPayload, ok := ikeMessage.Payloads[0].(*message.Encrypted)
 	if !ok {
 		log.Fatal("Received payload is not an encrypted payload")
+		return
 	}
 
 	decryptedIKEPayload, err := decryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
 	if err != nil {
 		log.Fatalf("Decrypt IKE message failed: %+v", err)
+		return
 	}
 
 	var eapIdentifier uint8
@@ -269,10 +284,235 @@ func UENon3GPPConnection() {
 
 	if err := encryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage); err != nil {
 		log.Fatal(err)
+		return
 	}
 
-	fmt.Println("...ok!")
-	fmt.Println(mobileIdentity5GS, n3ue, udpConnection, n3iwfUDPAddr, securityAssociation, proposal, localPublicKeyExchangeValue)
+	// Send to N3IWF
+	ikeMessageData, err = ikeMessage.Encode()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	if _, err := udpConnection.WriteToUDP(ikeMessageData, n3iwfUDPAddr); err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	// Receive N3IWF reply - Neste ponte é necessário o UE estar cadastrado no CORE com mesmo SUPI do arquivo de configuração, caso contrário teremos um erro de autenticação no AUSF
+	n, _, err = udpConnection.ReadFromUDP(buffer)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	ikeMessage.Payloads.Reset()
+	err = ikeMessage.Decode(buffer[:n])
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+	encryptedPayload, ok = ikeMessage.Payloads[0].(*message.Encrypted)
+	if !ok {
+		log.Fatal("Received payload is not an encrypted payload")
+		return
+	}
+	decryptedIKEPayload, err = decryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
+	if err != nil {
+		log.Fatalf("Decrypt IKE message failed: %+v", err)
+		return
+	}
+
+	var eapReq *message.EAP
+	var eapExpanded *message.EAPExpanded
+
+	eapReq, ok = decryptedIKEPayload[0].(*message.EAP)
+	if !ok {
+		log.Fatal("Received packet is not an EAP payload")
+		return
+	}
+
+	var decodedNAS *nas.Message
+
+	eapExpanded, ok = eapReq.EAPTypeData[0].(*message.EAPExpanded)
+	if !ok {
+		log.Fatal("The EAP data is not an EAP expended.")
+		return
+	}
+
+	// Decode NAS - Authentication Request
+	nasData := eapExpanded.VendorData[4:]
+	decodedNAS = new(nas.Message)
+	if err := decodedNAS.PlainNasDecode(&nasData); err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	// Calculate for RES*
+	if decodedNAS == nil {
+		log.Fatal("Erro inesperado! - Assert")
+	}
+	rand := decodedNAS.AuthenticationRequest.GetRANDValue()
+	resStat := ue.DeriveRESstarAndSetKey(ue.AuthenticationSubs, rand[:], "5G:mnc093.mcc208.3gppnetwork.org")
+
+	// send NAS Authentication Response
+	pdu := nasTestpacket.GetAuthenticationResponse(resStat, "")
+
+	// IKE_AUTH - EAP exchange
+	ikeMessage.Payloads.Reset()
+	n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
+	ikeMessage.BuildIKEHeader(n3ue.N3IWFIKESecurityAssociation.LocalSPI, n3ue.N3IWFIKESecurityAssociation.RemoteSPI,
+		message.IKE_AUTH, message.InitiatorBitCheck, n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
+
+	ikePayload.Reset()
+
+	// EAP-5G vendor type data
+	eapVendorTypeData = make([]byte, 4)
+	eapVendorTypeData[0] = message.EAP5GType5GNAS
+
+	// NAS - Authentication Response
+	nasLength = make([]byte, 2)
+	binary.BigEndian.PutUint16(nasLength, uint16(len(pdu)))
+	eapVendorTypeData = append(eapVendorTypeData, nasLength...)
+	eapVendorTypeData = append(eapVendorTypeData, pdu...)
+
+	eap = ikePayload.BuildEAP(message.EAPCodeResponse, eapReq.Identifier)
+	eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP, message.VendorTypeEAP5G, eapVendorTypeData)
+
+	err = encryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage)
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+
+	// Send to N3IWF
+	ikeMessageData, err = ikeMessage.Encode()
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+	_, err = udpConnection.WriteToUDP(ikeMessageData, n3iwfUDPAddr)
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+
+	// Receive N3IWF reply
+	n, _, err = udpConnection.ReadFromUDP(buffer)
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+	ikeMessage.Payloads.Reset()
+	err = ikeMessage.Decode(buffer[:n])
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+	encryptedPayload, ok = ikeMessage.Payloads[0].(*message.Encrypted)
+	if !ok {
+		log.Fatal("Received pakcet is not and encrypted payload")
+		panic("Received pakcet is not and encrypted payload")
+	}
+	decryptedIKEPayload, err = decryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+	eapReq, ok = decryptedIKEPayload[0].(*message.EAP)
+	if !ok {
+		log.Fatal("Received packet is not an EAP payload")
+		panic("Received packet is not an EAP payload")
+	}
+	eapExpanded, ok = eapReq.EAPTypeData[0].(*message.EAPExpanded)
+	if !ok {
+		log.Fatal("Received packet is not an EAP expended payload")
+		panic("Received packet is not an EAP expended payload")
+	}
+
+	nasData = eapExpanded.VendorData[4:]
+
+	// Send NAS Security Mode Complete Msg
+	registrationRequestWith5GMM := nasTestpacket.GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
+		mobileIdentity5GS, nil, ueSecurityCapability, ue.Get5GMMCapability(), nil, nil)
+	pdu = nasTestpacket.GetSecurityModeComplete(registrationRequestWith5GMM)
+	pdu, err = test.EncodeNasPduWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCipheredWithNew5gNasSecurityContext, true, true)
+	if err != nil {
+		//assert.Nil(t, err
+		panic(err)
+	}
+
+	// IKE_AUTH - EAP exchange
+	ikeMessage.Payloads.Reset()
+	n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
+	ikeMessage.BuildIKEHeader(n3ue.N3IWFIKESecurityAssociation.LocalSPI, n3ue.N3IWFIKESecurityAssociation.RemoteSPI,
+		message.IKE_AUTH, message.InitiatorBitCheck, n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
+
+	ikePayload.Reset()
+
+	// EAP-5G vendor type data
+	eapVendorTypeData = make([]byte, 4)
+	eapVendorTypeData[0] = message.EAP5GType5GNAS
+
+	// NAS - Authentication Response
+	nasLength = make([]byte, 2)
+	binary.BigEndian.PutUint16(nasLength, uint16(len(pdu)))
+	eapVendorTypeData = append(eapVendorTypeData, nasLength...)
+	eapVendorTypeData = append(eapVendorTypeData, pdu...)
+
+	eap = ikePayload.BuildEAP(message.EAPCodeResponse, eapReq.Identifier)
+	eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP, message.VendorTypeEAP5G, eapVendorTypeData)
+
+	err = encryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage)
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+
+	// Send to N3IWF
+	ikeMessageData, err = ikeMessage.Encode()
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+	_, err = udpConnection.WriteToUDP(ikeMessageData, n3iwfUDPAddr)
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+
+	// Receive N3IWF reply
+	n, _, err = udpConnection.ReadFromUDP(buffer)
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+	ikeMessage.Payloads.Reset()
+	err = ikeMessage.Decode(buffer[:n])
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+	encryptedPayload, ok = ikeMessage.Payloads[0].(*message.Encrypted)
+	if !ok {
+		log.Fatal("Received pakcet is not and encrypted payload")
+		panic("Received pakcet is not and encrypted payload")
+	}
+	decryptedIKEPayload, err = decryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+	eapReq, ok = decryptedIKEPayload[0].(*message.EAP)
+	if !ok {
+		log.Fatal("Received packet is not an EAP payload")
+		panic("Received packet is not an EAP payload")
+	}
+	if eapReq.Code != message.EAPCodeSuccess {
+		log.Fatal("Not Success")
+		panic("Not Success")
+	}
+
+	fmt.Println("...ok!", pdu)
+	fmt.Println(".........")
 }
 
 func buildEAP5GANParameters() []byte {
