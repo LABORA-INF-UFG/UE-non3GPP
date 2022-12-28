@@ -13,6 +13,12 @@ var Data = getConfig()
 
 type Config struct {
 	Ue struct {
+		AuthSubscription struct {
+			PermanentKeyValue string `yaml: "permanentkeyvalue"`
+			OpcValue          string `yaml: "opcvalue"`
+			OpValue           string `yaml: "opvalue"`
+			SequenceNumber    string `yaml: "sequencenumber"`
+		} `yaml: "authsubscription"`
 		Supi                          string `yaml: "supi"`
 		RanUeNgapId                   int64  `yaml: "ranuengapid"`
 		AmfUeNgapId                   int64  `yaml: "amfuengapid"`

@@ -1,9 +1,16 @@
 ue:
+  authsubscription:
+    permanentkeyvalue: "5122250214c33e723a5dd523fc145fc0"
+    opcvalue: "981d464c7c52eb6e5036234984ad0bcf"
+    opvalue: "c9e8763286b5b9ffbdf56e1297d0887b"
+    sequencenumber: "16f3b3f70fc2"
   supi: "imsi-2089300007487"
   ranuengapid: 1
   amfuengapid: 1
+  authenticationmanagementfield : "8000"
   ipudpconnection : "143.110.151.149"
   portudpconnection : "500"
+
 
 n3iwfinfo:
   ikebindaddress: "144.126.213.51"

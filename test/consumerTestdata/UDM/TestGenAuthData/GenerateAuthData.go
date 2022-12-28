@@ -27,16 +27,17 @@ const (
 	TESTSET_SERVING_NETWORK_NAME = "WLAN"
 )
 
-var TestGenAuthDataTable = make(map[string]*models.AuthenticationInfoRequest)
-var MilenageTestSet19 milenageTestSet
+var _TestGenAuthDataTable = make(map[string]*models.AuthenticationInfoRequest)
+var _MilenageTestSet19 milenageTestSet
 
+/* todos os registros utilizados em non3GPP foram parametrizados em CONFIG */
 func init() {
-	TestGenAuthDataTable[SUCCESS_CASE] = &models.AuthenticationInfoRequest{
+	_TestGenAuthDataTable[SUCCESS_CASE] = &models.AuthenticationInfoRequest{
 		ServingNetworkName: TESTSET_SERVING_NETWORK_NAME,
 	}
 
 	// TS 35.208 test set 19
-	MilenageTestSet19 = milenageTestSet{
+	_MilenageTestSet19 = milenageTestSet{
 		K:      "5122250214c33e723a5dd523fc145fc0",
 		RAND:   "81e92b6c0ee0e12ebceba8d92a99dfa5",
 		SQN:    "16f3b3f70fc2",
