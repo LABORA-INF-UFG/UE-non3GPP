@@ -1,5 +1,6 @@
 [fee5gc-core]
-<IP-address> physical_network_interface=<free5gc-machine-interface-name>
+147.182.206.18 physical_network_interface=eth0
 
 [fee5gc-n3iwf]
-<IP-address> free5gc_ip_address=<IP-address-free5gc>
+143.110.147.164 free5gc_ip_address=147.182.206.18
+
