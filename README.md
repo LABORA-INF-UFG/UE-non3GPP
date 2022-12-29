@@ -32,7 +32,7 @@ ssh-copy-id -i ~/.ssh/id_ecdsa.pub root@<free5gc-ip-address>
 ssh-copy-id -i ~/.ssh/id_ecdsa.pub root@<n3iwf-ip-address>
 ```
 
-##### UE-non3GPP VM Config
+## UE-non3GPP VM Config
 After creating the VM for UE-non3GPP, access via SSH and clone the project with the following command:
 ```
 apt update && git clone https://github.com/LABORA-INF-UFG/UE-non3GPP.git 
@@ -58,5 +58,9 @@ Now let's configure the N3IWF installation parameters. Still in the hosts file, 
     <img src="images/ip_n3iwf_hosts.png"/> 
 </p>
 
-##### Free5GC and N3IWF VM's Config
-After creating
+### Test Ansible Connection
+Now let's test the Ansible connection with the respective hosts configured in the previous steps. In the terminal, inside the ```UE-non3GPP/dev_environment_setup``` directory, run the following command:
+```
+ansible -i ./hosts -m ping all -u root
+```
+
