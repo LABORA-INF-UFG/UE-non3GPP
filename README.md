@@ -18,9 +18,18 @@ apt update && git clone https://github.com/LABORA-INF-UFG/UE-non3GPP.git
 ```
 
 After cloning the project, you need to edit the **hosts** file, located in the __UE-non3GPP/dev_environment_setup__ . The __host__ file contains 2 mapped hosts (n3IWF and free5GC). For each of them we must inform some configuration parameters. Let's start with the settings of the host responsible for running free5gc (except N3IWF). 
-* Replace the marked ```<IP-address>``` with the IP address of the VM where free5GC will be configured (except N3IWF) as shown in the figure below.
+* Replace the marker ```<IP-address>``` with the IP address of the VM where free5GC will be configured (except N3IWF) as shown in the figure below.
 <p align="center">
     <img src="images/ip_free5gc_hosts.png"/> 
+</p>
+
+* Access the VM where free5GC will be configured, run ```ifconfig``` and get the name of **internet network interface**, like as illustrated in the figure below:
+<p align="center">
+    <img src="images/if_config.png"/> 
+</p>
+replace the <free5gc-machine-interface-name> tag with the name of the network interface that provides internet access, as illustrated below:
+<p align="center">
+    <img src="images/net_interface_name_free5gc_hosts.png"/> 
 </p>
 
 
