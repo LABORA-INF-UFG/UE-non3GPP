@@ -1,17 +1,35 @@
 # UE-non3GPP
 User Equipment for non-3GPP access via N3IWF | Working in-progress
 
-#### Environment
+### Environment
 The content described in this repository was tested on 3 VM's in the [Digital Occean](https://www.digitalocean.com/) cloud environment [ ]1º VM representing UE-non3GPP, 2º VM where free5GC will run (except N3IWF) and 3º VM where the N3IWF ], each of them with the following configurations:
 * SO: Ubuntu 20.04 (LTS) x64
 * Uname -r: 5.4.0-122-generic
 * Memory: 8 GB
 * Disk: 80 GB
 
-##### Before starting
+#### Before starting
 The development environment setup is exec by Ansible. Before starting it is necessary to access via SSH each one of the VM's and execute the following command to install  __python + git + ansible__.
 ```
 sudo apt update && apt -y install python && sudo apt -y install git && sudo apt -y install ansible
+```
+
+### Dev Environment Setup
+The entire configuration process is done from the VM that represents ```UE-non3Gpp```, which needs to have full access to the other 2 VM's (free5GC and N3IWF). This is done through an SSH key exchange, as described in the following steps:
+* Access the VM representing UE-non3GPP and generate an SSH key as described in the following command:
+```
+ssh-keygen -t ecdsa -b 521
+```
+obs: after executing the command, press ENTER 3x.
+
+* After generating the key, we will copy and install the key in the VM that represents free5GC. To do this, just replace the ```<free5gc-ip-address>``` marker in the command below with the IP address of the machine that represents free5GC:
+```
+ssh-copy-id -i ~/.ssh/id_ecdsa.pub root@<free5gc-ip-address>
+```
+
+* The same procedure must be performed on the VM that represents the N3IWF, let's copy and install the key, replacing the marker ```<n3iwf-ip-address>``` in the command below with the IP address of the machine that represents the N3IWF:
+```
+ssh-copy-id -i ~/.ssh/id_ecdsa.pub root@<n3iwf-ip-address>
 ```
 
 ##### UE-non3GPP VM Config
