@@ -27,10 +27,14 @@ After cloning the project, you need to edit the **hosts** file, located in the _
 <p align="center">
     <img src="images/if_config.png"/> 
 </p>
-replace the <free5gc-machine-interface-name> tag with the name of the network interface that provides internet access, as illustrated below:
+replace the ```<free5gc-machine-interface-name>``` tag with the name of the network interface that provides internet access, as illustrated below:
 <p align="center">
     <img src="images/net_interface_name_free5gc_hosts.png"/> 
 </p>
 
+Now let's configure the N3IWF installation parameters. Still in the hosts file, but now in ```[fee5gc-n3iwf]```; replace the ```<IP-address>``` marker with the IP address of the machine where the N3IWF will be executed (highlighted in yellow in the following figure) and the ```<IP-address-free5gc>``` marker with the IP address of the machine where free5gc was configured (same IP address informed in the ```<IP-address>``` parameter of the host ```[fee5gc-core]``` in the line above).
+<p align="center">
+    <img src="images/ip_n3iwf_hosts.png"/> 
+</p>
 
 
