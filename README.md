@@ -14,6 +14,30 @@ The development environment setup is exec by Ansible. Before starting it is nece
 sudo apt update && apt -y install python && sudo apt -y install git && sudo apt -y install ansible
 ```
 
+##### Install Golang 14
+Remove Go-lang old install.
+```
+sudo rm -rf /usr/local/go
+apt remove golang-go
+```
+Download Go-lang 1.14.4.
+```
+wget https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
+sudo tar -C /usr/local -zxvf go1.14.4.linux-amd64.tar.gz
+
+mkdir ~/go && mkdir ~/go/bin && mkdir ~/go/pkg && mkdir ~/go/src  
+```
+
+Install Go-lang 1.14.4.
+```
+echo 'export GOPATH=$HOME/go' >> ~/.bashrc
+echo 'export GOROOT=/usr/local/go' >> ~/.bashrc
+echo 'export PATH=$PATH:$GOPATH/bin:$GOROOT/bin' >> ~/.bashrc
+echo 'export GO111MODULE=auto' >> ~/.bashrc
+rm -rf go1.14.4.linux-amd64.tar.gz
+source ~/.bashrc
+```
+
 ### Dev Environment Setup
 The entire configuration process is done from the VM that represents ```UE-non3Gpp```, which needs to have full access to the other 2 VM's (free5GC and N3IWF). This is done through an SSH key exchange, as described in the following steps:
 * Access the VM representing UE-non3GPP and generate an SSH key as described in the following command:
