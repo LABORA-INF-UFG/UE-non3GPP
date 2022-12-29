@@ -1,0 +1,5 @@
+[fee5gc-core]
+<IP-address> physical_network_interface=<free5gc-machine-interface-name>
+
+[fee5gc-n3iwf]
+<IP-address> free5gc_ip_address=<IP-address-free5gc>
