@@ -88,3 +88,7 @@ Now let's test the Ansible connection with the respective hosts configured in th
 ansible -i ./hosts -m ping all -u root
 ```
 
+### Run Ansible Dev Setup
+```
+ansible-playbook dev_environment_setup/dev-env-setup.yml -i dev_environment_setup/hosts
+```
