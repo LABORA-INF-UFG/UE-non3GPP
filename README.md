@@ -13,7 +13,9 @@ The development environment setup is exec by Ansible and involves 3 virtual mach
 
 ##### UE-non3GPP VM Config
 After creating the VM, access via SSH and clone the project with the following command:
-``git clone https://github.com/LABORA-INF-UFG/UE-non3GPP.git ``
+```
+git clone https://github.com/LABORA-INF-UFG/UE-non3GPP.git 
+```
 
 
 
