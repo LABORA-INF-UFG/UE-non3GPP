@@ -29,6 +29,7 @@ type IKEMessage struct {
 }
 
 func (ikeMessage *IKEMessage) Encode() ([]byte, error) {
+
 	ikeLog.Info("Encoding IKE message")
 
 	ikeMessageData := make([]byte, 28)

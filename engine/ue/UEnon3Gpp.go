@@ -415,6 +415,7 @@ func UENon3GPPConnection() {
 		log.Fatal("Received pakcet is not and encrypted payload")
 		panic("Received pakcet is not and encrypted payload")
 	}
+
 	decryptedIKEPayload, err = decryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
 	if err != nil {
 		log.Fatal(err)
@@ -470,6 +471,7 @@ func UENon3GPPConnection() {
 		panic(err)
 	}
 
+	fmt.Println("...o erro começa !")
 	// Send to N3IWF
 	ikeMessageData, err = ikeMessage.Encode()
 	if err != nil {
@@ -488,12 +490,14 @@ func UENon3GPPConnection() {
 		log.Fatal(err)
 		panic(err)
 	}
+
 	ikeMessage.Payloads.Reset()
 	err = ikeMessage.Decode(buffer[:n])
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
+
 	encryptedPayload, ok = ikeMessage.Payloads[0].(*message.Encrypted)
 	if !ok {
 		log.Fatal("Received pakcet is not and encrypted payload")
@@ -504,13 +508,15 @@ func UENon3GPPConnection() {
 		log.Fatal(err)
 		panic(err)
 	}
+
 	eapReq, ok = decryptedIKEPayload[0].(*message.EAP)
 	if !ok {
 		log.Fatal("Received packet is not an EAP payload")
 		panic("Received packet is not an EAP payload")
 	}
+	fmt.Println("...o erro termina aqui!")
 	if eapReq.Code != message.EAPCodeSuccess {
-		log.Fatal("Not Success")
+		log.Fatal("Not Success! Eap Req Code: ", eapReq.Code)
 		panic("Not Success")
 	}
 
@@ -1425,7 +1431,6 @@ func encryptProcedure(ikeSecurityAssociation *context.IKESecurityAssociation, ik
 	copy(checksumField, checksumOfMessage)
 
 	return nil
-
 }
 
 func generateSPI(n3ue *context.N3IWFUe) []byte {

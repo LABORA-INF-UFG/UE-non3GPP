@@ -5,7 +5,7 @@
         vars:
             GTP5G_DIR_INSTALL : "/root/gtp5g"
             FREE5GC_DIR_INSTALL : "/root/go/src/free5gc"
-            UPF_DIR_CONFIG : "/root/go/src/free5gc/NFs/upf/build/config"
+            UPF_DIR_CONFIG : "/roaot/go/src/free5gc/NFs/upf/build/config"
             WEB_CONSOLE_FRONTEND_DIR : "/root/go/src/free5gc/webconsole/frontend"
             WEB_CONSOLE_BASE_DIR : "/root/go/src/free5gc/webconsole"
             NFS_DIR_CONFIG : "/root/go/src/free5gc/config"
@@ -1463,19 +1463,19 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     AMF:
-                      debugLevel: info
+                      debugLevel: debug
                       ReportCaller: false
                     NAS:
-                      debugLevel: info
+                      debugLevel: debug
                       ReportCaller: false
                     FSM:
-                      debugLevel: info
+                      debugLevel: debug
                       ReportCaller: false
                     NGAP:
-                      debugLevel: info
+                      debugLevel: debug
                       ReportCaller: false
                     Aper:
-                      debugLevel: info
+                      debugLevel: debug
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -1594,19 +1594,19 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     AMF:
-                      debugLevel: info
+                      debugLevel: debug
                       ReportCaller: false
                     NAS:
-                      debugLevel: info
+                      debugLevel: debug
                       ReportCaller: false
                     FSM:
-                      debugLevel: info
+                      debugLevel: debug
                       ReportCaller: false
                     NGAP:
-                      debugLevel: info
+                      debugLevel: debug
                       ReportCaller: false
                     Aper:
-                      debugLevel: info
+                      debugLevel: debug
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -2367,6 +2367,19 @@
                 ip link add name ipsec0 type vti local $(hostname -i | awk '{print $1}') remote 0.0.0.0 key 5
                 ip a add 10.0.0.1/24 dev ipsec0
                 ip l set dev ipsec0 up
+              when: n3iwf_install == 'true'
+
+            - name: Remove Unused NFs dir form N3IWF VM
+              shell: |
+                rm -rf {{ AMF_DIR }}
+                rm -rf {{ AUSF_DIR }}
+                rm -rf {{ NRF_DIR }}
+                rm -rf {{ NSSF_DIR }}
+                rm -rf {{ PCF_DIR }}
+                rm -rf {{ SMF_DIR }}
+                rm -rf {{ UDM_DIR }}
+                rm -rf {{ UDR_DIR }}
+                rm -rf {{ UPF_DIR }}
               when: n3iwf_install == 'true'
 
                                                                                                                                                

@@ -11,6 +11,9 @@ func (ikeMessage *IKEMessage) BuildIKEHeader(
 	exchangeType uint8,
 	flags uint8,
 	messageID uint32) {
+
+	//fmt.Println("-->  ", initiatorSPI, responsorSPI, exchangeType, flags, messageID)
+
 	ikeMessage.InitiatorSPI = initiatorSPI
 	ikeMessage.ResponderSPI = responsorSPI
 	ikeMessage.Version = 0x20

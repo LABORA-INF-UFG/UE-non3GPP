@@ -265,12 +265,12 @@ func DecryptMessage(key []byte, cipherText []byte, algorithmType uint16) ([]byte
 		cbcBlockMode := cipher.NewCBCDecrypter(block, initializationVector)
 		cbcBlockMode.CryptBlocks(plainText, encryptedMessage)
 
-		log.Info("Decrypted content: " + hex.Dump(plainText))
+		//log.Info("Decrypted content: " + hex.Dump(plainText))
 
 		padding := int(plainText[len(plainText)-1]) + 1
 		plainText = plainText[:len(plainText)-padding]
 
-		log.Info("Decrypted content with out padding: " + hex.Dump(plainText))
+		//log.Info("Decrypted content with out padding: " + hex.Dump(plainText))
 
 		return plainText, nil
 	default:
