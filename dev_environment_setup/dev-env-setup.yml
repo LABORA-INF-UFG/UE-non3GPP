@@ -2133,12 +2133,12 @@
                       url: {{ MONGO_URL_CONNECTION }} # a valid URL of the mongodb
               when: n3iwf_install == 'false'
 
-            - name  : Build all NFs freee5gc
-              shell : source /root/.bashrc && make
-              args:
-                chdir: "{{ FREE5GC_DIR_INSTALL }}"
-                executable: /bin/bash
-              when: n3iwf_install == 'false'
+#            - name  : Build all NFs freee5gc
+#              shell : source /root/.bashrc && make
+#              args:
+#                chdir: "{{ FREE5GC_DIR_INSTALL }}"
+#                executable: /bin/bash
+#              when: n3iwf_install == 'false'
 
             - name  : BuilD WebConsole
               shell :  |
