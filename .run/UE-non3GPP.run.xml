@@ -1,6 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="UE-non3GPP" type="GoApplicationRunConfiguration" factoryName="Go Application">
     <module name="UE-non3GPP" />
+    <target name="root@164.92.93.214:22" />
     <working_directory value="$PROJECT_DIR$" />
     <parameters value="ue" />
     <kind value="PACKAGE" />

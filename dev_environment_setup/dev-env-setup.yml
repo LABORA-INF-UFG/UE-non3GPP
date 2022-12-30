@@ -9,6 +9,7 @@
             WEB_CONSOLE_FRONTEND_DIR : "/root/go/src/free5gc/webconsole/frontend"
             WEB_CONSOLE_BASE_DIR : "/root/go/src/free5gc/webconsole"
             NFS_DIR_CONFIG : "/root/go/src/free5gc/config"
+            UPF_DIR : "/root/go/src/free5gc/NFs/upf"
             NRF_DIR : "/root/go/src/free5gc/NFs/nrf"
             UDR_DIR : "/root/go/src/free5gc/NFs/udr"
             UDM_DIR : "/root/go/src/free5gc/NFs/udm"
@@ -2140,9 +2141,9 @@
 #                executable: /bin/bash
 #              when: n3iwf_install == 'false'
 
-            - name  : BuilD WebConsole
-              shell :  |
-                    yarn install
+#            - name  : BuilD WebConsole
+#              shell :  |
+#                    yarn install
 #                    yarn build
 #                    rm -rf ../public
 #                    cp -R build ../public
