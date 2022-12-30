@@ -659,7 +659,7 @@ func UENon3GPPConnection() {
 		}
 	}
 	if linkIPSec == nil {
-		log.Fatal("No link named ipsec0")
+		log.Fatal("k named ipsec0")
 		panic("No link named ipsec0")
 	}
 

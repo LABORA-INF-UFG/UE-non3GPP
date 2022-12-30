@@ -90,7 +90,7 @@
 
             - name: Install Basic requirements - n3iwf
               apt:
-                name: [ 'wget', 'git', 'ca-certificates', 'net-tools', 'gcc', 'cmake', 'autoconf', 'build-essential', 'libtool', 'pkg-config', 'libmnl-dev', 'libyaml-dev' ]
+                name: [ 'wget', 'git', 'net-tools', 'ca-certificates', 'net-tools', 'gcc', 'cmake', 'autoconf', 'build-essential', 'libtool', 'pkg-config', 'libmnl-dev', 'libyaml-dev' ]
                 state: present
                 update_cache: yes
               when: n3iwf_install == 'true'
