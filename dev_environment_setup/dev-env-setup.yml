@@ -2125,11 +2125,11 @@
               when: n3iwf_install == 'false'
 
             - name  : Build all NFs freee5gc
-              shell : source /root/.bashrc && make
+              shell : make
               args:
                 chdir: "{{ FREE5GC_DIR_INSTALL }}"
-                executable: /bin/bash
               when: n3iwf_install == 'false'
+              ignore_errors: true
 
             - name  : BuilD WebConsole
               shell :  |
@@ -2140,6 +2140,7 @@
               args:
                 chdir: "{{ WEB_CONSOLE_FRONTEND_DIR }}"
               when: n3iwf_install == 'false'
+              ignore_errors: true
 
             - name  : Build WebConsole
               shell :  |
@@ -2147,6 +2148,7 @@
               args:
                 chdir: "{{ WEB_CONSOLE_BASE_DIR }}"
               when: n3iwf_install == 'false'
+              ignore_errors: true
 
             - name  : Remove UPF default file config
               shell : rm upfcfg.yaml
@@ -2194,7 +2196,6 @@
                 mkdir .run
               args:
                 chdir: "{{ FREE5GC_DIR_INSTALL }}"
-
 
             - name  : Build A - NRF.run.xml config file
               copy:
@@ -2263,7 +2264,6 @@
                     </configuration>
                   </component>
               when: n3iwf_install == 'false'
-
 
             - name  : Build E - NSSF.run.xml config file
               copy:
