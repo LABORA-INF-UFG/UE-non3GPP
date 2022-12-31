@@ -165,9 +165,6 @@
               shell:  sudo rm -rf {{ FREE5GC_DIR_INSTALL }}
               ignore_errors: true
 
-            - name: User-plane Supporting Packages
-              shell: go get -u github.com/sirupsen/logrus
-
             - name  : Git Clone GTP5
               shell : git clone -b v0.2.1 https://github.com/free5gc/gtp5g.git
               args:
