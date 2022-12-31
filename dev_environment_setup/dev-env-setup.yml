@@ -96,40 +96,40 @@
                 update_cache: yes
               when: n3iwf_install == 'true'
 
-            - name: Remove Go-lang install 1/3
-              shell:  sudo rm -rf /usr/local/go
-              ignore_errors: true
-
-            - name: Remove Go-lang install 2/3
-              shell: sudo rm -rf ~/go
-              ignore_errors: true
-
-            - name: Remove Go-lang install 3/3
-              shell: apt remove golang-go
-              ignore_errors: true
-
-            - name: Install Go 1.14.4 - 1/5
-              shell: wget https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
-
-            - name: Install Go 1.14.4 - 2/5
-              shell: sudo tar -C /usr/local -zxvf go1.14.4.linux-amd64.tar.gz
-
-            - name: Install Go 1.14.4 - 3/5
-              shell: |
-                  mkdir ~/go
-                  mkdir ~/go/bin
-                  mkdir ~/go/pkg
-                  mkdir ~/go/src
-
-            - name: Install Go 1.14.4 - 4/5
-              shell: |
-                  echo 'export GOPATH=$HOME/go' >> ~/.bashrc
-                  echo 'export GOROOT=/usr/local/go' >> ~/.bashrc
-                  echo 'export PATH=$PATH:$GOPATH/bin:$GOROOT/bin' >> ~/.bashrc
-                  echo 'export GO111MODULE=auto' >> ~/.bashrc
-
-            - name: Remove GO install file - 5/5
-              shell: rm ~/go1.14.4.linux-amd64.tar.gz
+#            - name: Remove Go-lang install 1/3
+#              shell:  sudo rm -rf /usr/local/go
+#              ignore_errors: true
+#
+#            - name: Remove Go-lang install 2/3
+#              shell: sudo rm -rf ~/go
+#              ignore_errors: true
+#
+#            - name: Remove Go-lang install 3/3
+#              shell: apt remove golang-go
+#              ignore_errors: true
+#
+#            - name: Install Go 1.14.4 - 1/5
+#              shell: wget https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
+#
+#            - name: Install Go 1.14.4 - 2/5
+#              shell: sudo tar -C /usr/local -zxvf go1.14.4.linux-amd64.tar.gz
+#
+#            - name: Install Go 1.14.4 - 3/5
+#              shell: |
+#                  mkdir ~/go
+#                  mkdir ~/go/bin
+#                  mkdir ~/go/pkg
+#                  mkdir ~/go/src
+#
+#            - name: Install Go 1.14.4 - 4/5
+#              shell: |
+#                  echo 'export GOPATH=$HOME/go' >> ~/.bashrc
+#                  echo 'export GOROOT=/usr/local/go' >> ~/.bashrc
+#                  echo 'export PATH=$PATH:$GOPATH/bin:$GOROOT/bin' >> ~/.bashrc
+#                  echo 'export GO111MODULE=auto' >> ~/.bashrc
+#
+#            - name: Remove GO install file - 5/5
+#              shell: rm ~/go1.14.4.linux-amd64.tar.gz
 
             - name: Start Mongo-DB
               shell:  sudo systemctl start mongodb
@@ -165,8 +165,8 @@
               shell:  sudo rm -rf {{ FREE5GC_DIR_INSTALL }}
               ignore_errors: true
 
-#            # - name: User-plane Supporting Packages
-#            #   shell: go get -u github.com/sirupsen/logrus
+            - name: User-plane Supporting Packages
+              shell: go get -u github.com/sirupsen/logrus
 
             - name  : Git Clone GTP5
               shell : git clone -b v0.2.1 https://github.com/free5gc/gtp5g.git
@@ -2106,14 +2106,6 @@
                       ReportCaller: false
               when: n3iwf_install == 'true'
 
-
-
-            # - name  : Checkout the WebConsole version v1.0.1 - required for free5gc version is v3.0.5
-            #   shell : git checkout v1.0.1
-            #   args:
-            #     chdir: "{{ WEB_CONSOLE_BASE_DIR }}"
-            #   when  : FREE5GC == 'true'
-
             - name  : Remove webuicfg.yaml default file config
               shell : rm config/webuicfg.yaml
               args:
@@ -2132,22 +2124,22 @@
                     mongodb: # the mongodb connected by this webui
                       name: free5gc # name of the mongodb
                       url: {{ MONGO_URL_CONNECTION }} # a valid URL of the mongodb
+
               when: n3iwf_install == 'false'
 
-#            - name  : Build all NFs freee5gc
-#              shell : source /root/.bashrc && make
-#              args:
-#                chdir: "{{ FREE5GC_DIR_INSTALL }}"
-#                executable: /bin/bash
-#              when: n3iwf_install == 'false'
+            - name  : Build all NFs freee5gc
+              shell : source /root/.bashrc && make
+              args:
+                chdir: "{{ FREE5GC_DIR_INSTALL }}"
+                executable: /bin/bash
+              when: n3iwf_install == 'false'
 
-#            - name  : BuilD WebConsole
-#              shell :  |
-#                    yarn install
+            - name  : BuilD WebConsole
+              shell :  |
+                    yarn install
 #                    yarn build
 #                    rm -rf ../public
 #                    cp -R build ../public
-
               args:
                 chdir: "{{ WEB_CONSOLE_FRONTEND_DIR }}"
               when: n3iwf_install == 'false'

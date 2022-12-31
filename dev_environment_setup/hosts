@@ -1,8 +1,8 @@
 
 
 [fee5gc-core]
-143.198.135.236 internet_network_interface=eth0 n3iwf_install=false
+143.198.134.144 internet_network_interface=eth0 n3iwf_install=false
 
 [fee5gc-n3iwf]
-143.198.61.21 free5gc_ip_address=143.198.135.236 n3iwf_install=true
+143.198.76.247 free5gc_ip_address=143.198.134.144 n3iwf_install=true
 
