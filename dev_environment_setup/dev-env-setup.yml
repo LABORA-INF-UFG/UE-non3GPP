@@ -5,7 +5,7 @@
         vars:
             GTP5G_DIR_INSTALL : "/root/gtp5g"
             FREE5GC_DIR_INSTALL : "/root/go/src/free5gc"
-            UPF_DIR_CONFIG : "/roaot/go/src/free5gc/NFs/upf/build/config"
+            UPF_DIR_CONFIG : "/root/go/src/free5gc/NFs/upf/build/config"
             WEB_CONSOLE_FRONTEND_DIR : "/root/go/src/free5gc/webconsole/frontend"
             WEB_CONSOLE_BASE_DIR : "/root/go/src/free5gc/webconsole"
             NFS_DIR_CONFIG : "/root/go/src/free5gc/config"
@@ -96,40 +96,40 @@
                 update_cache: yes
               when: n3iwf_install == 'true'
 
-            - name: Remove Go-lang install 1/3
-              shell:  sudo rm -rf /usr/local/go
-              ignore_errors: true
-
-            - name: Remove Go-lang install 2/3
-              shell: sudo rm -rf ~/go
-              ignore_errors: true
-
-            - name: Remove Go-lang install 3/3
-              shell: apt remove golang-go
-              ignore_errors: true
-
-            - name: Install Go 1.14.4 - 1/5
-              shell: wget https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
-
-            - name: Install Go 1.14.4 - 2/5
-              shell: sudo tar -C /usr/local -zxvf go1.14.4.linux-amd64.tar.gz
-
-            - name: Install Go 1.14.4 - 3/5
-              shell: |
-                  mkdir ~/go
-                  mkdir ~/go/bin
-                  mkdir ~/go/pkg
-                  mkdir ~/go/src
-
-            - name: Install Go 1.14.4 - 4/5
-              shell: |
-                  echo 'export GOPATH=$HOME/go' >> ~/.bashrc
-                  echo 'export GOROOT=/usr/local/go' >> ~/.bashrc
-                  echo 'export PATH=$PATH:$GOPATH/bin:$GOROOT/bin' >> ~/.bashrc
-                  echo 'export GO111MODULE=auto' >> ~/.bashrc
-
-            - name: Remove GO install file - 5/5
-              shell: rm ~/go1.14.4.linux-amd64.tar.gz
+#            - name: Remove Go-lang install 1/3
+#              shell:  sudo rm -rf /usr/local/go
+#              ignore_errors: true
+#
+#            - name: Remove Go-lang install 2/3
+#              shell: sudo rm -rf ~/go
+#              ignore_errors: true
+#
+#            - name: Remove Go-lang install 3/3
+#              shell: apt remove golang-go
+#              ignore_errors: true
+#
+#            - name: Install Go 1.14.4 - 1/5
+#              shell: wget https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
+#
+#            - name: Install Go 1.14.4 - 2/5
+#              shell: sudo tar -C /usr/local -zxvf go1.14.4.linux-amd64.tar.gz
+#
+#            - name: Install Go 1.14.4 - 3/5
+#              shell: |
+#                  mkdir ~/go
+#                  mkdir ~/go/bin
+#                  mkdir ~/go/pkg
+#                  mkdir ~/go/src
+#
+#            - name: Install Go 1.14.4 - 4/5
+#              shell: |
+#                  echo 'export GOPATH=$HOME/go' >> ~/.bashrc
+#                  echo 'export GOROOT=/usr/local/go' >> ~/.bashrc
+#                  echo 'export PATH=$PATH:$GOPATH/bin:$GOROOT/bin' >> ~/.bashrc
+#                  echo 'export GO111MODULE=auto' >> ~/.bashrc
+#
+#            - name: Remove GO install file - 5/5
+#              shell: rm ~/go1.14.4.linux-amd64.tar.gz
 
             - name: Start Mongo-DB
               shell:  sudo systemctl start mongodb
@@ -2124,44 +2124,27 @@
 
               when: n3iwf_install == 'false'
 
-            - name  : Build all NFs freee5gc
-              shell : make
-              args:
-                chdir: "{{ FREE5GC_DIR_INSTALL }}"
-              when: n3iwf_install == 'false'
-
-            - name  : BuilD WebConsole
-              shell :  |
-                    yarn install
-#                    yarn build
-#                    rm -rf ../public
-#                    cp -R build ../public
-              args:
-                chdir: "{{ WEB_CONSOLE_FRONTEND_DIR }}"
-              when: n3iwf_install == 'false'
-
-
             - name  : Remove UPF default file config
               shell : rm upfcfg.yaml
               args:
-                chdir: "{{ UPF_DIR_CONFIG }}"
+                chdir: "{{ NFS_DIR_CONFIG }}"
               when: n3iwf_install == 'false'
 
-            - name  : Build upfcfg.yaml config file
+            - name: Build upfcfg.yaml config file
               copy:
-                dest: "{{ UPF_DIR_CONFIG }}/upfcfg.yaml"
+                dest: "{{ NFS_DIR_CONFIG }}/upfcfg.yaml"
                 content: |
                   info:
                     version: 1.0.0
                     description: UPF configuration
-
+                  
                   configuration:
                     # the kind of log output
                       # debugLevel: how detailed to output, value: trace, debug, info, warn, error, fatal, panic
                       # ReportCaller: enable the caller report or not, value: true or false
                     debugLevel: info
                     ReportCaller: false
-
+                  
                     # The IP list of the N4 interface on this UPF (Can't set to 0.0.0.0)
                     pfcp:
                       - addr: {{ UPF_IP_ADDRESS }}
@@ -2173,7 +2156,7 @@
                       # - name: upf.5gc.nctu.me
                       # [optional] gtpu.ifname
                       # - ifname: gtpif
-
+                  
                     # The DNN list supported by UPF
                     dnn_list:
                       - dnn: internet # Data Network Name
@@ -2363,4 +2346,14 @@
                 rm -rf {{ UPF_DIR }}
               when: n3iwf_install == 'true'
 
-                                                                                                                                               
+            - name: Build UPF
+              shell: make upf
+              args:
+                chdir: "{{ FREE5GC_DIR_INSTALL }}"
+              when: n3iwf_install == 'false'
+
+            - name: Build Webconsole
+              shell: make webconsole
+              args:
+                chdir: "{{ FREE5GC_DIR_INSTALL }}"
+              when: n3iwf_install == 'false'
