@@ -2,6 +2,7 @@ package test
 
 import (
 	"encoding/hex"
+	"fmt"
 	"github.com/free5gc/nas/nasMessage"
 	"github.com/free5gc/nas/nasType"
 	"github.com/free5gc/nas/security"
@@ -381,6 +382,7 @@ func (ue *RanUeContext) DerivateKamf(key []byte, snName string, SQN, AK []byte) 
 		log.Fatalf("GetKDFValue error: %+v", err)
 		panic(err)
 	}
+	fmt.Println("Kausf: ", Kausf[:])
 	P0 = []byte(snName)
 	Kseaf, err := ueauth.GetKDFValue(Kausf, ueauth.FC_FOR_KSEAF_DERIVATION, P0, ueauth.KDFLen(P0))
 	if err != nil {
@@ -479,6 +481,16 @@ func (ue *RanUeContext) GetBearerType() uint8 {
 	if ue.AnType == models.AccessType__3_GPP_ACCESS {
 		return security.Bearer3GPP
 	} else if ue.AnType == models.AccessType_NON_3_GPP_ACCESS {
+		return security.BearerNon3GPP
+	} else {
+		return security.OnlyOneBearer
+	}
+}
+
+func (ue *RanUeContext) GetBearerByType(accessType models.AccessType) uint8 {
+	if accessType == models.AccessType__3_GPP_ACCESS {
+		return security.Bearer3GPP
+	} else if accessType == models.AccessType_NON_3_GPP_ACCESS {
 		return security.BearerNon3GPP
 	} else {
 		return security.OnlyOneBearer

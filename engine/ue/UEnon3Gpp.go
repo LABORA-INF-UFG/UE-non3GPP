@@ -354,6 +354,7 @@ func UENon3GPPConnection() {
 		log.Fatal("Erro inesperado! - Assert")
 	}
 	rand := decodedNAS.AuthenticationRequest.GetRANDValue()
+
 	resStat := ue.DeriveRESstarAndSetKey(ue.AuthenticationSubs, rand[:], "5G:mnc093.mcc208.3gppnetwork.org")
 
 	// send NAS Authentication Response
@@ -410,6 +411,7 @@ func UENon3GPPConnection() {
 		log.Fatal(err)
 		panic(err)
 	}
+
 	encryptedPayload, ok = ikeMessage.Payloads[0].(*message.Encrypted)
 	if !ok {
 		log.Fatal("Received pakcet is not and encrypted payload")

@@ -8,12 +8,12 @@ ue:
   ranuengapid: 1
   amfuengapid: 1
   authenticationmanagementfield : "8000"
-  ipudpconnection : "192.168.1.106"
+  ipudpconnection : "192.168.1.110"
   portudpconnection : "500"
 
 
 n3iwfinfo:
-  ikebindaddress: "146.190.57.85"
+  ikebindaddress: "137.184.179.22"
   ikebindport: "500"
   ipsecifaceprotocol: "udp"
 
