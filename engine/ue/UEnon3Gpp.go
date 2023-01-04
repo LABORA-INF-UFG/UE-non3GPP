@@ -440,16 +440,13 @@ func UENon3GPPConnection() {
 	registrationRequestWith5GMM := nasTestpacket.GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
 		mobileIdentity5GS, nil, ueSecurityCapability, ue.Get5GMMCapability(), nil, nil)
 	pdu = nasTestpacket.GetSecurityModeComplete(registrationRequestWith5GMM)
-	fmt.Println("...PDU-1")
-	fmt.Println(pdu[0:])
+
 	pdu, err = test.EncodeNasPduWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCipheredWithNew5gNasSecurityContext, true, true)
 	if err != nil {
 		//assert.Nil(t, err
 		panic(err)
 	}
 
-	fmt.Println("...PDU-2")
-	fmt.Println(pdu[0:])
 	// IKE_AUTH - EAP exchange
 	ikeMessage.Payloads.Reset()
 	n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
@@ -468,10 +465,6 @@ func UENon3GPPConnection() {
 	eapVendorTypeData = append(eapVendorTypeData, nasLength...)
 	eapVendorTypeData = append(eapVendorTypeData, pdu...)
 
-	fmt.Println(".........")
-	fmt.Println(".........PDU-3")
-	fmt.Println(pdu[0:])
-
 	eap = ikePayload.BuildEAP(message.EAPCodeResponse, eapReq.Identifier)
 	eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP, message.VendorTypeEAP5G, eapVendorTypeData)
 
@@ -481,10 +474,9 @@ func UENon3GPPConnection() {
 		panic(err)
 	}
 
-	fmt.Println("...o erro começa !")
 	// Send to N3IWF
 	ikeMessageData, err = ikeMessage.Encode()
-	fmt.Println(ikeMessageData[0:])
+
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -525,7 +517,7 @@ func UENon3GPPConnection() {
 		log.Fatal("Received packet is not an EAP payload")
 		panic("Received packet is not an EAP payload")
 	}
-	fmt.Println("...o erro termina aqui!")
+
 	if eapReq.Code != message.EAPCodeSuccess {
 		log.Fatal("Not Success! Eap Req Code: ", eapReq.Code)
 		panic("Not Success")
@@ -984,8 +976,6 @@ func UENon3GPPConnection() {
 		panic("Ping Failed")
 	}
 
-	fmt.Println("...ok!", pdu)
-	fmt.Println(".........")
 }
 
 func parse5GQoSInfoNotify(n *message.Notification) (info *PDUQoSInfo, err error) {

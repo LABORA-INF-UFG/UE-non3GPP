@@ -377,6 +377,14 @@ func (ue *RanUeContext) DerivateKamf(key []byte, snName string, SQN, AK []byte) 
 		SQNxorAK[i] = SQN[i] ^ AK[i]
 	}
 	P1 := SQNxorAK
+
+	fmt.Println("key: ", key[:])
+	fmt.Println(FC[:])
+	fmt.Println(P0[:])
+	fmt.Println(ueauth.KDFLen(P0))
+	fmt.Println(P1[:])
+	fmt.Print(ueauth.KDFLen(P1))
+
 	Kausf, err := ueauth.GetKDFValue(key, FC, P0, ueauth.KDFLen(P0), P1, ueauth.KDFLen(P1))
 	if err != nil {
 		log.Fatalf("GetKDFValue error: %+v", err)
