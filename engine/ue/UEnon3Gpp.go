@@ -628,8 +628,8 @@ func UENon3GPPConnection() {
 		log.Fatalf("Create child security association context failed: %+v", err)
 		panic(err)
 	}
-	err = parseIPAddressInformationToChildSecurityAssociation(childSecurityAssociationContext,
-		net.ParseIP("192.168.127.1").To4(),
+	err = parseIPAddressInformationToChildSecurityAssociation(cfg, childSecurityAssociationContext,
+		net.ParseIP(cfg.N3iwfInfo.IKEBindAddress).To4(),
 		responseTrafficSelectorInitiator.TrafficSelectors[0],
 		responseTrafficSelectorResponder.TrafficSelectors[0])
 
@@ -690,6 +690,9 @@ func UENon3GPPConnection() {
 	localTCPAddr := &net.TCPAddr{
 		IP: ueAddr.IP,
 	}
+
+	//o problema está aqui ... faz-se uma conexão tcp com a N3 passando um endereço de retorno vinculado ao IPSec
+	//na faixa 10
 	tcpConnWithN3IWF, err := net.DialTCP("tcp", localTCPAddr, n3iwfNASAddr)
 	if err != nil {
 		log.Fatal(err)
@@ -1261,7 +1264,7 @@ func generateKeyForChildSA(ikeSecurityAssociation *context.IKESecurityAssociatio
 
 }
 
-func parseIPAddressInformationToChildSecurityAssociation(
+func parseIPAddressInformationToChildSecurityAssociation(cfg config.Config,
 	childSecurityAssociation *context.ChildSecurityAssociation,
 	n3iwfPublicIPAddr net.IP,
 	trafficSelectorLocal *message.IndividualTrafficSelector,
@@ -1272,7 +1275,7 @@ func parseIPAddressInformationToChildSecurityAssociation(
 	}
 
 	childSecurityAssociation.PeerPublicIPAddr = n3iwfPublicIPAddr
-	childSecurityAssociation.LocalPublicIPAddr = net.ParseIP("192.168.127.2")
+	childSecurityAssociation.LocalPublicIPAddr = net.ParseIP(cfg.Ue.IpUDPConnection) //childSecurityAssociation.LocalPublicIPAddr = net.ParseIP("192.168.127.2")
 
 	childSecurityAssociation.TrafficSelectorLocal = net.IPNet{
 		IP:   trafficSelectorLocal.StartAddress,

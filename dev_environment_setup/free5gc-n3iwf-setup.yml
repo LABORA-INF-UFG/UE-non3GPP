@@ -22,10 +22,12 @@
             GO_SRC_DIR : "/root/go/src"
             HOME_DIR: "/root"
             FREE5GC_GIT_CHECKOUT_URL_FREEGC_TAG_VERSION: "--recursive -b v3.1.1 -j `nproc` https://github.com/free5gc/free5gc.git"
+            LABORA_UE_NON3GPP_GIT_REPO: "https://github.com/LABORA-INF-UFG/UE-non3GPP.git"
             FREE5GC_CHECKOUT_FOLDER_NAME: "free5gc"
             PREDEFINED_IP_ADDRESS: "false"
             MONGO_URL_CONNECTION: "mongodb://127.0.0.1:27017"
             NRF_IP_ADDRESS: "127.0.0.10"
+            MASCARA_REDE_DECIMAL: "19"
             NRF_PORT: "8000"
             UDR_IP_ADDRESS: "127.0.0.4"
             UDR_PORT: "8000"
@@ -49,9 +51,7 @@
             N3IWF_AMF_SCTP_PORT: "38412"
             N3IWF_IKE_BIND_ADDRESS: "127.0.0.21"
             N3IWF_IP_SEC_INTERFACE_ADDRESS: "10.0.0.1"
-            N3IWF_UE_IP_ADDRESS_RANGE: "10.0.0.0/24"
-            N3IWF_IP_ADDRESS_RANGE: "10.0.0.1/24"
-            N3IWF_GTP_BIND_ADDRESS: "10.200.200.2"
+            N3IWF_UE_IP_ADDRESS_RANGE: "10.0.0.0"
             N3IWF_IP_SEC_INTERFACE_MARK: "5"
             N3IWF_NAS_TCP_PORT: "20000"
             
@@ -74,7 +74,6 @@
             - set_fact:
                 AMF_NGAP_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
                 N3IWF_IKE_BIND_ADDRESS: "{{ ansible_default_ipv4.address }}"
-                N3IWF_GTP_BIND_ADDRESS: "{{ ansible_default_ipv4.address }}"
                 SMF_N3_INTERFACE_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
                 SMF_N4_INTERFACE_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
                 GTPU_UPF_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
@@ -2074,7 +2073,7 @@
 
                     IPSecInterfaceAddress: {{ N3IWF_IP_SEC_INTERFACE_ADDRESS }} # IP address of IPSec virtual interface (IPsec tunnel enpoint on this N3IWF)
 
-                    UEIPAddressRange: {{ N3IWF_UE_IP_ADDRESS_RANGE }} # IP address allocated to UE in IPSec tunnel
+                    UEIPAddressRange: {{ N3IWF_UE_IP_ADDRESS_RANGE }}/24 # IP address allocated to UE in IPSec tunnel
 
                     IPSecInterfaceMark: {{ N3IWF_IP_SEC_INTERFACE_MARK }} # IPSec virtual interface mark (Any value except to 0, default value is 7 if not defined)
 
@@ -2327,11 +2326,17 @@
                   </component>
               when: n3iwf_install == 'false'
 
+            # o comando
             - name  : Config N3IWF env
               shell : |
-                ip link add name ipsec0 type vti local {{ N3IWF_IKE_BIND_ADDRESS }} remote 0.0.0.0 key 5                
-                ip a add {{ N3IWF_IP_ADDRESS_RANGE }} dev ipsec0
-                ip l set dev ipsec0 up
+                sudo ip link add veth2 type veth peer name veth3
+                sudo ip addr add {{ N3IWF_IKE_BIND_ADDRESS }}/{{ MASCARA_REDE_DECIMAL }} dev veth2
+                sudo ip link set veth2 up
+                
+                sudo ip link add name ipsec0 type vti local {{ N3IWF_IKE_BIND_ADDRESS }} remote 0.0.0.0 key 5
+                sudo ip addr add {{ N3IWF_IP_SEC_INTERFACE_ADDRESS }}/{{ MASCARA_REDE_DECIMAL }} dev ipsec0
+                sudo ip link set ipsec0 up
+
               when: n3iwf_install == 'true'
 
             - name: Remove Unused NFs dir form N3IWF VM
@@ -2358,3 +2363,8 @@
               args:
                 chdir: "{{ FREE5GC_DIR_INSTALL }}"
               when: n3iwf_install == 'false'
+
+            - name  : Git Clone UE-non3GPP
+              shell : git clone {{ LABORA_UE_NON3GPP_GIT_REPO }}
+              args:
+                chdir: "{{ GO_SRC_DIR }}"
