@@ -8,7 +8,7 @@ ue:
   ranuengapid: 1
   amfuengapid: 1
   authenticationmanagementfield : "8000"
-  ipudpconnection : "192.168.1.110"
+  ipudpconnection : "146.190.54.27"
   portudpconnection : "500"
 
 

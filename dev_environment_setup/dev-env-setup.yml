@@ -50,18 +50,19 @@
             N3IWF_IKE_BIND_ADDRESS: "127.0.0.21"
             N3IWF_IP_SEC_INTERFACE_ADDRESS: "10.0.0.1"
             N3IWF_UE_IP_ADDRESS_RANGE: "10.0.0.0/24"
+            N3IWF_IP_ADDRESS_RANGE: "10.0.0.1/24"
             N3IWF_GTP_BIND_ADDRESS: "10.200.200.2"
             N3IWF_IP_SEC_INTERFACE_MARK: "5"
             N3IWF_NAS_TCP_PORT: "20000"
             
         tasks:
-            - name: "Ansible | Print a variable"
-              debug:
-                  msg: "The operating system is {{ n3iwf_install }}"
+#            - name: "Ansible | Print a variable"
+#              debug:
+#                  msg: "The operating system is {{ n3iwf_install }}"
 
 #            - fail:
 #                msg: "'internet_network_interface' not found, this parameter is required!"
-#              when: internet_network_interface == '' and n3iwf_install == 'false'
+#              when: 5gc_internet_network_interface == '' and n3iwf_install == 'false'
 
 
             - name: Environment validation!
@@ -189,7 +190,7 @@
               when: n3iwf_install == 'false'
 
             - name  : Network Setting 2/4
-              shell : sudo iptables -t nat -A POSTROUTING -o {{ internet_network_interface }} -j MASQUERADE
+              shell : sudo iptables -t nat -A POSTROUTING -o {{ 5gc_internet_network_interface }} -j MASQUERADE
               when: n3iwf_install == 'false'
 
             - name  : Network Setting 3/4
@@ -2328,8 +2329,8 @@
 
             - name  : Config N3IWF env
               shell : |
-                ip link add name ipsec0 type vti local $(hostname -i | awk '{print $1}') remote 0.0.0.0 key 5
-                ip a add 10.0.0.1/24 dev ipsec0
+                ip link add name ipsec0 type vti local {{ N3IWF_IKE_BIND_ADDRESS }} remote 0.0.0.0 key 5                
+                ip a add {{ N3IWF_IP_ADDRESS_RANGE }} dev ipsec0
                 ip l set dev ipsec0 up
               when: n3iwf_install == 'true'
 
