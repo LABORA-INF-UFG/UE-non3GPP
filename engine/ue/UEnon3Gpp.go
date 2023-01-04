@@ -629,7 +629,6 @@ func UENon3GPPConnection() {
 		panic(err)
 	}
 	err = parseIPAddressInformationToChildSecurityAssociation(cfg, childSecurityAssociationContext,
-		net.ParseIP(cfg.N3iwfInfo.IKEBindAddress).To4(),
 		responseTrafficSelectorInitiator.TrafficSelectors[0],
 		responseTrafficSelectorResponder.TrafficSelectors[0])
 
@@ -848,7 +847,7 @@ func UENon3GPPConnection() {
 		log.Fatalf("Create child security association context failed: %+v", err)
 		panic(err)
 	}
-	err = parseIPAddressInformationToChildSecurityAssociation(childSecurityAssociationContextUserPlane, net.ParseIP("192.168.127.1"), responseTrafficSelectorResponder.TrafficSelectors[0], responseTrafficSelectorInitiator.TrafficSelectors[0])
+	err = parseIPAddressInformationToChildSecurityAssociation(cfg, childSecurityAssociationContextUserPlane, responseTrafficSelectorResponder.TrafficSelectors[0], responseTrafficSelectorInitiator.TrafficSelectors[0])
 	if err != nil {
 		log.Fatalf("Parse IP address to child security association failed: %+v", err)
 		panic(err)
@@ -1266,7 +1265,6 @@ func generateKeyForChildSA(ikeSecurityAssociation *context.IKESecurityAssociatio
 
 func parseIPAddressInformationToChildSecurityAssociation(cfg config.Config,
 	childSecurityAssociation *context.ChildSecurityAssociation,
-	n3iwfPublicIPAddr net.IP,
 	trafficSelectorLocal *message.IndividualTrafficSelector,
 	trafficSelectorRemote *message.IndividualTrafficSelector) error {
 
@@ -1274,7 +1272,7 @@ func parseIPAddressInformationToChildSecurityAssociation(cfg config.Config,
 		return errors.New("childSecurityAssociation is nil")
 	}
 
-	childSecurityAssociation.PeerPublicIPAddr = n3iwfPublicIPAddr
+	childSecurityAssociation.PeerPublicIPAddr = net.ParseIP(cfg.N3iwfInfo.IKEBindAddress).To4()
 	childSecurityAssociation.LocalPublicIPAddr = net.ParseIP(cfg.Ue.IpUDPConnection) //childSecurityAssociation.LocalPublicIPAddr = net.ParseIP("192.168.127.2")
 
 	childSecurityAssociation.TrafficSelectorLocal = net.IPNet{
