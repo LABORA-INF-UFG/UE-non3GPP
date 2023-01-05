@@ -52,15 +52,14 @@
                     authenticationmanagementfield : "{{ AUTH_MN_FIELD }}"
                     ipudpconnection : "{{ UE_NON3GPP_IP_ADDR }}"
                     portudpconnection : "{{ UE_NON3GPP_PORT_UDP_CONNECTION }}"
-                    
-                    
-                    n3iwfinfo:
-                      ikebindaddress: "{{ n3iwf_ike_ip_address }}"
-                      ikebindport: "500"
-                      ipsecifaceprotocol: "udp"
-                    
-                    logs:
-                      level: 4
+                                       
+                  n3iwfinfo:
+                    ikebindaddress: "{{ n3iwf_ike_ip_address }}"
+                    ikebindport: "500"
+                    ipsecifaceprotocol: "udp"
+                  
+                  logs:
+                    level: 4
 
             - name  : Remove UE-non3GPP ipsec0 confg (if exists)
               shell : |
