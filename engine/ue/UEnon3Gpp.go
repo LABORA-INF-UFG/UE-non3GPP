@@ -690,8 +690,6 @@ func UENon3GPPConnection() {
 		IP: ueAddr.IP,
 	}
 
-	//o problema está aqui ... faz-se uma conexão tcp com a N3 passando um endereço de retorno vinculado ao IPSec
-	//na faixa 10
 	tcpConnWithN3IWF, err := net.DialTCP("tcp", localTCPAddr, n3iwfNASAddr)
 	if err != nil {
 		log.Fatal(err)
@@ -738,6 +736,7 @@ func UENon3GPPConnection() {
 		panic(err)
 	}
 
+	//o problema está aqui ... resposta não está chegando
 	// Receive N3IWF reply
 	n, _, err = udpConnection.ReadFromUDP(buffer)
 	if err != nil {
