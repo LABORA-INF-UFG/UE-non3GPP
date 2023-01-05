@@ -62,6 +62,16 @@
                     logs:
                       level: 4
 
+            - name  : Remove UE-non3GPP ipsec0 confg (if exists)
+              shell : |
+                sudo ip link del ipsec0
+              ignore_errors: true
+
+            - name  : Remove UE-non3GPP veth3 confg (if exists)
+              shell : |
+                sudo ip link del veth3
+              ignore_errors: true
+
             - name  : Config UE-non3GPP veth3 / ipsec0
               shell : |
                 sudo ip link set veth3 

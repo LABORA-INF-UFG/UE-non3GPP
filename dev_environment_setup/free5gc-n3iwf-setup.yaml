@@ -2363,8 +2363,3 @@
               args:
                 chdir: "{{ FREE5GC_DIR_INSTALL }}"
               when: n3iwf_install == 'false'
-
-            - name  : Git Clone UE-non3GPP
-              shell : git clone {{ LABORA_UE_NON3GPP_GIT_REPO }}
-              args:
-                chdir: "{{ GO_SRC_DIR }}"
