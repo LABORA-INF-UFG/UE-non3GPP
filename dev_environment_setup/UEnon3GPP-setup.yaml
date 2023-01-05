@@ -14,6 +14,7 @@
             AUTH_MN_FIELD: "8000"
             UE_NON3GPP_IP_ADDR: "127.0.0.1"
             MASCARA_REDE_DECIMAL: "19"
+            GO_SRC_DIR : "/root/go/src"
             UE_NON3GPP_PORT_UDP_CONNECTION: "500"
             LABORA_UE_NON3GPP_GIT_REPO: "https://github.com/LABORA-INF-UFG/UE-non3GPP.git"
         tasks:
@@ -33,7 +34,7 @@
               shell: rm config.yaml
               args:
                 chdir: "{{ UE_NON3GPPCONFIG_DIR }}"
-              when: n3iwf_install == 'false'
+              
 
             - name: Build UE-non3GPP config.yaml
               copy:
@@ -61,7 +62,7 @@
                     logs:
                       level: 4
 
-            - name  : Config UE-non3GPP veth3
+            - name  : Config UE-non3GPP veth3 / ipsec0
               shell : |
                 sudo ip link set veth3 
                 sudo ip addr add {{ UE_NON3GPP_IP_ADDR }}/{{ MASCARA_REDE_DECIMAL }} dev veth3

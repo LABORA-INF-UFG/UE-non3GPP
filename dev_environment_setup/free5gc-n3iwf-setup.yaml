@@ -62,13 +62,13 @@
 
 #            - fail:
 #                msg: "'internet_network_interface' not found, this parameter is required!"
-#              when: 5gc_internet_network_interface == '' and n3iwf_install == 'false'
+#              when: internet_network_interface == '' and n3iwf_install == 'false'
 
 
             - name: Environment validation!
               assert:
                 that:
-                  - ansible_memtotal_mb >= 500
+                  - ansible_memtotal_mb >= 1000
                 msg: "Minimum memory requirements in the deployment environment is 4GB! Operation failed!"
 
             - set_fact:
@@ -189,7 +189,7 @@
               when: n3iwf_install == 'false'
 
             - name  : Network Setting 2/4
-              shell : sudo iptables -t nat -A POSTROUTING -o {{ 5gc_internet_network_interface }} -j MASQUERADE
+              shell : sudo iptables -t nat -A POSTROUTING -o {{ internet_network_interface }} -j MASQUERADE
               when: n3iwf_install == 'false'
 
             - name  : Network Setting 3/4

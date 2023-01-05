@@ -88,7 +88,17 @@ Now let's test the Ansible connection with the respective hosts configured in th
 ansible -i ./hosts -m ping all -u root
 ```
 
-### Run Ansible Dev Setup
+### Run Ansible Go Install
 ```
-ansible-playbook dev_environment_setup/dev-env-setup.yml -i dev_environment_setup/hosts
+ansible-playbook dev_environment_setup/go-install.yaml -i dev_environment_setup/hosts
+```
+
+### Run Ansible Free5GC and N3IWF Setup
+```
+ansible-playbook dev_environment_setup/free5gc-n3iwf-setup.yaml -i dev_environment_setup/hosts
+```
+
+### Run Ansible UE-non3GPP Setup
+```
+ansible-playbook dev_environment_setup/UEnon3GPP-setup.yaml -i dev_environment_setup/hosts
 ```

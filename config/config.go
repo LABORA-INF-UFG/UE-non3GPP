@@ -1,12 +1,13 @@
 package config
 
 import (
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"path"
 	"path/filepath"
 	"runtime"
+
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/yaml.v2"
 )
 
 var Data = getConfig()
@@ -47,7 +48,7 @@ func RootDir() string {
 func getConfig() Config {
 	var cfg = Config{}
 	Ddir := RootDir()
-	configPath, err := filepath.Abs(Ddir + "/config/config.yml")
+	configPath, err := filepath.Abs(Ddir + "/config/config.yaml")
 	log.Debug(configPath)
 	if err != nil {
 		log.Fatal("Could not find config in: ", configPath)
@@ -64,7 +65,7 @@ func getConfig() Config {
 func GetConfig() (Config, error) {
 	var cfg = Config{}
 	Ddir := RootDir()
-	configPath, err := filepath.Abs(Ddir + "/config/config.yml")
+	configPath, err := filepath.Abs(Ddir + "/config/config.yaml")
 	log.Debug(configPath)
 	if err != nil {
 		return Config{}, nil

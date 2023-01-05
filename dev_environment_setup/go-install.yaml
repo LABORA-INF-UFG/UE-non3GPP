@@ -10,7 +10,7 @@
 
             - name: Install Basic requirements
               apt:
-                name: ['mongodb', 'wget', 'git', 'ca-certificates', 'net-tools', 'gcc', 'cmake', 'autoconf', 'build-essential', 'libtool', 'pkg-config', 'libmnl-dev', 'libyaml-dev']
+                name: ['wget', 'git', 'ca-certificates', 'net-tools', 'gcc', 'cmake', 'autoconf', 'build-essential', 'libtool', 'pkg-config', 'libmnl-dev', 'libyaml-dev']
                 state: present
                 update_cache: yes
 
