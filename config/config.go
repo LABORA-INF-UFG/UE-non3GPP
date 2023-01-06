@@ -26,6 +26,7 @@ type Config struct {
 		AuthenticationManagementField string `yaml: "authenticationmanagementfield"`
 		LocalPublicIPAddr             string `yaml: "localpublicipaddr"`
 		LocalPublicPortUDPConnection  string `yaml: "localpublicportudpconnection"`
+		GRETunName                    string `yaml: "gretunname"`
 	} `yaml:"ue"`
 
 	N3iwfInfo struct {

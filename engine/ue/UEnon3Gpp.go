@@ -18,6 +18,7 @@ import (
 	"github.com/go-ping/ping"
 	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
+	"golang.org/x/sys/execabs"
 	"golang.org/x/sys/unix"
 	"hash"
 	"math/big"
@@ -33,6 +34,8 @@ func UENon3GPPConnection() {
 		log.Fatal("Could not resolve config file")
 		return
 	}
+	/* initial config */
+	initialSetup(cfg)
 
 	ue := test.NewRanUeContext(cfg.Ue.Supi, 1, security.AlgCiphering128NEA0, security.AlgIntegrity128NIA2,
 		models.AccessType_NON_3_GPP_ACCESS)
@@ -519,6 +522,7 @@ func UENon3GPPConnection() {
 	}
 
 	if eapReq.Code != message.EAPCodeSuccess {
+		log.Warnf("Check UE sequenceNumber value in config.yaml with the respective value in MONGO db.subscriptionData.authenticationData.authenticationSubscription.")
 		log.Fatal("Not Success! Eap Req Code: ", eapReq.Code)
 		panic("Not Success")
 	}
@@ -735,7 +739,7 @@ func UENon3GPPConnection() {
 		log.Fatal(err)
 		panic(err)
 	}
-	// Receive N3IWF reply
+	// Receive N3IWF reply - Um erro aqui pode ser problema entre SMF e UPF (plano de dados)
 	n, _, err = udpConnection.ReadFromUDP(buffer)
 	if err != nil {
 		log.Fatal(err)
@@ -859,9 +863,7 @@ func UENon3GPPConnection() {
 
 	log.Info("State function: encr: %d, auth: %d", childSecurityAssociationContextUserPlane.EncryptionAlgorithm, childSecurityAssociationContextUserPlane.IntegrityAlgorithm)
 	// Aplly XFRM rules
-	fmt.Println(".............")
-	fmt.Println("")
-	fmt.Println("Aplly XFRM rules ------ opa! ")
+
 	if err = applyXFRMRule(false, childSecurityAssociationContextUserPlane); err != nil {
 		log.Fatalf("Applying XFRM rules failed: %+v", err)
 		panic(err)
@@ -883,10 +885,12 @@ func UENon3GPPConnection() {
 		IKey:   greKeyField,
 		OKey:   greKeyField,
 	}
+
 	if err := netlink.LinkAdd(newGRETunnel); err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
+
 	// Get link info
 	links, err = netlink.LinkList()
 	if err != nil {
@@ -930,6 +934,7 @@ func UENon3GPPConnection() {
 			Mask: net.IPv4Mask(0, 0, 0, 0),
 		},
 	}
+	fmt.Println("................................................................................aqui!!!")
 	if err := netlink.RouteAdd(upRoute); err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -1263,6 +1268,18 @@ func generateKeyForChildSA(ikeSecurityAssociation *context.IKESecurityAssociatio
 
 }
 
+func initialSetup(cfg config.Config) {
+	//remove a interface de rede GRE
+	dropGreTunInterface := "ip link del " + cfg.Ue.GRETunName
+	cmd := execabs.Command("bash", "-c", dropGreTunInterface)
+	err := cmd.Run()
+	if err != nil {
+		log.Info(cfg.Ue.GRETunName + " not found!")
+	} else {
+		log.Info(cfg.Ue.GRETunName + " was droped!")
+	}
+}
+
 func parseIPAddressInformationToChildSecurityAssociation(cfg config.Config,
 	childSecurityAssociation *context.ChildSecurityAssociation,
 	trafficSelectorLocal *message.IndividualTrafficSelector,
@@ -1271,20 +1288,6 @@ func parseIPAddressInformationToChildSecurityAssociation(cfg config.Config,
 	if childSecurityAssociation == nil {
 		return errors.New("childSecurityAssociation is nil")
 	}
-
-	fmt.Println(".....................")
-	fmt.Println("")
-	fmt.Println("-trafficSelectorLocal.StartAddress")
-	fmt.Println(trafficSelectorLocal.StartAddress[:])
-	fmt.Println("-trafficSelectorLocal.EndAddress")
-	fmt.Println(trafficSelectorLocal.EndAddress[:])
-	fmt.Println("")
-	fmt.Println("-trafficSelectorRemote.StartAddress")
-	fmt.Println(trafficSelectorRemote.StartAddress[:])
-	fmt.Println("-trafficSelectorRemote.EndAddress")
-	fmt.Println(trafficSelectorRemote.EndAddress[:])
-	fmt.Println("")
-	fmt.Println(".....................")
 
 	childSecurityAssociation.PeerPublicIPAddr = net.ParseIP(cfg.N3iwfInfo.IKEBindAddress).To4()
 
