@@ -735,8 +735,6 @@ func UENon3GPPConnection() {
 		log.Fatal(err)
 		panic(err)
 	}
-
-	//o problema está aqui ... resposta não está chegando
 	// Receive N3IWF reply
 	n, _, err = udpConnection.ReadFromUDP(buffer)
 	if err != nil {
@@ -861,6 +859,9 @@ func UENon3GPPConnection() {
 
 	log.Info("State function: encr: %d, auth: %d", childSecurityAssociationContextUserPlane.EncryptionAlgorithm, childSecurityAssociationContextUserPlane.IntegrityAlgorithm)
 	// Aplly XFRM rules
+	fmt.Println(".............")
+	fmt.Println("")
+	fmt.Println("Aplly XFRM rules ------ opa! ")
 	if err = applyXFRMRule(false, childSecurityAssociationContextUserPlane); err != nil {
 		log.Fatalf("Applying XFRM rules failed: %+v", err)
 		panic(err)
@@ -1271,8 +1272,24 @@ func parseIPAddressInformationToChildSecurityAssociation(cfg config.Config,
 		return errors.New("childSecurityAssociation is nil")
 	}
 
+	fmt.Println(".....................")
+	fmt.Println("")
+	fmt.Println("-trafficSelectorLocal.StartAddress")
+	fmt.Println(trafficSelectorLocal.StartAddress[:])
+	fmt.Println("-trafficSelectorLocal.EndAddress")
+	fmt.Println(trafficSelectorLocal.EndAddress[:])
+	fmt.Println("")
+	fmt.Println("-trafficSelectorRemote.StartAddress")
+	fmt.Println(trafficSelectorRemote.StartAddress[:])
+	fmt.Println("-trafficSelectorRemote.EndAddress")
+	fmt.Println(trafficSelectorRemote.EndAddress[:])
+	fmt.Println("")
+	fmt.Println(".....................")
+
 	childSecurityAssociation.PeerPublicIPAddr = net.ParseIP(cfg.N3iwfInfo.IKEBindAddress).To4()
-	childSecurityAssociation.LocalPublicIPAddr = net.ParseIP(cfg.Ue.IpUDPConnection) //childSecurityAssociation.LocalPublicIPAddr = net.ParseIP("192.168.127.2")
+
+	//childSecurityAssociation.LocalPublicIPAddr = net.ParseIP("192.168.127.2")
+	childSecurityAssociation.LocalPublicIPAddr = net.ParseIP(cfg.Ue.LocalPublicIPAddr)
 
 	childSecurityAssociation.TrafficSelectorLocal = net.IPNet{
 		IP:   trafficSelectorLocal.StartAddress,
@@ -1523,7 +1540,7 @@ func concatenateNonceAndSPI(nonce []byte, SPI_initiator uint64, SPI_responder ui
 }
 
 func setupUDPSocket(cfg config.Config) *net.UDPConn {
-	bindAddr := cfg.Ue.IpUDPConnection + ":" + cfg.Ue.PortUDPConnection
+	bindAddr := cfg.Ue.LocalPublicIPAddr + ":" + cfg.Ue.LocalPublicPortUDPConnection
 	udpAddr, err := net.ResolveUDPAddr("udp", bindAddr)
 	if err != nil {
 		log.Fatal("Resolve UDP address failed")

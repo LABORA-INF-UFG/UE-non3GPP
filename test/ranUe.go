@@ -2,7 +2,6 @@ package test
 
 import (
 	"encoding/hex"
-	"fmt"
 	"github.com/free5gc/nas/nasMessage"
 	"github.com/free5gc/nas/nasType"
 	"github.com/free5gc/nas/security"
@@ -378,19 +377,12 @@ func (ue *RanUeContext) DerivateKamf(key []byte, snName string, SQN, AK []byte) 
 	}
 	P1 := SQNxorAK
 
-	fmt.Println("key: ", key[:])
-	fmt.Println(FC[:])
-	fmt.Println(P0[:])
-	fmt.Println(ueauth.KDFLen(P0))
-	fmt.Println(P1[:])
-	fmt.Print(ueauth.KDFLen(P1))
-
 	Kausf, err := ueauth.GetKDFValue(key, FC, P0, ueauth.KDFLen(P0), P1, ueauth.KDFLen(P1))
 	if err != nil {
 		log.Fatalf("GetKDFValue error: %+v", err)
 		panic(err)
 	}
-	fmt.Println("Kausf: ", Kausf[:])
+
 	P0 = []byte(snName)
 	Kseaf, err := ueauth.GetKDFValue(Kausf, ueauth.FC_FOR_KSEAF_DERIVATION, P0, ueauth.KDFLen(P0))
 	if err != nil {

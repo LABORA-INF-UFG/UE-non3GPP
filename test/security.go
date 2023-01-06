@@ -42,12 +42,12 @@ func NASEncode(ue *RanUeContext, msg *nas.Message, securityContextAvailable bool
 		mac32 := make([]byte, 4)
 		_ = mac32
 
-		fmt.Println("ue.IntegrityAlg", ue.IntegrityAlg)
-		fmt.Println("ue.KnasInt", ue.KnasInt)
-		fmt.Println("ue.ULCount.Get()", ue.ULCount.Get())
-		fmt.Println("acessType", ue.GetBearerByType(models.AccessType_NON_3_GPP_ACCESS))
-		fmt.Println("security.DirectionUplink", security.DirectionUplink)
-		fmt.Println("payload", payload)
+		//fmt.Println("ue.IntegrityAlg", ue.IntegrityAlg)
+		//fmt.Println("ue.KnasInt", ue.KnasInt)
+		//fmt.Println("ue.ULCount.Get()", ue.ULCount.Get())
+		//fmt.Println("acessType", ue.GetBearerByType(models.AccessType_NON_3_GPP_ACCESS))
+		//fmt.Println("security.DirectionUplink", security.DirectionUplink)
+		//fmt.Println("payload", payload)
 
 		//fmt.Println("sequenceNumber", sequenceNumber)
 		//fmt.Println("security.Bearer3GPP", security.Bearer3GPP)
@@ -61,7 +61,7 @@ func NASEncode(ue *RanUeContext, msg *nas.Message, securityContextAvailable bool
 		// Add mac value
 		payload = append(mac32, payload[:]...)
 
-		fmt.Println("tem isso aqui --> ", mac32[:])
+		//fmt.Println("tem isso aqui --> ", mac32[:])
 		// Add EPD and Security Type
 		msgSecurityHeader := []byte{msg.SecurityHeader.ProtocolDiscriminator, msg.SecurityHeader.SecurityHeaderType}
 		payload = append(msgSecurityHeader, payload[:]...)

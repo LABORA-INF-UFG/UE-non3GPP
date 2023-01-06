@@ -24,8 +24,8 @@ type Config struct {
 		RanUeNgapId                   int64  `yaml: "ranuengapid"`
 		AmfUeNgapId                   int64  `yaml: "amfuengapid"`
 		AuthenticationManagementField string `yaml: "authenticationmanagementfield"`
-		IpUDPConnection               string `yaml: "ipudpconnection"`
-		PortUDPConnection             string `yaml: "portudpconnection"`
+		LocalPublicIPAddr             string `yaml: "localpublicipaddr"`
+		LocalPublicPortUDPConnection  string `yaml: "localpublicportudpconnection"`
 	} `yaml:"ue"`
 
 	N3iwfInfo struct {

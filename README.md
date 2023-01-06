@@ -81,7 +81,7 @@ ansible-playbook dev_environment_setup/free5gc-n3iwf-setup.yaml -i dev_environme
 ```
 
 ### Run Ansible UE-non3GPP Setup
-now let's run the script that configures the UE-non3GPP code, with all the interconnection configuration with the other 2 VMs
+Now let's run the script that configures the UE-non3GPP code, with all the interconnection configuration with the other 2 VMs
 ```
 ansible-playbook dev_environment_setup/UEnon3GPP-setup.yaml -i dev_environment_setup/hosts
 ```

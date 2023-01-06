@@ -55,6 +55,7 @@ func GetRegistrationRequest(
 	err := m.GmmMessageEncode(data)
 	if err != nil {
 		fmt.Println(err.Error())
+		panic(err)
 	}
 
 	return data.Bytes()
@@ -94,6 +95,7 @@ func GetAuthenticationResponse(authenticationResponseParam []uint8, eapMsg strin
 	err := m.GmmMessageEncode(data)
 	if err != nil {
 		fmt.Println(err.Error())
+		panic(err)
 	}
 
 	return data.Bytes()
@@ -135,6 +137,7 @@ func GetSecurityModeComplete(nasMessageContainer []uint8) []byte {
 	err := m.GmmMessageEncode(data)
 	if err != nil {
 		fmt.Println(err.Error())
+		panic(err)
 	}
 
 	return data.Bytes()
@@ -166,6 +169,7 @@ func GetRegistrationComplete(sorTransparentContainer []uint8) []byte {
 	err := m.GmmMessageEncode(data)
 	if err != nil {
 		fmt.Println(err.Error())
+		panic(err)
 	}
 
 	return data.Bytes()
@@ -219,6 +223,7 @@ func GetUlNasTransport_PduSessionEstablishmentRequest(pduSessionId uint8, reques
 	err := m.GmmMessageEncode(data)
 	if err != nil {
 		fmt.Println(err.Error())
+		panic(err)
 	}
 
 	return data.Bytes()
@@ -264,6 +269,7 @@ func GetPduSessionEstablishmentRequest(pduSessionId uint8) []byte {
 	err := m.GsmMessageEncode(data)
 	if err != nil {
 		fmt.Println(err.Error())
+		panic(err)
 	}
 
 	return data.Bytes()
