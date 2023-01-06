@@ -14,30 +14,6 @@ The development environment setup is exec by Ansible. Before starting it is nece
 sudo apt update && apt -y install python && sudo apt -y install git && sudo apt -y install ansible
 ```
 
-##### Install Golang 14
-Remove Go-lang old install.
-```
-sudo rm -rf /usr/local/go
-apt remove golang-go
-```
-Download Go-lang 1.14.4.
-```
-wget https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
-sudo tar -C /usr/local -zxvf go1.14.4.linux-amd64.tar.gz
-
-mkdir ~/go && mkdir ~/go/bin && mkdir ~/go/pkg && mkdir ~/go/src  
-```
-
-Install Go-lang 1.14.4.
-```
-echo 'export GOPATH=$HOME/go' >> ~/.bashrc
-echo 'export GOROOT=/usr/local/go' >> ~/.bashrc
-echo 'export PATH=$PATH:$GOPATH/bin:$GOROOT/bin' >> ~/.bashrc
-echo 'export GO111MODULE=auto' >> ~/.bashrc
-rm -rf go1.14.4.linux-amd64.tar.gz
-source ~/.bashrc
-```
-
 ### Dev Environment Setup
 The entire configuration process is done from the VM that represents ```UE-non3Gpp```, which needs to have full access to the other 2 VM's (free5GC and N3IWF). This is done through an SSH key exchange, as described in the following steps:
 * Access the VM representing UE-non3GPP and generate an SSH key as described in the following command:
@@ -88,17 +64,24 @@ Now let's test the Ansible connection with the respective hosts configured in th
 ansible -i ./hosts -m ping all -u root
 ```
 
-### Run Ansible Go Install
+### Go Install eith Ansible
+The command below installs GO v.1.14 on each of VMs
 ```
 ansible-playbook dev_environment_setup/go-install.yaml -i dev_environment_setup/hosts
 ```
+Now it is necessary to access each of the VMs and update bashrc
+```
+source ~/.bashrc
+```
 
 ### Run Ansible Free5GC and N3IWF Setup
+Now let's run the script responsible for configuring free5gc (except the N3IWF network function) and a version of free5gc containing only the N3IWF network function
 ```
 ansible-playbook dev_environment_setup/free5gc-n3iwf-setup.yaml -i dev_environment_setup/hosts
 ```
 
 ### Run Ansible UE-non3GPP Setup
+now let's run the script that configures the UE-non3GPP code, with all the interconnection configuration with the other 2 VMs
 ```
 ansible-playbook dev_environment_setup/UEnon3GPP-setup.yaml -i dev_environment_setup/hosts
 ```
