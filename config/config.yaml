@@ -3,17 +3,20 @@ ue:
     permanentkeyvalue: "5122250214c33e723a5dd523fc145fc0"
     opcvalue: "981d464c7c52eb6e5036234984ad0bcf"
     opvalue: "c9e8763286b5b9ffbdf56e1297d0887b"
-    sequencenumber: "16f3b3f70fc2"
+    sequencenumber: "16f3b3f70fd9"
   supi: "imsi-2089300007487"
   ranuengapid: 1
   amfuengapid: 1
   authenticationmanagementfield : "8000"
-  localpublicipaddr : "137.184.38.138"
+  localpublicipaddr : "24.199.101.47"
   localpublicportudpconnection : "500"
   gretunname : "gretun0"
+  snssai:
+    sst: 1
+    sd: "010203"
                      
 n3iwfinfo:
-  ikebindaddress: "146.190.42.8"
+  ikebindaddress: "165.232.131.134"
   ikebindport: "500"
   ipsecifaceprotocol: "udp"
 

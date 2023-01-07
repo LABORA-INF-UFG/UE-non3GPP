@@ -67,16 +67,7 @@
                 sudo ip link del ipsec0
               ignore_errors: true
 
-            - name  : Remove UE-non3GPP veth3 confg (if exists)
-              shell : |
-                sudo ip link del veth3
-              ignore_errors: true
-
             - name  : Config UE-non3GPP veth3 / ipsec0
               shell : |
-                sudo ip link add veth3 type veth  
-                sudo ip addr add {{ UE_NON3GPP_IP_ADDR }}/{{ MASCARA_REDE_DECIMAL }} dev veth3
-                sudo ip link set lo up
-                sudo ip link set veth3 up
                 sudo ip link add ipsec0 type vti local {{ UE_NON3GPP_IP_ADDR }} remote {{ n3iwf_ike_ip_address }} key 5
                 sudo ip link set ipsec0 up

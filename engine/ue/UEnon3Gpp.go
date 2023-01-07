@@ -696,6 +696,7 @@ func UENon3GPPConnection() {
 
 	tcpConnWithN3IWF, err := net.DialTCP("tcp", localTCPAddr, n3iwfNASAddr)
 	if err != nil {
+		log.Warning("The error may be related to the ipsec0 interface that provides communication between UE and N3IWF. Try to recreate the interfaces")
 		log.Fatal(err)
 		panic(err)
 	}
@@ -725,8 +726,8 @@ func UENon3GPPConnection() {
 
 	// UE request PDU session setup
 	sNssai := models.Snssai{
-		Sst: 1,
-		Sd:  "010203",
+		Sst: cfg.Ue.Snssai.Sst,
+		Sd:  cfg.Ue.Snssai.Sd,
 	}
 	pdu = nasTestpacket.GetUlNasTransport_PduSessionEstablishmentRequest(10, nasMessage.ULNASTransportRequestTypeInitialRequest, "internet", &sNssai)
 	pdu, err = EncodeNasPduInEnvelopeWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
@@ -739,9 +740,10 @@ func UENon3GPPConnection() {
 		log.Fatal(err)
 		panic(err)
 	}
-	// Receive N3IWF reply - Um erro aqui pode ser problema entre SMF e UPF (plano de dados)
+	// Receive N3IWF reply
 	n, _, err = udpConnection.ReadFromUDP(buffer)
 	if err != nil {
+		log.Warning("This error could be related to the data plane configuration involving AMF, SMF and UPF. Check the logs of these microservices for any anomalies. Re-creating the GTP5 tunnel may also be an option!")
 		log.Fatal(err)
 		panic(err)
 	}
@@ -913,7 +915,7 @@ func UENon3GPPConnection() {
 	// Link address 10.60.0.1/24
 	linkGREAddr := &netlink.Addr{
 		IPNet: &net.IPNet{
-			IP:   net.IPv4(10, 60, 0, 1),
+			IP:   net.IPv4(60, 60, 0, 1),
 			Mask: net.IPv4Mask(255, 255, 255, 255),
 		},
 	}
@@ -927,18 +929,18 @@ func UENon3GPPConnection() {
 		panic(err)
 	}
 	// Add route
-	upRoute := &netlink.Route{
-		LinkIndex: linkGRE.Attrs().Index,
-		Dst: &net.IPNet{
-			IP:   net.IPv4zero,
-			Mask: net.IPv4Mask(0, 0, 0, 0),
-		},
-	}
-	fmt.Println("................................................................................aqui!!!")
-	if err := netlink.RouteAdd(upRoute); err != nil {
-		log.Fatal(err)
-		panic(err)
-	}
+	//upRoute := &netlink.Route{
+	//	LinkIndex: linkGRE.Attrs().Index,
+	//	Dst: &net.IPNet{
+	//		IP:   net.IPv4zero,
+	//		Mask: net.IPv4Mask(0, 0, 0, 0),
+	//	},
+	//}
+	//fmt.Println("................................................................................aqui!!!")
+	//if err := netlink.RouteAdd(upRoute); err != nil {
+	//	log.Fatal(err)
+	//	panic(err)
+	//}
 
 	defer func() {
 		_ = netlink.LinkSetDown(linkGRE)
@@ -946,7 +948,7 @@ func UENon3GPPConnection() {
 	}()
 
 	// Ping remote
-	pinger, err := ping.NewPinger("10.60.0.101")
+	pinger, err := ping.NewPinger("8.8.8.8")
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -956,20 +958,42 @@ func UENon3GPPConnection() {
 	pinger.SetPrivileged(true)
 
 	pinger.OnRecv = func(pkt *ping.Packet) {
-		log.Info("%d bytes from %s: icmp_seq=%d time=%v\n",
-			pkt.Nbytes, pkt.IPAddr, pkt.Seq, pkt.Rtt)
+		fmt.Println("")
+		fmt.Println("............................")
+		fmt.Println("------PING 8.8.8.8----------")
+		fmt.Println("Bytes recebidos:")
+		fmt.Println(pkt.Nbytes)
+		fmt.Println("Host Origem:")
+		fmt.Println(pkt.IPAddr)
+		fmt.Println("ICMP Seq:")
+		fmt.Println(pkt.Seq)
+		fmt.Println("RTT:")
+		fmt.Println(pkt.Rtt)
 	}
+
 	pinger.OnFinish = func(stats *ping.Statistics) {
-		log.Info("\n--- %s ping statistics ---\n", stats.Addr)
-		log.Info("%d packets transmitted, %d packets received, %v%% packet loss\n",
-			stats.PacketsSent, stats.PacketsRecv, stats.PacketLoss)
-		log.Info("round-trip min/avg/max/stddev = %v/%v/%v/%v\n",
-			stats.MinRtt, stats.AvgRtt, stats.MaxRtt, stats.StdDevRtt)
+		fmt.Println("")
+		fmt.Println("............................")
+		fmt.Println("------Estatísticas----------")
+		fmt.Println("Pacotes transmitidos:")
+		fmt.Println(stats.PacketsSent)
+		fmt.Println("Pacotes recebidos:")
+		fmt.Println(stats.PacketsRecv)
+		fmt.Println("Pacotes perdidos:")
+		fmt.Println(stats.PacketLoss)
+		fmt.Println("round-trip min:")
+		fmt.Println(stats.MinRtt)
+		fmt.Println("round-trip avg:")
+		fmt.Println(stats.AvgRtt)
+		fmt.Println("round-trip max:")
+		fmt.Println(stats.MaxRtt)
+		fmt.Println("round-trip stddev:")
+		fmt.Println(stats.StdDevRtt)
 	}
 
 	pinger.Count = 5
 	pinger.Timeout = 10 * time.Second
-	pinger.Source = "10.60.0.1"
+	pinger.Source = "8.8.8.8"
 
 	time.Sleep(3 * time.Second)
 

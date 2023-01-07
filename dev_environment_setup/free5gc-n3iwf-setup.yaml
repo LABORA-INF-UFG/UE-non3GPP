@@ -96,41 +96,6 @@
                 update_cache: yes
               when: n3iwf_install == 'true'
 
-#            - name: Remove Go-lang install 1/3
-#              shell:  sudo rm -rf /usr/local/go
-#              ignore_errors: true
-#
-#            - name: Remove Go-lang install 2/3
-#              shell: sudo rm -rf ~/go
-#              ignore_errors: true
-#
-#            - name: Remove Go-lang install 3/3
-#              shell: apt remove golang-go
-#              ignore_errors: true
-#
-#            - name: Install Go 1.14.4 - 1/5
-#              shell: wget https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
-#
-#            - name: Install Go 1.14.4 - 2/5
-#              shell: sudo tar -C /usr/local -zxvf go1.14.4.linux-amd64.tar.gz
-#
-#            - name: Install Go 1.14.4 - 3/5
-#              shell: |
-#                  mkdir ~/go
-#                  mkdir ~/go/bin
-#                  mkdir ~/go/pkg
-#                  mkdir ~/go/src
-#
-#            - name: Install Go 1.14.4 - 4/5
-#              shell: |
-#                  echo 'export GOPATH=$HOME/go' >> ~/.bashrc
-#                  echo 'export GOROOT=/usr/local/go' >> ~/.bashrc
-#                  echo 'export PATH=$PATH:$GOPATH/bin:$GOROOT/bin' >> ~/.bashrc
-#                  echo 'export GO111MODULE=auto' >> ~/.bashrc
-#
-#            - name: Remove GO install file - 5/5
-#              shell: rm ~/go1.14.4.linux-amd64.tar.gz
-
             - name: Start Mongo-DB
               shell:  sudo systemctl start mongodb
               when: n3iwf_install == 'false'

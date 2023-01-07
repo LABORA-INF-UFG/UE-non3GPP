@@ -27,6 +27,10 @@ type Config struct {
 		LocalPublicIPAddr             string `yaml: "localpublicipaddr"`
 		LocalPublicPortUDPConnection  string `yaml: "localpublicportudpconnection"`
 		GRETunName                    string `yaml: "gretunname"`
+		Snssai                        struct {
+			Sst int32  `yaml: "sst"`
+			Sd  string `yaml: "sd"`
+		} `yaml: "snssai"`
 	} `yaml:"ue"`
 
 	N3iwfInfo struct {
