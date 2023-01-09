@@ -2316,6 +2316,10 @@
                 rm -rf {{ UPF_DIR }}
               when: n3iwf_install == 'true'
 
+            - name: Create virtual interface - UPF
+              shell: sudo ip addr add {{ GTPU_UPF_IP_ADDRESS }} dev {{ internet_network_interface }}
+              when: n3iwf_install == 'false'
+
             - name: Build UPF
               shell: make upf
               args:

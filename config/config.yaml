@@ -3,7 +3,7 @@ ue:
     permanentkeyvalue: "5122250214c33e723a5dd523fc145fc0"
     opcvalue: "981d464c7c52eb6e5036234984ad0bcf"
     opvalue: "c9e8763286b5b9ffbdf56e1297d0887b"
-    sequencenumber: "16f3b3f70fc6"
+    sequencenumber: "16f3b3f70fe5"
   supi: "imsi-2089300007487"
   ranuengapid: 1
   amfuengapid: 1
@@ -12,13 +12,13 @@ ue:
   localpublicportudpconnection : "500"
   gretunname : "gretun0"
   ipsecinterfacename : "ipsec0"
-  ipsecinterfacemark: "5"
-  snssai:
-    sst: 1
-    sd: "010203"
+  ipsecinterfacemark: "5" # IPSec virtual interface mark (Any value except to 0, default value is 7 if not defined)
+  snssai: # Single Network Slice Selection Assistance Information
+    sst: 1 # Slice/Service Type (1 byte hex string, range: 0~F)
+    sd: "010203" # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
 
 n3iwfinfo:
-  ikebindaddress: "24.199.120.70"
+  ikebindaddress: "24.199.120.70" # IP address of Nwu interface (IKE) on N3IWF
   ikebindport: "500"
   ipsecifaceprotocol: "udp"
 

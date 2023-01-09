@@ -880,7 +880,7 @@ func UENon3GPPConnection() {
 	// New GRE tunnel interface
 	newGRETunnel := &netlink.Gretun{
 		LinkAttrs: netlink.LinkAttrs{
-			Name: "gretun0",
+			Name: cfg.Ue.GRETunName,
 		},
 		Local:  ueAddr.IP,
 		Remote: upIPAddr,
@@ -932,11 +932,12 @@ func UENon3GPPConnection() {
 	upRoute := &netlink.Route{
 		LinkIndex: linkGRE.Attrs().Index,
 		Dst: &net.IPNet{
-			IP:   net.IPv4zero,
-			Mask: net.IPv4Mask(0, 0, 0, 0),
+			//IP: net.IPv4zero,
+			IP:   net.IPv4(24, 199, 112, 0),
+			Mask: net.IPv4Mask(255, 255, 240, 0),
 		},
 	}
-	fmt.Println("................................................................................aqui!!!")
+
 	if err := netlink.RouteAdd(upRoute); err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -948,7 +949,7 @@ func UENon3GPPConnection() {
 	}()
 
 	// Ping remote
-	pinger, err := ping.NewPinger("8.8.8.8")
+	pinger, err := ping.NewPinger("60.60.0.101")
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -993,7 +994,7 @@ func UENon3GPPConnection() {
 
 	pinger.Count = 5
 	pinger.Timeout = 10 * time.Second
-	pinger.Source = "8.8.8.8"
+	pinger.Source = "60.60.0.1"
 
 	time.Sleep(3 * time.Second)
 
