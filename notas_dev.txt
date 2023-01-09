@@ -1,2 +1,2 @@
-amf/internal/nas/nas_security/security.go
-ln: 180 - 182
+descobrir pq o UPF está dando ip na faixa10.60.0.1 quando está tudo configurado
+para a faixa 60.60.0.1
