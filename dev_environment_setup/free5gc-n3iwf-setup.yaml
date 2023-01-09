@@ -2291,7 +2291,6 @@
                   </component>
               when: n3iwf_install == 'false'
 
-            # o comando
             - name  : Config N3IWF env
               shell : |
                 sudo ip link add veth2 type veth peer name veth3
