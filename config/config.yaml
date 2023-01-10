@@ -8,7 +8,7 @@ ue:
   ranuengapid: 1
   amfuengapid: 1
   authenticationmanagementfield : "8000"
-  localpublicipaddr : "128.199.1.211"
+  localpublicipaddr : "137.184.44.255"
   localpublicportudpconnection : "500"
   gretunname : "gretun0"
   ipsecinterfacename : "ipsec0"
@@ -18,7 +18,7 @@ ue:
     sd: "010203" # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
 
 n3iwfinfo:
-  ikebindaddress: "24.199.120.70" # IP address of Nwu interface (IKE) on N3IWF
+  ikebindaddress: "143.198.154.189" # IP address of Nwu interface (IKE) on N3IWF
   ikebindport: "500"
   ipsecifaceprotocol: "udp"
 
