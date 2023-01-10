@@ -934,8 +934,10 @@ func UENon3GPPConnection() {
 		LinkIndex: linkGRE.Attrs().Index,
 		Dst: &net.IPNet{
 			//IP: net.IPv4zero,
-			/*ip da rede do ip publico da N3IWF*/
-			IP:   net.IPv4(143, 198, 128, 0),
+			/*ip da rede do ip publico da UPF - */
+			/*comando: route --> pegar o último endereço da pilha */
+			IP: net.IPv4(143, 198, 128, 0),
+			/* máscara de rede da UPF - verificar na Digital Occean */
 			Mask: net.IPv4Mask(255, 255, 240, 0),
 		},
 	}

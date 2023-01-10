@@ -4,3 +4,4 @@ para a faixa 60.60.0.1
 
 lembrar do IMTU no momento da construção do GRETun -> setar um limite menor
 ifconfig <<interface-name>> mtu <<mteu-value>>  --> possível valor 1300
+ifconfig gretun0 mtu 1300
