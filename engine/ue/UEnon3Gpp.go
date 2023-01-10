@@ -198,7 +198,7 @@ func UENon3GPPConnection() {
 	tsr := ikePayload.BuildTrafficSelectorResponder()
 	tsr.TrafficSelectors.BuildIndividualTrafficSelector(message.TS_IPV4_ADDR_RANGE, 0, 0, 65535, []byte{0, 0, 0, 0}, []byte{255, 255, 255, 255})
 
-	if err := encryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage); err != nil {
+	if err := util.EncryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage); err != nil {
 		log.Fatalf("Encrypting IKE message failed: %+v", err)
 		return
 	}
@@ -235,7 +235,7 @@ func UENon3GPPConnection() {
 		return
 	}
 
-	decryptedIKEPayload, err := decryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
+	decryptedIKEPayload, err := util.DecryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
 	if err != nil {
 		log.Fatalf("Decrypt IKE message failed: %+v", err)
 		return
@@ -289,7 +289,7 @@ func UENon3GPPConnection() {
 	eap := ikePayload.BuildEAP(message.EAPCodeResponse, eapIdentifier)
 	eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP, message.VendorTypeEAP5G, eapVendorTypeData)
 
-	if err := encryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage); err != nil {
+	if err := util.EncryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage); err != nil {
 		log.Fatal(err)
 		return
 	}
@@ -322,7 +322,7 @@ func UENon3GPPConnection() {
 		log.Fatal("Received payload is not an encrypted payload")
 		return
 	}
-	decryptedIKEPayload, err = decryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
+	decryptedIKEPayload, err = util.DecryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
 	if err != nil {
 		log.Fatalf("Decrypt IKE message failed: %+v", err)
 		return
@@ -385,7 +385,7 @@ func UENon3GPPConnection() {
 	eap = ikePayload.BuildEAP(message.EAPCodeResponse, eapReq.Identifier)
 	eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP, message.VendorTypeEAP5G, eapVendorTypeData)
 
-	err = encryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage)
+	err = util.EncryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -422,7 +422,7 @@ func UENon3GPPConnection() {
 		panic("Received pakcet is not and encrypted payload")
 	}
 
-	decryptedIKEPayload, err = decryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
+	decryptedIKEPayload, err = util.DecryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -472,7 +472,7 @@ func UENon3GPPConnection() {
 	eap = ikePayload.BuildEAP(message.EAPCodeResponse, eapReq.Identifier)
 	eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP, message.VendorTypeEAP5G, eapVendorTypeData)
 
-	err = encryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage)
+	err = util.EncryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -510,7 +510,7 @@ func UENon3GPPConnection() {
 		log.Fatal("Received pakcet is not and encrypted payload")
 		panic("Received pakcet is not and encrypted payload")
 	}
-	decryptedIKEPayload, err = decryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
+	decryptedIKEPayload, err = util.DecryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -543,7 +543,7 @@ func UENon3GPPConnection() {
 	configurationRequest := ikePayload.BuildConfiguration(message.CFG_REQUEST)
 	configurationRequest.ConfigurationAttribute.BuildConfigurationAttribute(message.INTERNAL_IP4_ADDRESS, nil)
 
-	err = encryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage)
+	err = util.EncryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -578,7 +578,7 @@ func UENon3GPPConnection() {
 		log.Fatal("Received pakcet is not and encrypted payload")
 		panic("Received pakcet is not and encrypted payload")
 	}
-	decryptedIKEPayload, err = decryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
+	decryptedIKEPayload, err = util.DecryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -761,7 +761,7 @@ func UENon3GPPConnection() {
 		log.Fatal("Received pakcet is not and encrypted payload")
 		panic("Received pakcet is not and encrypted payload")
 	}
-	decryptedIKEPayload, err = decryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
+	decryptedIKEPayload, err = util.DecryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -826,7 +826,7 @@ func UENon3GPPConnection() {
 	ikeSecurityAssociation.ConcatenatedNonce = append(ikeSecurityAssociation.ConcatenatedNonce, localNonce...)
 	ikePayload.BuildNonce(localNonce)
 
-	if err := encryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage); err != nil {
+	if err := util.EncryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage); err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
@@ -895,23 +895,26 @@ func UENon3GPPConnection() {
 	}
 
 	// Get link info
-	links, err = netlink.LinkList()
-	if err != nil {
-		log.Fatal(err)
-		panic(err)
-	}
-	var linkGRE netlink.Link
-	for _, link := range links {
-		if link.Attrs() != nil {
-			if link.Attrs().Name == "gretun0" {
-				linkGRE = link
-				break
-			}
-		}
-	}
+	//links, err = netlink.LinkList()
+	//if err != nil {
+	//	log.Fatal(err)
+	//	panic(err)
+	//}
+	//var linkGRE netlink.Link
+	//for _, link := range links {
+	//	if link.Attrs() != nil {
+	//		if link.Attrs().Name == cfg.Ue.GRETunName {
+	//			linkGRE = link
+	//			break
+	//		}
+	//	}
+	//}
+
+	// Get link info GRETun1
+	var linkGRE = util.GetLinkGRE(cfg)
 	if linkGRE == nil {
-		log.Fatal("No link named gretun0")
-		panic("No link named gretun0")
+		log.Fatal("No link named " + cfg.Ue.GRETunName)
+		panic("No link named " + cfg.Ue.GRETunName)
 	}
 	// Link address 10.60.0.1/24
 	linkGREAddr := &netlink.Addr{
@@ -1434,79 +1437,79 @@ func buildEAP5GANParameters() []byte {
 	return anParameters
 }
 
-func decryptProcedure(ikeSecurityAssociation *context.IKESecurityAssociation, ikeMessage *message.IKEMessage, encryptedPayload *message.Encrypted) (message.IKEPayloadContainer, error) {
-	// Load needed information
-	transformIntegrityAlgorithm := ikeSecurityAssociation.IntegrityAlgorithm
-	transformEncryptionAlgorithm := ikeSecurityAssociation.EncryptionAlgorithm
-	checksumLength := 12 // HMAC_SHA1_96
+//func decryptProcedure(ikeSecurityAssociation *context.IKESecurityAssociation, ikeMessage *message.IKEMessage, encryptedPayload *message.Encrypted) (message.IKEPayloadContainer, error) {
+//	// Load needed information
+//	transformIntegrityAlgorithm := ikeSecurityAssociation.IntegrityAlgorithm
+//	transformEncryptionAlgorithm := ikeSecurityAssociation.EncryptionAlgorithm
+//	checksumLength := 12 // HMAC_SHA1_96
+//
+//	// Checksum
+//	checksum := encryptedPayload.EncryptedData[len(encryptedPayload.EncryptedData)-checksumLength:]
+//
+//	ikeMessageData, err := ikeMessage.Encode()
+//	if err != nil {
+//		return nil, errors.New("Encoding IKE message failed")
+//	}
+//
+//	ok, err := handler.VerifyIKEChecksum(ikeSecurityAssociation.SK_ar, ikeMessageData[:len(ikeMessageData)-checksumLength], checksum, transformIntegrityAlgorithm.TransformID)
+//	if err != nil {
+//		return nil, errors.New("Error verify checksum")
+//	}
+//	if !ok {
+//		return nil, errors.New("Checksum failed, drop.")
+//	}
+//
+//	// Decrypt
+//	encryptedData := encryptedPayload.EncryptedData[:len(encryptedPayload.EncryptedData)-checksumLength]
+//	plainText, err := handler.DecryptMessage(ikeSecurityAssociation.SK_er, encryptedData, transformEncryptionAlgorithm.TransformID)
+//	if err != nil {
+//		return nil, errors.New("Error decrypting message")
+//	}
+//
+//	var decryptedIKEPayload message.IKEPayloadContainer
+//	err = decryptedIKEPayload.Decode(encryptedPayload.NextPayload, plainText)
+//	if err != nil {
+//		return nil, errors.New("Decoding decrypted payload failed")
+//	}
+//
+//	return decryptedIKEPayload, nil
+//
+//}
 
-	// Checksum
-	checksum := encryptedPayload.EncryptedData[len(encryptedPayload.EncryptedData)-checksumLength:]
-
-	ikeMessageData, err := ikeMessage.Encode()
-	if err != nil {
-		return nil, errors.New("Encoding IKE message failed")
-	}
-
-	ok, err := handler.VerifyIKEChecksum(ikeSecurityAssociation.SK_ar, ikeMessageData[:len(ikeMessageData)-checksumLength], checksum, transformIntegrityAlgorithm.TransformID)
-	if err != nil {
-		return nil, errors.New("Error verify checksum")
-	}
-	if !ok {
-		return nil, errors.New("Checksum failed, drop.")
-	}
-
-	// Decrypt
-	encryptedData := encryptedPayload.EncryptedData[:len(encryptedPayload.EncryptedData)-checksumLength]
-	plainText, err := handler.DecryptMessage(ikeSecurityAssociation.SK_er, encryptedData, transformEncryptionAlgorithm.TransformID)
-	if err != nil {
-		return nil, errors.New("Error decrypting message")
-	}
-
-	var decryptedIKEPayload message.IKEPayloadContainer
-	err = decryptedIKEPayload.Decode(encryptedPayload.NextPayload, plainText)
-	if err != nil {
-		return nil, errors.New("Decoding decrypted payload failed")
-	}
-
-	return decryptedIKEPayload, nil
-
-}
-
-func encryptProcedure(ikeSecurityAssociation *context.IKESecurityAssociation, ikePayload message.IKEPayloadContainer, responseIKEMessage *message.IKEMessage) error {
-	// Load needed information
-	transformIntegrityAlgorithm := ikeSecurityAssociation.IntegrityAlgorithm
-	transformEncryptionAlgorithm := ikeSecurityAssociation.EncryptionAlgorithm
-	checksumLength := 12 // HMAC_SHA1_96
-
-	// Encrypting
-	notificationPayloadData, err := ikePayload.Encode()
-	if err != nil {
-		return errors.New("Encoding IKE payload failed.")
-	}
-
-	encryptedData, err := handler.EncryptMessage(ikeSecurityAssociation.SK_ei, notificationPayloadData, transformEncryptionAlgorithm.TransformID)
-	if err != nil {
-		return errors.New("Error encrypting message")
-	}
-
-	encryptedData = append(encryptedData, make([]byte, checksumLength)...)
-	sk := responseIKEMessage.Payloads.BuildEncrypted(ikePayload[0].Type(), encryptedData)
-
-	// Calculate checksum
-	responseIKEMessageData, err := responseIKEMessage.Encode()
-	if err != nil {
-		return errors.New("Encoding IKE message error")
-	}
-	checksumOfMessage, err := handler.CalculateChecksum(ikeSecurityAssociation.SK_ai, responseIKEMessageData[:len(responseIKEMessageData)-checksumLength], transformIntegrityAlgorithm.TransformID)
-	if err != nil {
-		return errors.New("Error calculating checksum")
-	}
-	checksumField := sk.EncryptedData[len(sk.EncryptedData)-checksumLength:]
-	copy(checksumField, checksumOfMessage)
-
-	return nil
-}
+//func encryptProcedure(ikeSecurityAssociation *context.IKESecurityAssociation, ikePayload message.IKEPayloadContainer, responseIKEMessage *message.IKEMessage) error {
+//	// Load needed information
+//	transformIntegrityAlgorithm := ikeSecurityAssociation.IntegrityAlgorithm
+//	transformEncryptionAlgorithm := ikeSecurityAssociation.EncryptionAlgorithm
+//	checksumLength := 12 // HMAC_SHA1_96
+//
+//	// Encrypting
+//	notificationPayloadData, err := ikePayload.Encode()
+//	if err != nil {
+//		return errors.New("Encoding IKE payload failed.")
+//	}
+//
+//	encryptedData, err := handler.EncryptMessage(ikeSecurityAssociation.SK_ei, notificationPayloadData, transformEncryptionAlgorithm.TransformID)
+//	if err != nil {
+//		return errors.New("Error encrypting message")
+//	}
+//
+//	encryptedData = append(encryptedData, make([]byte, checksumLength)...)
+//	sk := responseIKEMessage.Payloads.BuildEncrypted(ikePayload[0].Type(), encryptedData)
+//
+//	// Calculate checksum
+//	responseIKEMessageData, err := responseIKEMessage.Encode()
+//	if err != nil {
+//		return errors.New("Encoding IKE message error")
+//	}
+//	checksumOfMessage, err := handler.CalculateChecksum(ikeSecurityAssociation.SK_ai, responseIKEMessageData[:len(responseIKEMessageData)-checksumLength], transformIntegrityAlgorithm.TransformID)
+//	if err != nil {
+//		return errors.New("Error calculating checksum")
+//	}
+//	checksumField := sk.EncryptedData[len(sk.EncryptedData)-checksumLength:]
+//	copy(checksumField, checksumOfMessage)
+//
+//	return nil
+//}
 
 func generateSPI(n3ue *context.N3IWFUe) []byte {
 	var spi uint32
