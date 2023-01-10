@@ -2291,17 +2291,30 @@
                   </component>
               when: n3iwf_install == 'false'
 
+            - name  : Remove N3IWF ipsec0 (if exist)
+              shell : |
+                sudo ip link del ipsec0
+              when: n3iwf_install == 'true'
+
             - name  : Config N3IWF env
               shell : |
-                sudo ip link add veth2 type veth peer name veth3
-                sudo ip addr add {{ N3IWF_IKE_BIND_ADDRESS }}/{{ MASCARA_REDE_DECIMAL }} dev veth2
-                sudo ip link set veth2 up
-                
                 sudo ip link add name ipsec0 type vti local {{ N3IWF_IKE_BIND_ADDRESS }} remote 0.0.0.0 key 5
                 sudo ip addr add {{ N3IWF_IP_SEC_INTERFACE_ADDRESS }}/{{ MASCARA_REDE_DECIMAL }} dev ipsec0
                 sudo ip link set ipsec0 up
-
               when: n3iwf_install == 'true'
+
+
+#            - name  : Config N3IWF env
+#              shell : |
+#                sudo ip link add veth2 type veth peer name veth3
+#                sudo ip addr add {{ N3IWF_IKE_BIND_ADDRESS }}/{{ MASCARA_REDE_DECIMAL }} dev veth2
+#                sudo ip link set veth2 up
+#
+#                sudo ip link add name ipsec0 type vti local {{ N3IWF_IKE_BIND_ADDRESS }} remote 0.0.0.0 key 5
+#                sudo ip addr add {{ N3IWF_IP_SEC_INTERFACE_ADDRESS }}/{{ MASCARA_REDE_DECIMAL }} dev ipsec0
+#                sudo ip link set ipsec0 up
+#
+#              when: n3iwf_install == 'true'
 
             - name: Remove Unused NFs dir form N3IWF VM
               shell: |
