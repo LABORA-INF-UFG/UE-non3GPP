@@ -3,6 +3,7 @@ package ue
 import (
 	"UE-non3GPP/config"
 	util "UE-non3GPP/engine/util"
+
 	"UE-non3GPP/free5gc/n3iwf/pkg/context"
 	"UE-non3GPP/free5gc/n3iwf/pkg/ike/handler"
 	"UE-non3GPP/free5gc/n3iwf/pkg/ike/message"
@@ -864,9 +865,15 @@ func UENon3GPPConnection() {
 		panic(err)
 	}
 
-	log.Info("State function: encr: %d, auth: %d", childSecurityAssociationContextUserPlane.EncryptionAlgorithm, childSecurityAssociationContextUserPlane.IntegrityAlgorithm)
-	// Aplly XFRM rules
+	//fmt.Println("---------------------------------")
+	//fmt.Println("State Function:")
+	//fmt.Println("   encr:")
+	//fmt.Println(childSecurityAssociationContextUserPlane.EncryptionAlgorithm)
+	//fmt.Println("   auth:")
+	//fmt.Println(childSecurityAssociationContextUserPlane.IntegrityAlgorithm)
+	//fmt.Println("---------------------------------")
 
+	// Aplly XFRM rules
 	if err = applyXFRMRule(false, childSecurityAssociationContextUserPlane); err != nil {
 		log.Fatalf("Applying XFRM rules failed: %+v", err)
 		panic(err)
@@ -877,6 +884,12 @@ func UENon3GPPConnection() {
 	if QoSInfo != nil {
 		greKeyField |= (uint32(QoSInfo.qfiList[0]) & 0x3F) << 24
 	}
+
+	fmt.Println(".................")
+	fmt.Println("ueAddr.IP")
+	fmt.Println(ueAddr.IP)
+	fmt.Println(upIPAddr)
+	fmt.Println(" ")
 
 	// New GRE tunnel interface
 	newGRETunnel := &netlink.Gretun{
@@ -894,22 +907,6 @@ func UENon3GPPConnection() {
 		panic(err)
 	}
 
-	// Get link info
-	//links, err = netlink.LinkList()
-	//if err != nil {
-	//	log.Fatal(err)
-	//	panic(err)
-	//}
-	//var linkGRE netlink.Link
-	//for _, link := range links {
-	//	if link.Attrs() != nil {
-	//		if link.Attrs().Name == cfg.Ue.GRETunName {
-	//			linkGRE = link
-	//			break
-	//		}
-	//	}
-	//}
-
 	// Get link info GRETun1
 	var linkGRE = util.GetLinkGRE(cfg)
 	if linkGRE == nil {
@@ -920,7 +917,7 @@ func UENon3GPPConnection() {
 	linkGREAddr := &netlink.Addr{
 		IPNet: &net.IPNet{
 			IP:   net.IPv4(60, 60, 0, 1),
-			Mask: net.IPv4Mask(255, 255, 255, 255),
+			Mask: net.IPv4Mask(255, 255, 255, 0),
 		},
 	}
 	if err := netlink.AddrAdd(linkGRE, linkGREAddr); err != nil {
@@ -937,7 +934,8 @@ func UENon3GPPConnection() {
 		LinkIndex: linkGRE.Attrs().Index,
 		Dst: &net.IPNet{
 			//IP: net.IPv4zero,
-			IP:   net.IPv4(24, 199, 112, 0),
+			/*ip da rede do ip publico da N3IWF*/
+			IP:   net.IPv4(143, 198, 128, 0),
 			Mask: net.IPv4Mask(255, 255, 240, 0),
 		},
 	}
@@ -965,7 +963,7 @@ func UENon3GPPConnection() {
 	pinger.OnRecv = func(pkt *ping.Packet) {
 		fmt.Println("")
 		fmt.Println("............................")
-		fmt.Println("------PING 8.8.8.8----------")
+		fmt.Println("------PING 60.60.0.101----------")
 		fmt.Println("Bytes recebidos:")
 		fmt.Println(pkt.Nbytes)
 		fmt.Println("Host Origem:")
@@ -1005,6 +1003,11 @@ func UENon3GPPConnection() {
 	pinger.Run()
 
 	time.Sleep(1 * time.Second)
+
+	//fmt.Println(".................................")
+	//fmt.Println("......finish!!!!")
+	//fmt.Println(".................................")
+	//time.Sleep(15 * time.Second)
 
 	stats := pinger.Statistics()
 	if stats.PacketsSent != stats.PacketsRecv {
@@ -1297,46 +1300,6 @@ func generateKeyForChildSA(ikeSecurityAssociation *context.IKESecurityAssociatio
 
 }
 
-//func initialSetup(cfg config.Config) {
-//	//remove a interface de rede GRE (se existir)
-//	dropGreTunInterface := "ip link del " + cfg.Ue.GRETunName
-//	cmd := execabs.Command("bash", "-c", dropGreTunInterface)
-//	err := cmd.Run()
-//	if err != nil {
-//		log.Info(cfg.Ue.GRETunName + " not found!")
-//	} else {
-//		log.Info(cfg.Ue.GRETunName + " was droped!")
-//	}
-//
-//	//remove ipsec0 (se existir)
-//	dropIpsec0Interface := "ip link del " + cfg.Ue.IPSecInterfaceName
-//	cmd = execabs.Command("bash", "-c", dropIpsec0Interface)
-//	err = cmd.Run()
-//	if err != nil {
-//		log.Info(cfg.Ue.IPSecInterfaceName + " not found!")
-//	} else {
-//		log.Info(cfg.Ue.IPSecInterfaceName + " was droped!")
-//	}
-//
-//	//cria ipsec0
-//	createIpsec0Interface := "sudo ip link add " + cfg.Ue.IPSecInterfaceName + " type vti local " + cfg.Ue.LocalPublicIPAddr + " remote " + cfg.N3iwfInfo.IKEBindAddress + " key " + cfg.Ue.IPSecInterfaceMark
-//	cmd = execabs.Command("bash", "-c", createIpsec0Interface)
-//	err = cmd.Run()
-//	if err != nil {
-//		log.Info("could not create interface " + cfg.Ue.IPSecInterfaceName)
-//	} else {
-//		log.Info(cfg.Ue.IPSecInterfaceName + " interface was created")
-//	}
-//
-//	//up ipsec0
-//	upIpsec0Interface := "sudo ip link set " + cfg.Ue.IPSecInterfaceName + " up "
-//	cmd = execabs.Command("bash", "-c", upIpsec0Interface)
-//	err = cmd.Run()
-//	if err != nil {
-//		log.Info("up " + cfg.Ue.IPSecInterfaceName + " fail!")
-//	}
-//}
-
 func parseIPAddressInformationToChildSecurityAssociation(cfg config.Config,
 	childSecurityAssociation *context.ChildSecurityAssociation,
 	trafficSelectorLocal *message.IndividualTrafficSelector,
@@ -1436,80 +1399,6 @@ func buildEAP5GANParameters() []byte {
 
 	return anParameters
 }
-
-//func decryptProcedure(ikeSecurityAssociation *context.IKESecurityAssociation, ikeMessage *message.IKEMessage, encryptedPayload *message.Encrypted) (message.IKEPayloadContainer, error) {
-//	// Load needed information
-//	transformIntegrityAlgorithm := ikeSecurityAssociation.IntegrityAlgorithm
-//	transformEncryptionAlgorithm := ikeSecurityAssociation.EncryptionAlgorithm
-//	checksumLength := 12 // HMAC_SHA1_96
-//
-//	// Checksum
-//	checksum := encryptedPayload.EncryptedData[len(encryptedPayload.EncryptedData)-checksumLength:]
-//
-//	ikeMessageData, err := ikeMessage.Encode()
-//	if err != nil {
-//		return nil, errors.New("Encoding IKE message failed")
-//	}
-//
-//	ok, err := handler.VerifyIKEChecksum(ikeSecurityAssociation.SK_ar, ikeMessageData[:len(ikeMessageData)-checksumLength], checksum, transformIntegrityAlgorithm.TransformID)
-//	if err != nil {
-//		return nil, errors.New("Error verify checksum")
-//	}
-//	if !ok {
-//		return nil, errors.New("Checksum failed, drop.")
-//	}
-//
-//	// Decrypt
-//	encryptedData := encryptedPayload.EncryptedData[:len(encryptedPayload.EncryptedData)-checksumLength]
-//	plainText, err := handler.DecryptMessage(ikeSecurityAssociation.SK_er, encryptedData, transformEncryptionAlgorithm.TransformID)
-//	if err != nil {
-//		return nil, errors.New("Error decrypting message")
-//	}
-//
-//	var decryptedIKEPayload message.IKEPayloadContainer
-//	err = decryptedIKEPayload.Decode(encryptedPayload.NextPayload, plainText)
-//	if err != nil {
-//		return nil, errors.New("Decoding decrypted payload failed")
-//	}
-//
-//	return decryptedIKEPayload, nil
-//
-//}
-
-//func encryptProcedure(ikeSecurityAssociation *context.IKESecurityAssociation, ikePayload message.IKEPayloadContainer, responseIKEMessage *message.IKEMessage) error {
-//	// Load needed information
-//	transformIntegrityAlgorithm := ikeSecurityAssociation.IntegrityAlgorithm
-//	transformEncryptionAlgorithm := ikeSecurityAssociation.EncryptionAlgorithm
-//	checksumLength := 12 // HMAC_SHA1_96
-//
-//	// Encrypting
-//	notificationPayloadData, err := ikePayload.Encode()
-//	if err != nil {
-//		return errors.New("Encoding IKE payload failed.")
-//	}
-//
-//	encryptedData, err := handler.EncryptMessage(ikeSecurityAssociation.SK_ei, notificationPayloadData, transformEncryptionAlgorithm.TransformID)
-//	if err != nil {
-//		return errors.New("Error encrypting message")
-//	}
-//
-//	encryptedData = append(encryptedData, make([]byte, checksumLength)...)
-//	sk := responseIKEMessage.Payloads.BuildEncrypted(ikePayload[0].Type(), encryptedData)
-//
-//	// Calculate checksum
-//	responseIKEMessageData, err := responseIKEMessage.Encode()
-//	if err != nil {
-//		return errors.New("Encoding IKE message error")
-//	}
-//	checksumOfMessage, err := handler.CalculateChecksum(ikeSecurityAssociation.SK_ai, responseIKEMessageData[:len(responseIKEMessageData)-checksumLength], transformIntegrityAlgorithm.TransformID)
-//	if err != nil {
-//		return errors.New("Error calculating checksum")
-//	}
-//	checksumField := sk.EncryptedData[len(sk.EncryptedData)-checksumLength:]
-//	copy(checksumField, checksumOfMessage)
-//
-//	return nil
-//}
 
 func generateSPI(n3ue *context.N3IWFUe) []byte {
 	var spi uint32

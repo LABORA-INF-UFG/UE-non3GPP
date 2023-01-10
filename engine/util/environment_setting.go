@@ -18,7 +18,7 @@ func InitialSetup(cfg config.Config) {
 	}
 
 	//remove ipsec0 (se existir)
-	dropIpsec0Interface := "ip link del " + cfg.Ue.IPSecInterfaceName
+	dropIpsec0Interface := "sudo ip link del " + cfg.Ue.IPSecInterfaceName
 	cmd = execabs.Command("bash", "-c", dropIpsec0Interface)
 	err = cmd.Run()
 	if err != nil {
@@ -32,7 +32,9 @@ func InitialSetup(cfg config.Config) {
 	cmd = execabs.Command("bash", "-c", createIpsec0Interface)
 	err = cmd.Run()
 	if err != nil {
-		log.Info("could not create interface " + cfg.Ue.IPSecInterfaceName)
+		log.Warning(createIpsec0Interface)
+		log.Error("could not create interface " + cfg.Ue.IPSecInterfaceName)
+		panic(err)
 	} else {
 		log.Info(cfg.Ue.IPSecInterfaceName + " interface was created")
 	}
@@ -43,5 +45,6 @@ func InitialSetup(cfg config.Config) {
 	err = cmd.Run()
 	if err != nil {
 		log.Info("up " + cfg.Ue.IPSecInterfaceName + " fail!")
+		panic(err)
 	}
 }

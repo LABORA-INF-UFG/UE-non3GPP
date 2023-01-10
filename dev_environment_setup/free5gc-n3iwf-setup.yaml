@@ -1,4 +1,4 @@
----
+u---
     -   hosts: fee5gc-core, fee5gc-n3iwf
         become: yes
         remote_user: root
@@ -48,6 +48,7 @@
             SMF_PORT: "8000"
             UPF_IP_ADDRESS: "127.0.0.8"
             GTPU_UPF_IP_ADDRESS: "127.0.0.8"
+            GRE_TUN_IP_ADDRESS_UPF_UE_NON3GGP: "60.60.0.101"
             N3IWF_AMF_SCTP_PORT: "38412"
             N3IWF_IKE_BIND_ADDRESS: "127.0.0.21"
             N3IWF_IP_SEC_INTERFACE_ADDRESS: "10.0.0.1"
@@ -78,6 +79,10 @@
                 SMF_N4_INTERFACE_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
                 GTPU_UPF_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
               when: PREDEFINED_IP_ADDRESS == 'false'
+
+            - set_fact:
+                MASCARA_REDE_DECIMAL: "20"
+              when: ansible_default_ipv4.netmask == '255.255.240.0'
 
             - name: Upgrade all apt packages
               apt: upgrade=dist force_apt_get=yes
@@ -2107,7 +2112,7 @@
                     # the kind of log output
                       # debugLevel: how detailed to output, value: trace, debug, info, warn, error, fatal, panic
                       # ReportCaller: enable the caller report or not, value: true or false
-                    debugLevel: info
+                    debugLevel: debug
                     ReportCaller: false
                   
                     # The IP list of the N4 interface on this UPF (Can't set to 0.0.0.0)
@@ -2289,7 +2294,7 @@
                       <method v="2" />
                     </configuration>
                   </component>
-              when: n3iwf_install == 'false'
+              when: n3iwf_instuall == 'false'
 
             - name  : Remove N3IWF ipsec0 (if exist)
               shell : |
@@ -2330,7 +2335,7 @@
               when: n3iwf_install == 'true'
 
             - name: Create virtual interface - UPF
-              shell: sudo ip addr add {{ GTPU_UPF_IP_ADDRESS }} dev {{ internet_network_interface }}
+              shell: sudo ip addr add {{ GRE_TUN_IP_ADDRESS_UPF_UE_NON3GGP }} dev {{ internet_network_interface }}
               when: n3iwf_install == 'false'
 
             - name: Build UPF
