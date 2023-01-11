@@ -40,8 +40,11 @@ func UENon3GPPConnection() {
 	/* initial config */
 	util.InitialSetup(cfg)
 
-	ue := ran_ue.NewRanUeContext(cfg.Ue.Supi, 1, security.AlgCiphering128NEA0, security.AlgIntegrity128NIA2,
+	ue := ran_ue.NewRanUeContext(cfg.Ue.Supi, 1,
+		security.AlgCiphering128NEA0,
+		security.AlgIntegrity128NIA2,
 		models.AccessType_NON_3_GPP_ACCESS)
+
 	ue.AmfUeNgapId = cfg.Ue.AmfUeNgapId
 	ue.AuthenticationSubs = getAuthSubscription(cfg)
 	mobileIdentity5GS := nasType.MobileIdentity5GS{
@@ -262,8 +265,11 @@ func UENon3GPPConnection() {
 	// IKE_AUTH - EAP exchange
 	ikeMessage.Payloads.Reset()
 	n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
-	ikeMessage.BuildIKEHeader(n3ue.N3IWFIKESecurityAssociation.LocalSPI, n3ue.N3IWFIKESecurityAssociation.RemoteSPI,
-		message.IKE_AUTH, message.InitiatorBitCheck, n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
+	ikeMessage.BuildIKEHeader(n3ue.N3IWFIKESecurityAssociation.LocalSPI,
+		n3ue.N3IWFIKESecurityAssociation.RemoteSPI,
+		message.IKE_AUTH,
+		message.InitiatorBitCheck,
+		n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
 
 	ikePayload.Reset()
 
@@ -281,7 +287,12 @@ func UENon3GPPConnection() {
 	// NAS
 	ueSecurityCapability := ue.GetUESecurityCapability()
 	registrationRequest := nas_registration.GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
-		mobileIdentity5GS, nil, ueSecurityCapability, nil, nil, nil)
+		mobileIdentity5GS,
+		nil,
+		ueSecurityCapability,
+		nil,
+		nil,
+		nil)
 
 	nasLength := make([]byte, 2)
 	binary.BigEndian.PutUint16(nasLength, uint16(len(registrationRequest)))
@@ -369,8 +380,11 @@ func UENon3GPPConnection() {
 	// IKE_AUTH - EAP exchange
 	ikeMessage.Payloads.Reset()
 	n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
-	ikeMessage.BuildIKEHeader(n3ue.N3IWFIKESecurityAssociation.LocalSPI, n3ue.N3IWFIKESecurityAssociation.RemoteSPI,
-		message.IKE_AUTH, message.InitiatorBitCheck, n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
+	ikeMessage.BuildIKEHeader(n3ue.N3IWFIKESecurityAssociation.LocalSPI,
+		n3ue.N3IWFIKESecurityAssociation.RemoteSPI,
+		message.IKE_AUTH,
+		message.InitiatorBitCheck,
+		n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
 
 	ikePayload.Reset()
 
@@ -444,7 +458,13 @@ func UENon3GPPConnection() {
 
 	// Send NAS Security Mode Complete Msg
 	registrationRequestWith5GMM := nas_registration.GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
-		mobileIdentity5GS, nil, ueSecurityCapability, ue.Get5GMMCapability(), nil, nil)
+		mobileIdentity5GS,
+		nil,
+		ueSecurityCapability,
+		ue.Get5GMMCapability(),
+		nil,
+		nil)
+
 	pdu = nas_registration.GetSecurityModeComplete(registrationRequestWith5GMM)
 
 	pdu, err = nas_registration.EncodeNasPduWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCipheredWithNew5gNasSecurityContext, true, true)
@@ -456,8 +476,11 @@ func UENon3GPPConnection() {
 	// IKE_AUTH - EAP exchange
 	ikeMessage.Payloads.Reset()
 	n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
-	ikeMessage.BuildIKEHeader(n3ue.N3IWFIKESecurityAssociation.LocalSPI, n3ue.N3IWFIKESecurityAssociation.RemoteSPI,
-		message.IKE_AUTH, message.InitiatorBitCheck, n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
+	ikeMessage.BuildIKEHeader(n3ue.N3IWFIKESecurityAssociation.LocalSPI,
+		n3ue.N3IWFIKESecurityAssociation.RemoteSPI,
+		message.IKE_AUTH,
+		message.InitiatorBitCheck,
+		n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
 
 	ikePayload.Reset()
 
@@ -472,7 +495,9 @@ func UENon3GPPConnection() {
 	eapVendorTypeData = append(eapVendorTypeData, pdu...)
 
 	eap = ikePayload.BuildEAP(message.EAPCodeResponse, eapReq.Identifier)
-	eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP, message.VendorTypeEAP5G, eapVendorTypeData)
+	eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP,
+		message.VendorTypeEAP5G,
+		eapVendorTypeData)
 
 	err = util.EncryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage)
 	if err != nil {
@@ -533,8 +558,11 @@ func UENon3GPPConnection() {
 	// IKE_AUTH - Authentication
 	ikeMessage.Payloads.Reset()
 	n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
-	ikeMessage.BuildIKEHeader(n3ue.N3IWFIKESecurityAssociation.LocalSPI, n3ue.N3IWFIKESecurityAssociation.RemoteSPI,
-		message.IKE_AUTH, message.InitiatorBitCheck, n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
+	ikeMessage.BuildIKEHeader(n3ue.N3IWFIKESecurityAssociation.LocalSPI,
+		n3ue.N3IWFIKESecurityAssociation.RemoteSPI,
+		message.IKE_AUTH,
+		message.InitiatorBitCheck,
+		n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
 
 	ikePayload.Reset()
 
@@ -545,7 +573,10 @@ func UENon3GPPConnection() {
 	configurationRequest := ikePayload.BuildConfiguration(message.CFG_REQUEST)
 	configurationRequest.ConfigurationAttribute.BuildConfigurationAttribute(message.INTERNAL_IP4_ADDRESS, nil)
 
-	err = util.EncryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage)
+	err = util.EncryptProcedure(ikeSecurityAssociation,
+		ikePayload,
+		ikeMessage)
+
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -807,8 +838,11 @@ func UENon3GPPConnection() {
 
 	// IKE CREATE_CHILD_SA response
 	ikeMessage.Payloads.Reset()
-	ikeMessage.BuildIKEHeader(ikeMessage.InitiatorSPI, ikeMessage.ResponderSPI, message.CREATE_CHILD_SA,
-		message.ResponseBitCheck|message.InitiatorBitCheck, n3ue.N3IWFIKESecurityAssociation.ResponderMessageID)
+	ikeMessage.BuildIKEHeader(ikeMessage.InitiatorSPI,
+		ikeMessage.ResponderSPI,
+		message.CREATE_CHILD_SA,
+		message.ResponseBitCheck|message.InitiatorBitCheck,
+		n3ue.N3IWFIKESecurityAssociation.ResponderMessageID)
 
 	ikePayload.Reset()
 
@@ -954,70 +988,68 @@ func UENon3GPPConnection() {
 		_ = netlink.LinkDel(linkGRE)
 	}()
 
-	// Ping remote
 	pinger, err := ping.NewPinger("60.60.0.101")
-	//pinger, err := ping.NewPinger("8.8.8.8")
-	if err != nil {
-		log.Fatal(err)
-		panic(err)
-	}
+	for {
+		// Ping remote
 
-	// Run with root
-	pinger.SetPrivileged(true)
+		//pinger, err := ping.NewPinger("8.8.8.8")
+		if err != nil {
+			log.Fatal(err)
+			panic(err)
+		}
 
-	pinger.OnRecv = func(pkt *ping.Packet) {
-		fmt.Println("")
-		fmt.Println("............................")
-		fmt.Println("------PING 60.60.0.101----------")
-		fmt.Println("Bytes recebidos:")
-		fmt.Println(pkt.Nbytes)
-		fmt.Println("Host Origem:")
-		fmt.Println(pkt.IPAddr)
-		fmt.Println("ICMP Seq:")
-		fmt.Println(pkt.Seq)
-		fmt.Println("RTT:")
-		fmt.Println(pkt.Rtt)
-	}
+		// Run with root
+		pinger.SetPrivileged(true)
 
-	pinger.OnFinish = func(stats *ping.Statistics) {
-		fmt.Println("")
-		fmt.Println("............................")
-		fmt.Println("------Estatísticas----------")
-		fmt.Println("Pacotes transmitidos:")
-		fmt.Println(stats.PacketsSent)
-		fmt.Println("Pacotes recebidos:")
-		fmt.Println(stats.PacketsRecv)
-		fmt.Println("Pacotes perdidos:")
-		fmt.Println(stats.PacketLoss)
-		fmt.Println("round-trip min:")
-		fmt.Println(stats.MinRtt)
-		fmt.Println("round-trip avg:")
-		fmt.Println(stats.AvgRtt)
-		fmt.Println("round-trip max:")
-		fmt.Println(stats.MaxRtt)
-		fmt.Println("round-trip stddev:")
-		fmt.Println(stats.StdDevRtt)
-	}
+		pinger.OnRecv = func(pkt *ping.Packet) {
+			fmt.Println("")
+			fmt.Println("............................")
+			fmt.Println("------PING 60.60.0.101----------")
+			fmt.Println("Bytes recebidos:")
+			fmt.Println(pkt.Nbytes)
+			fmt.Println("Host Origem:")
+			fmt.Println(pkt.IPAddr)
+			fmt.Println("ICMP Seq:")
+			fmt.Println(pkt.Seq)
+			fmt.Println("RTT:")
+			fmt.Println(pkt.Rtt)
+		}
 
-	pinger.Count = 5
-	pinger.Timeout = 10 * time.Second
-	pinger.Source = "60.60.0.1"
+		pinger.OnFinish = func(stats *ping.Statistics) {
+			fmt.Println("")
+			fmt.Println("............................")
+			fmt.Println("------Estatísticas----------")
+			fmt.Println("Pacotes transmitidos:")
+			fmt.Println(stats.PacketsSent)
+			fmt.Println("Pacotes recebidos:")
+			fmt.Println(stats.PacketsRecv)
+			fmt.Println("Pacotes perdidos:")
+			fmt.Println(stats.PacketLoss)
+			fmt.Println("round-trip min:")
+			fmt.Println(stats.MinRtt)
+			fmt.Println("round-trip avg:")
+			fmt.Println(stats.AvgRtt)
+			fmt.Println("round-trip max:")
+			fmt.Println(stats.MaxRtt)
+			fmt.Println("round-trip stddev:")
+			fmt.Println(stats.StdDevRtt)
+		}
 
-	time.Sleep(3 * time.Second)
+		pinger.Count = 5
+		pinger.Timeout = 10 * time.Second
+		pinger.Source = "60.60.0.1"
 
-	pinger.Run()
+		time.Sleep(3 * time.Second)
 
-	time.Sleep(1 * time.Second)
+		pinger.Run()
 
-	//fmt.Println(".................................")
-	//fmt.Println("......finish!!!!")
-	//fmt.Println(".................................")
-	//time.Sleep(15 * time.Second)
+		time.Sleep(1 * time.Second)
 
-	stats := pinger.Statistics()
-	if stats.PacketsSent != stats.PacketsRecv {
-		log.Fatal("Ping Failed")
-		panic("Ping Failed")
+		stats := pinger.Statistics()
+		if stats.PacketsSent != stats.PacketsRecv {
+			log.Fatal("Ping Failed")
+			panic("Ping Failed")
+		}
 	}
 
 }
