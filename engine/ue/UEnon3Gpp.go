@@ -2,14 +2,14 @@ package ue
 
 import (
 	"UE-non3GPP/config"
-	util "UE-non3GPP/engine/util"
 	nas_registration "UE-non3GPP/engine/nas"
+	ran_ue "UE-non3GPP/engine/ran"
+	util "UE-non3GPP/engine/util"
 
 	"UE-non3GPP/free5gc/n3iwf/pkg/context"
 	"UE-non3GPP/free5gc/n3iwf/pkg/ike/handler"
 	"UE-non3GPP/free5gc/n3iwf/pkg/ike/message"
-	"UE-non3GPP/test"
-	
+
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -40,7 +40,7 @@ func UENon3GPPConnection() {
 	/* initial config */
 	util.InitialSetup(cfg)
 
-	ue := test.NewRanUeContext(cfg.Ue.Supi, 1, security.AlgCiphering128NEA0, security.AlgIntegrity128NIA2,
+	ue := ran_ue.NewRanUeContext(cfg.Ue.Supi, 1, security.AlgCiphering128NEA0, security.AlgIntegrity128NIA2,
 		models.AccessType_NON_3_GPP_ACCESS)
 	ue.AmfUeNgapId = cfg.Ue.AmfUeNgapId
 	ue.AuthenticationSubs = getAuthSubscription(cfg)
@@ -447,7 +447,7 @@ func UENon3GPPConnection() {
 		mobileIdentity5GS, nil, ueSecurityCapability, ue.Get5GMMCapability(), nil, nil)
 	pdu = nas_registration.GetSecurityModeComplete(registrationRequestWith5GMM)
 
-	pdu, err = test.EncodeNasPduWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCipheredWithNew5gNasSecurityContext, true, true)
+	pdu, err = nas_registration.EncodeNasPduWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCipheredWithNew5gNasSecurityContext, true, true)
 	if err != nil {
 		//assert.Nil(t, err
 		panic(err)
@@ -1044,7 +1044,7 @@ func parse5GQoSInfoNotify(n *message.Notification) (info *PDUQoSInfo, err error)
 	return
 }
 
-func EncodeNasPduInEnvelopeWithSecurity(ue *test.RanUeContext, pdu []byte, securityHeaderType uint8,
+func EncodeNasPduInEnvelopeWithSecurity(ue *ran_ue.RanUeContext, pdu []byte, securityHeaderType uint8,
 	securityContextAvailable, newSecurityContext bool) ([]byte, error) {
 	m := nas.NewMessage()
 	err := m.PlainNasDecode(&pdu)
@@ -1058,7 +1058,7 @@ func EncodeNasPduInEnvelopeWithSecurity(ue *test.RanUeContext, pdu []byte, secur
 	return NASEnvelopeEncode(ue, m, securityContextAvailable, newSecurityContext)
 }
 
-func NASEnvelopeEncode(ue *test.RanUeContext, msg *nas.Message, securityContextAvailable bool, newSecurityContext bool) (
+func NASEnvelopeEncode(ue *ran_ue.RanUeContext, msg *nas.Message, securityContextAvailable bool, newSecurityContext bool) (
 	payload []byte, err error) {
 	var sequenceNumber uint8
 	if ue == nil {

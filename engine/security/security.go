@@ -1,13 +1,14 @@
-package test
+package security
 
 import (
+	ran_ue "UE-non3GPP/engine/ran"
 	"fmt"
 	"github.com/free5gc/nas"
 	"github.com/free5gc/nas/security"
 	"github.com/free5gc/openapi/models"
 )
 
-func NASEncode(ue *RanUeContext, msg *nas.Message, securityContextAvailable bool, newSecurityContext bool) (
+func NASEncode(ue *ran_ue.RanUeContext, msg *nas.Message, securityContextAvailable bool, newSecurityContext bool) (
 	payload []byte, err error) {
 	var sequenceNumber uint8
 	if ue == nil {
