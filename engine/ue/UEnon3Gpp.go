@@ -3,12 +3,13 @@ package ue
 import (
 	"UE-non3GPP/config"
 	util "UE-non3GPP/engine/util"
+	nas_registration "UE-non3GPP/engine/nas"
 
 	"UE-non3GPP/free5gc/n3iwf/pkg/context"
 	"UE-non3GPP/free5gc/n3iwf/pkg/ike/handler"
 	"UE-non3GPP/free5gc/n3iwf/pkg/ike/message"
 	"UE-non3GPP/test"
-	"UE-non3GPP/test/nasTestpacket"
+	
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -279,7 +280,7 @@ func UENon3GPPConnection() {
 
 	// NAS
 	ueSecurityCapability := ue.GetUESecurityCapability()
-	registrationRequest := nasTestpacket.GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
+	registrationRequest := nas_registration.GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
 		mobileIdentity5GS, nil, ueSecurityCapability, nil, nil, nil)
 
 	nasLength := make([]byte, 2)
@@ -363,7 +364,7 @@ func UENon3GPPConnection() {
 	resStat := ue.DeriveRESstarAndSetKey(ue.AuthenticationSubs, rand[:], "5G:mnc093.mcc208.3gppnetwork.org")
 
 	// send NAS Authentication Response
-	pdu := nasTestpacket.GetAuthenticationResponse(resStat, "")
+	pdu := nas_registration.GetAuthenticationResponse(resStat, "")
 
 	// IKE_AUTH - EAP exchange
 	ikeMessage.Payloads.Reset()
@@ -442,9 +443,9 @@ func UENon3GPPConnection() {
 	nasData = eapExpanded.VendorData[4:]
 
 	// Send NAS Security Mode Complete Msg
-	registrationRequestWith5GMM := nasTestpacket.GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
+	registrationRequestWith5GMM := nas_registration.GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
 		mobileIdentity5GS, nil, ueSecurityCapability, ue.Get5GMMCapability(), nil, nil)
-	pdu = nasTestpacket.GetSecurityModeComplete(registrationRequestWith5GMM)
+	pdu = nas_registration.GetSecurityModeComplete(registrationRequestWith5GMM)
 
 	pdu, err = test.EncodeNasPduWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCipheredWithNew5gNasSecurityContext, true, true)
 	if err != nil {
@@ -712,7 +713,7 @@ func UENon3GPPConnection() {
 	}
 
 	// send NAS Registration Complete Msg
-	pdu = nasTestpacket.GetRegistrationComplete(nil)
+	pdu = nas_registration.GetRegistrationComplete(nil)
 	pdu, err = EncodeNasPduInEnvelopeWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
 	if err != nil {
 		log.Fatal(err)
@@ -731,7 +732,7 @@ func UENon3GPPConnection() {
 		Sst: cfg.Ue.Snssai.Sst,
 		Sd:  cfg.Ue.Snssai.Sd,
 	}
-	pdu = nasTestpacket.GetUlNasTransport_PduSessionEstablishmentRequest(10, nasMessage.ULNASTransportRequestTypeInitialRequest, "internet", &sNssai)
+	pdu = nas_registration.GetUlNasTransport_PduSessionEstablishmentRequest(10, nasMessage.ULNASTransportRequestTypeInitialRequest, "internet", &sNssai)
 	pdu, err = EncodeNasPduInEnvelopeWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
 	if err != nil {
 		log.Fatal(err)
@@ -864,14 +865,6 @@ func UENon3GPPConnection() {
 		log.Fatalf("Generate key for child SA failed: %+v", err)
 		panic(err)
 	}
-
-	//fmt.Println("---------------------------------")
-	//fmt.Println("State Function:")
-	//fmt.Println("   encr:")
-	//fmt.Println(childSecurityAssociationContextUserPlane.EncryptionAlgorithm)
-	//fmt.Println("   auth:")
-	//fmt.Println(childSecurityAssociationContextUserPlane.IntegrityAlgorithm)
-	//fmt.Println("---------------------------------")
 
 	// Aplly XFRM rules
 	if err = applyXFRMRule(false, childSecurityAssociationContextUserPlane); err != nil {
