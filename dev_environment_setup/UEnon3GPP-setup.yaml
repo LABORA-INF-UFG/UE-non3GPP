@@ -12,6 +12,8 @@
             SEQ_NUMBER: "16f3b3f70fcf"
             SUPI: "imsi-2089300007487"
             AUTH_MN_FIELD: "8000"
+            IPSEC_INTERFACE: "ipsec0"
+            GRE_TUN_INTERFACE: "gretun0"
             UE_NON3GPP_IP_ADDR: "127.0.0.1"
             MASCARA_REDE_DECIMAL: "19"
             GO_SRC_DIR : "/root/go/src"
@@ -52,8 +54,8 @@
                     authenticationmanagementfield : "{{ AUTH_MN_FIELD }}"
                     localpublicipaddr : "{{ UE_NON3GPP_IP_ADDR }}"
                     localpublicportudpconnection : "{{ UE_NON3GPP_PORT_UDP_CONNECTION }}"
-                    gretunname : "gretun0"
-                    ipsecinterfacename : "ipsec0"
+                    gretunname : "{{ GRE_TUN_INTERFACE }}"
+                    ipsecinterfacename : "{{ IPSEC_INTERFACE }}"
                     ipsecinterfacemark: "5" # IPSec virtual interface mark (Any value except to 0, default value is 7 if not defined)
                     snssai: # Single Network Slice Selection Assistance Information
                       sst: 1 # Slice/Service Type (1 byte hex string, range: 0~F)
@@ -63,16 +65,20 @@
                     ikebindaddress: "{{ n3iwf_ike_ip_address }}" # IP address of Nwu interface (IKE) on N3IWF
                     ikebindport: "500"
                     ipsecifaceprotocol: "udp"
+
+                  upfinfo:
+                    networkaddress: "{{ upf_network_address }}" # Network address where the UPF is located. It will be used to build the access route via GRE tunnel
+                    networkmask: "{{ upf_network_mask }}" # Network mask where the UPF is located. It will be used to build the access route via GRE tunnel
                   
                   logs:
                     level: 4
 
-#            - name  : Remove UE-non3GPP ipsec0 confg (if exists)
-#              shell : |
-#                sudo ip link del ipsec0
-#              ignore_errors: true
+            - name  : Remove UE-non3GPP ipsec0 confg (if exists)
+              shell : |
+                sudo ip link del {{ IPSEC_INTERFACE }}
+              ignore_errors: true
 
-#            - name  : Config UE-non3GPP veth3 / ipsec0
-#              shell : |
-#                sudo ip link add ipsec0 type vti local {{ UE_NON3GPP_IP_ADDR }} remote {{ n3iwf_ike_ip_address }} key 5
-#                sudo ip link set ipsec0 up
+            - name  : Config UE-non3GPP ipsec0
+              shell : |
+                sudo ip link add {{ IPSEC_INTERFACE }} type vti local {{ UE_NON3GPP_IP_ADDR }} remote {{ n3iwf_ike_ip_address }} key 5
+                sudo ip link set {{ IPSEC_INTERFACE }} up

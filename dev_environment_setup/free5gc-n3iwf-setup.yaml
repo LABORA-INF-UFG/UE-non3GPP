@@ -21,6 +21,7 @@ u---
             N3IWF_DIR : "/root/go/src/free5gc/NFs/n3iwf" 
             GO_SRC_DIR : "/root/go/src"
             HOME_DIR: "/root"
+            CLASSLESS_INTER_DOMAIN_ROUTING_IPV4_POOL_OF_UE : "60.60.0.0"
             FREE5GC_GIT_CHECKOUT_URL_FREEGC_TAG_VERSION: "--recursive -b v3.1.1 -j `nproc` https://github.com/free5gc/free5gc.git"
             LABORA_UE_NON3GPP_GIT_REPO: "https://github.com/LABORA-INF-UFG/UE-non3GPP.git"
             FREE5GC_CHECKOUT_FOLDER_NAME: "free5gc"
@@ -1761,7 +1762,7 @@ u---
                               dnnUpfInfoList: # DNN information list for this S-NSSAI
                                 - dnn: internet
                                   pools:
-                                    - cidr: 10.60.0.0/16
+                                    - cidr: {{ CLASSLESS_INTER_DOMAIN_ROUTING_IPV4_POOL_OF_UE }}/16
                             - sNssai: # S-NSSAI (Single Network Slice Selection Assistance Information)
                                 sst: 1 # Slice/Service Type (uinteger, range: 0~255)
                                 sd: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
@@ -1865,7 +1866,7 @@ u---
                               dnnUpfInfoList: # DNN information list for this S-NSSAI
                                 - dnn: internet
                                   pools:
-                                    - cidr: 10.60.0.0/16
+                                    - cidr: {{ CLASSLESS_INTER_DOMAIN_ROUTING_IPV4_POOL_OF_UE }}/16
                             - sNssai: # S-NSSAI (Single Network Slice Selection Assistance Information)
                                 sst: 1 # Slice/Service Type (uinteger, range: 0~255)
                                 sd: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
@@ -2130,7 +2131,7 @@ u---
                     # The DNN list supported by UPF
                     dnn_list:
                       - dnn: internet # Data Network Name
-                        cidr: 60.60.0.0/24 # Classless Inter-Domain Routing for assigned IPv4 pool of UE
+                        cidr: {{ CLASSLESS_INTER_DOMAIN_ROUTING_IPV4_POOL_OF_UE }}/24 # Classless Inter-Domain Routing for assigned IPv4 pool of UE
                         # [optional] dnn_list[*].natifname
                         # natifname: eth0
               when: n3iwf_install == 'false'

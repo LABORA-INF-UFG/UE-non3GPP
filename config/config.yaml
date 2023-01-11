@@ -22,5 +22,9 @@ n3iwfinfo:
   ikebindport: "500"
   ipsecifaceprotocol: "udp"
 
+upfinfo:
+  networkaddress: "147.182.192.0" # IP address of Nwu interface (IKE) on N3IWF
+  networkmask: "255.255.240.0"
+
 logs:
   level: 4

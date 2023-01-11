@@ -7,4 +7,4 @@
 164.92.97.76 free5gc_ip_address=147.182.204.150 n3iwf_install=true
 
 [labora-UE-non3GPP]
-24.199.116.214 n3iwf_ike_ip_address=164.92.97.76
+24.199.116.214 n3iwf_ike_ip_address=164.92.97.76 upf_network_address=147.182.192.0 upf_network_mask=255.255.240.0
