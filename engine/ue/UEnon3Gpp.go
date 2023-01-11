@@ -885,16 +885,10 @@ func UENon3GPPConnection() {
 		greKeyField |= (uint32(QoSInfo.qfiList[0]) & 0x3F) << 24
 	}
 
-	fmt.Println(".................")
-	fmt.Println("ueAddr.IP")
-	fmt.Println(ueAddr.IP)
-	fmt.Println(upIPAddr)
-	fmt.Println(" ")
-
 	// New GRE tunnel interface
 	newGRETunnel := &netlink.Gretun{
 		LinkAttrs: netlink.LinkAttrs{
-			Name: cfg.Ue.GRETunName,
+			Name: cfg.Ue.LinkGRE.Name,
 		},
 		Local:  ueAddr.IP,
 		Remote: upIPAddr,
@@ -910,14 +904,23 @@ func UENon3GPPConnection() {
 	// Get link info GRETun1
 	var linkGRE = util.GetLinkGRE(cfg)
 	if linkGRE == nil {
-		log.Fatal("No link named " + cfg.Ue.GRETunName)
-		panic("No link named " + cfg.Ue.GRETunName)
+		log.Fatal("No link named " + cfg.Ue.LinkGRE.Name)
+		panic("No link named " + cfg.Ue.LinkGRE.Name)
 	}
+
+	util.ConfigMTUGreTun(cfg)
+
 	// Link address 10.60.0.1/24
 	linkGREAddr := &netlink.Addr{
 		IPNet: &net.IPNet{
-			IP:   net.IPv4(60, 60, 0, 1),
-			Mask: net.IPv4Mask(255, 255, 255, 0),
+			IP: net.IPv4(cfg.Ue.LinkGRE.IPAddress[0],
+				cfg.Ue.LinkGRE.IPAddress[1],
+				cfg.Ue.LinkGRE.IPAddress[2],
+				cfg.Ue.LinkGRE.IPAddress[3]),
+			Mask: net.IPv4Mask(cfg.Ue.LinkGRE.Mask[0],
+				cfg.Ue.LinkGRE.Mask[1],
+				cfg.Ue.LinkGRE.Mask[2],
+				cfg.Ue.LinkGRE.Mask[3]),
 		},
 	}
 	if err := netlink.AddrAdd(linkGRE, linkGREAddr); err != nil {
@@ -936,9 +939,15 @@ func UENon3GPPConnection() {
 			//IP: net.IPv4zero,
 			/*ip da rede do ip publico da UPF - */
 			/*comando: route --> pegar o último endereço da pilha */
-			IP: net.IPv4(143, 198, 128, 0),
+			IP: net.IPv4(cfg.UPFInfo.NetworkAddress[0],
+				cfg.UPFInfo.NetworkAddress[1],
+				cfg.UPFInfo.NetworkAddress[2],
+				cfg.UPFInfo.NetworkAddress[3]),
 			/* máscara de rede da UPF - verificar na Digital Occean */
-			Mask: net.IPv4Mask(255, 255, 240, 0),
+			Mask: net.IPv4Mask(cfg.UPFInfo.NetworkMask[0],
+				cfg.UPFInfo.NetworkMask[1],
+				cfg.UPFInfo.NetworkMask[2],
+				cfg.UPFInfo.NetworkMask[3]),
 		},
 	}
 
@@ -954,6 +963,7 @@ func UENon3GPPConnection() {
 
 	// Ping remote
 	pinger, err := ping.NewPinger("60.60.0.101")
+	//pinger, err := ping.NewPinger("8.8.8.8")
 	if err != nil {
 		log.Fatal(err)
 		panic(err)

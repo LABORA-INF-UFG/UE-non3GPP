@@ -6,15 +6,27 @@ import (
 	"golang.org/x/sys/execabs"
 )
 
-func InitialSetup(cfg config.Config) {
+func ConfigMTUGreTun(cfg config.Config) {
 	//remove a interface de rede GRE (se existir)
-	dropGreTunInterface := "ip link del " + cfg.Ue.GRETunName
+	dropGreTunInterface := "ifconfig " + cfg.Ue.LinkGRE.Name + " mtu 1200"
 	cmd := execabs.Command("bash", "-c", dropGreTunInterface)
 	err := cmd.Run()
 	if err != nil {
-		log.Info(cfg.Ue.GRETunName + " not found!")
+		log.Info(cfg.Ue.LinkGRE.Name + " not found!")
 	} else {
-		log.Info(cfg.Ue.GRETunName + " was droped!")
+		log.Info(cfg.Ue.LinkGRE.Name + " mtu set 1300!")
+	}
+}
+
+func InitialSetup(cfg config.Config) {
+	//remove a interface de rede GRE (se existir)
+	dropGreTunInterface := "ip link del " + cfg.Ue.LinkGRE.Name
+	cmd := execabs.Command("bash", "-c", dropGreTunInterface)
+	err := cmd.Run()
+	if err != nil {
+		log.Info(cfg.Ue.LinkGRE.Name + " not found!")
+	} else {
+		log.Info(cfg.Ue.LinkGRE.Name + " was droped!")
 	}
 
 	//remove ipsec0 (se existir)

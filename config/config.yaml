@@ -3,14 +3,17 @@ ue:
     permanentkeyvalue: "5122250214c33e723a5dd523fc145fc0"
     opcvalue: "981d464c7c52eb6e5036234984ad0bcf"
     opvalue: "c9e8763286b5b9ffbdf56e1297d0887b"
-    sequencenumber: "16f3b3f70fd3"
+    sequencenumber: "16f3b3f70fd4"
   supi: "imsi-2089300007487"
   ranuengapid: 1
   amfuengapid: 1
   authenticationmanagementfield : "8000"
-  localpublicipaddr : "137.184.44.255"
+  localpublicipaddr : "24.199.116.214"
   localpublicportudpconnection : "500"
-  gretunname : "gretun0"
+  linkgre:
+    name : "gretun0"
+    ipaddress: [60,60,0,1]
+    mask: [255,255,255,0]
   ipsecinterfacename : "ipsec0"
   ipsecinterfacemark: "5" # IPSec virtual interface mark (Any value except to 0, default value is 7 if not defined)
   snssai: # Single Network Slice Selection Assistance Information
@@ -18,13 +21,13 @@ ue:
     sd: "010203" # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
                      
 n3iwfinfo:
-  ikebindaddress: "143.198.154.189" # IP address of Nwu interface (IKE) on N3IWF
+  ikebindaddress: "164.92.97.76" # IP address of Nwu interface (IKE) on N3IWF
   ikebindport: "500"
   ipsecifaceprotocol: "udp"
 
 upfinfo:
-  networkaddress: "147.182.192.0" # IP address of Nwu interface (IKE) on N3IWF
-  networkmask: "255.255.240.0"
+  networkaddress: [147,182,192,0] # Network address where the UPF is located. It will be used to build the access route via GRE tunnel
+  networkmask: [255, 255,240,0] # Network mask where the UPF is located. It will be used to build the access route via GRE tunnel
 
 logs:
   level: 4

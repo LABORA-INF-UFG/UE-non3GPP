@@ -15,7 +15,7 @@ func GetLinkGRE(cfg config.Config) netlink.Link {
 	var linkGRE netlink.Link
 	for _, link := range links {
 		if link.Attrs() != nil {
-			if link.Attrs().Name == cfg.Ue.GRETunName {
+			if link.Attrs().Name == cfg.Ue.LinkGRE.Name {
 				linkGRE = link
 				break
 			}

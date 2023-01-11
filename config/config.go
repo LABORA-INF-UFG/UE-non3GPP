@@ -26,10 +26,15 @@ type Config struct {
 		AuthenticationManagementField string `yaml: "authenticationmanagementfield"`
 		LocalPublicIPAddr             string `yaml: "localpublicipaddr"`
 		LocalPublicPortUDPConnection  string `yaml: "localpublicportudpconnection"`
-		GRETunName                    string `yaml: "gretunname"`
-		IPSecInterfaceName            string `yaml: "ipsecinterfacename"`
-		IPSecInterfaceMark            string `yaml: "ipsecinterfacemark"`
-		Snssai                        struct {
+		LinkGRE                       struct {
+			Name      string `yaml: "name"`
+			IPAddress []byte `yaml: "ipaddress,flow"`
+			Mask      []byte `yaml: "mask,flow"`
+		} `yaml: "linkgre"`
+
+		IPSecInterfaceName string `yaml: "ipsecinterfacename"`
+		IPSecInterfaceMark string `yaml: "ipsecinterfacemark"`
+		Snssai             struct {
 			Sst int32  `yaml: "sst"`
 			Sd  string `yaml: "sd"`
 		} `yaml: "snssai"`
@@ -40,6 +45,11 @@ type Config struct {
 		IKEBindPort        string `yaml: "ikebindport"`
 		IPSecIfaceProtocol string `yaml: "ipsecifaceprotocol"`
 	} `yaml:"n3iwfinfo"`
+
+	UPFInfo struct {
+		NetworkAddress []byte `yaml: "networkaddress,flow"`
+		NetworkMask    []byte `yaml: "networkmask,flow"`
+	} `yaml:"upfinfo"`
 
 	Logs struct {
 		Level int `yaml: "level"`

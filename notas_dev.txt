@@ -5,3 +5,11 @@ para a faixa 60.60.0.1
 lembrar do IMTU no momento da construção do GRETun -> setar um limite menor
 ifconfig <<interface-name>> mtu <<mteu-value>>  --> possível valor 1300
 ifconfig gretun0 mtu 1300
+
+
+Ping não funciona?
+- verificar se as faixas de IP nos arquivos uerouting e smsconfig
+estão setadas com início em 60.
+- verificar com o comando (ip -4 a) se na interface de rede com acesso a WEB
+da UPF (eth0) tem um mapeamento ( inet 60.60.0.101/32 scope global). é este mapeamento
+que faz o link com o UE via n3iwf.
