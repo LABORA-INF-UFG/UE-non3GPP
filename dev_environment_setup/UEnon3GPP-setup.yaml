@@ -53,6 +53,7 @@
                     localpublicipaddr : "{{ UE_NON3GPP_IP_ADDR }}"
                     localpublicportudpconnection : "{{ UE_NON3GPP_PORT_UDP_CONNECTION }}"
                     gretunname : "gretun0"
+                    ipsecinterfacename : "ipsec0"
                     ipsecinterfacemark: "5" # IPSec virtual interface mark (Any value except to 0, default value is 7 if not defined)
                     snssai: # Single Network Slice Selection Assistance Information
                       sst: 1 # Slice/Service Type (1 byte hex string, range: 0~F)
