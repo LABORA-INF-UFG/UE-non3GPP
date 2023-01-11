@@ -56,6 +56,8 @@ u---
             N3IWF_UE_IP_ADDRESS_RANGE: "10.0.0.0"
             N3IWF_IP_SEC_INTERFACE_MARK: "5"
             N3IWF_NAS_TCP_PORT: "20000"
+            N3IWF_IPSEC_INTERFACE_NAME: "ipsec0"
+            N3IWF_IPSEC_INTERFACE_XFRM_MARK: "5"
             
         tasks:
 #            - name: "Ansible | Print a variable"
@@ -2299,28 +2301,15 @@ u---
 
             - name  : Remove N3IWF ipsec0 (if exist)
               shell : |
-                sudo ip link del ipsec0
+                sudo ip link del {{ N3IWF_IPSEC_INTERFACE_NAME }}
               when: n3iwf_install == 'true'
 
             - name  : Config N3IWF env
               shell : |
-                sudo ip link add name ipsec0 type vti local {{ N3IWF_IKE_BIND_ADDRESS }} remote 0.0.0.0 key 5
-                sudo ip addr add {{ N3IWF_IP_SEC_INTERFACE_ADDRESS }}/{{ MASCARA_REDE_DECIMAL }} dev ipsec0
-                sudo ip link set ipsec0 up
+                sudo ip link add name {{ N3IWF_IPSEC_INTERFACE_NAME }} type vti local {{ N3IWF_IKE_BIND_ADDRESS }} remote 0.0.0.0 key {{ N3IWF_IPSEC_INTERFACE_XFRM_MARK }}
+                sudo ip addr add {{ N3IWF_IP_SEC_INTERFACE_ADDRESS }}/{{ MASCARA_REDE_DECIMAL }} dev {{ N3IWF_IPSEC_INTERFACE_NAME }}
+                sudo ip link set {{ N3IWF_IPSEC_INTERFACE_NAME }} up
               when: n3iwf_install == 'true'
-
-
-#            - name  : Config N3IWF env
-#              shell : |
-#                sudo ip link add veth2 type veth peer name veth3
-#                sudo ip addr add {{ N3IWF_IKE_BIND_ADDRESS }}/{{ MASCARA_REDE_DECIMAL }} dev veth2
-#                sudo ip link set veth2 up
-#
-#                sudo ip link add name ipsec0 type vti local {{ N3IWF_IKE_BIND_ADDRESS }} remote 0.0.0.0 key 5
-#                sudo ip addr add {{ N3IWF_IP_SEC_INTERFACE_ADDRESS }}/{{ MASCARA_REDE_DECIMAL }} dev ipsec0
-#                sudo ip link set ipsec0 up
-#
-#              when: n3iwf_install == 'true'
 
             - name: Remove Unused NFs dir form N3IWF VM
               shell: |
