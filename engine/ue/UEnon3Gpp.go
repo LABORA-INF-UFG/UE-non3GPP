@@ -718,11 +718,11 @@ func UENon3GPPConnection() {
 		panic(err)
 	}
 
-	defer func() {
-		_ = netlink.AddrDel(linkIPSec, linkIPSecAddr)
-		_ = netlink.XfrmPolicyFlush()
-		_ = netlink.XfrmStateFlush(netlink.XFRM_PROTO_IPSEC_ANY)
-	}()
+	//defer func() {
+	//	_ = netlink.AddrDel(linkIPSec, linkIPSecAddr)
+	//	_ = netlink.XfrmPolicyFlush()
+	//	_ = netlink.XfrmStateFlush(netlink.XFRM_PROTO_IPSEC_ANY)
+	//}()
 
 	localTCPAddr := &net.TCPAddr{
 		IP: ueAddr.IP,
@@ -983,10 +983,10 @@ func UENon3GPPConnection() {
 		panic(err)
 	}
 
-	defer func() {
-		_ = netlink.LinkSetDown(linkGRE)
-		_ = netlink.LinkDel(linkGRE)
-	}()
+	//defer func() {
+	//	_ = netlink.LinkSetDown(linkGRE)
+	//	_ = netlink.LinkDel(linkGRE)
+	//}()
 
 	pinger, err := ping.NewPinger("60.60.0.101")
 	for {
