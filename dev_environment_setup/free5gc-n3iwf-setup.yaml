@@ -2310,6 +2310,7 @@
             - name  : Remove N3IWF ipsec0 (if exist)
               shell : |
                 sudo ip link del {{ N3IWF_IPSEC_INTERFACE_NAME }}
+              ignore_errors: true
               when: n3iwf_install == 'true'
 
             - name  : Config N3IWF env
