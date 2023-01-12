@@ -2305,7 +2305,7 @@
                       <method v="2" />
                     </configuration>
                   </component>
-              when: n3iwf_instuall == 'false'
+              when: n3iwf_install == 'false'
 
             - name  : Remove N3IWF ipsec0 (if exist)
               shell : |
