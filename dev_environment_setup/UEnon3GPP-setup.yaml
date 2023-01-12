@@ -54,7 +54,10 @@
                     authenticationmanagementfield : "{{ AUTH_MN_FIELD }}"
                     localpublicipaddr : "{{ UE_NON3GPP_IP_ADDR }}"
                     localpublicportudpconnection : "{{ UE_NON3GPP_PORT_UDP_CONNECTION }}"
-                    gretunname : "{{ GRE_TUN_INTERFACE }}"
+                    linkgre:
+                      name : "gretun0"
+                      ipaddress: [60,60,0,1]
+                      mask: [255,255,255,0]
                     ipsecinterfacename : "{{ IPSEC_INTERFACE }}"
                     ipsecinterfacemark: "5" # IPSec virtual interface mark (Any value except to 0, default value is 7 if not defined)
                     snssai: # Single Network Slice Selection Assistance Information
@@ -67,8 +70,8 @@
                     ipsecifaceprotocol: "udp"
 
                   upfinfo:
-                    networkaddress: "{{ upf_network_address }}" # Network address where the UPF is located. It will be used to build the access route via GRE tunnel
-                    networkmask: "{{ upf_network_mask }}" # Network mask where the UPF is located. It will be used to build the access route via GRE tunnel
+                    networkaddress: [147,182,192,0] # Network address where the UPF is located. It will be used to build the access route via GRE tunnel
+                    networkmask: [255, 255,240,0] # Network mask where the UPF is located. It will be used to build the access route via GRE tunnel
                   
                   logs:
                     level: 4

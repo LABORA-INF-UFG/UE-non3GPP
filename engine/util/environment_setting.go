@@ -20,13 +20,32 @@ func ConfigMTUGreTun(cfg config.Config) {
 
 func InitialSetup(cfg config.Config) {
 	//remove a interface de rede GRE (se existir)
-	dropGreTunInterface := "ip link del " + cfg.Ue.LinkGRE.Name
-	cmd := execabs.Command("bash", "-c", dropGreTunInterface)
+	downGreTunInterface := "ip link set " + cfg.Ue.LinkGRE.Name + " down"
+	cmd := execabs.Command("bash", "-c", downGreTunInterface)
 	err := cmd.Run()
 	if err != nil {
 		log.Info(cfg.Ue.LinkGRE.Name + " not found!")
 	} else {
+		log.Info(cfg.Ue.LinkGRE.Name + " was set down!")
+	}
+
+	//remove a interface de rede GRE (se existir)
+	dropGreTunInterface := "ip link del " + cfg.Ue.LinkGRE.Name
+	cmd = execabs.Command("bash", "-c", dropGreTunInterface)
+	err = cmd.Run()
+	if err != nil {
+		log.Info(cfg.Ue.LinkGRE.Name + " not found!")
+	} else {
 		log.Info(cfg.Ue.LinkGRE.Name + " was droped!")
+	}
+
+	downIpsec0Interface := "sudo ip link set " + cfg.Ue.IPSecInterfaceName + " down"
+	cmd = execabs.Command("bash", "-c", downIpsec0Interface)
+	err = cmd.Run()
+	if err != nil {
+		log.Info(cfg.Ue.IPSecInterfaceName + " not found!")
+	} else {
+		log.Info(cfg.Ue.IPSecInterfaceName + " was set down!")
 	}
 
 	//remove ipsec0 (se existir)

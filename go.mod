@@ -15,7 +15,6 @@ require (
 	github.com/go-ping/ping v0.0.0-20210506233800-ff8be3320020
 	github.com/sirupsen/logrus v1.9.0
 	github.com/ugorji/go v1.2.1 // indirect
-	github.com/urfave/cli v1.22.10
 	github.com/urfave/cli/v2 v2.23.7
 	github.com/vishvananda/netlink v1.1.0
 	github.com/wmnsk/go-gtp v0.8.0

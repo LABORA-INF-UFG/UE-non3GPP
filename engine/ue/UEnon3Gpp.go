@@ -718,12 +718,6 @@ func UENon3GPPConnection() {
 		panic(err)
 	}
 
-	//defer func() {
-	//	_ = netlink.AddrDel(linkIPSec, linkIPSecAddr)
-	//	_ = netlink.XfrmPolicyFlush()
-	//	_ = netlink.XfrmStateFlush(netlink.XFRM_PROTO_IPSEC_ANY)
-	//}()
-
 	localTCPAddr := &net.TCPAddr{
 		IP: ueAddr.IP,
 	}
@@ -979,28 +973,20 @@ func UENon3GPPConnection() {
 	}
 
 	if err := netlink.RouteAdd(upRoute); err != nil {
+		log.Warning("UPF Route exist!")
+	}
+
+	pinger, err := ping.NewPinger("60.60.0.101")
+	//pinger, err := ping.NewPinger("8.8.8.8")
+	if err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
+	pinger.SetPrivileged(true)
 
-	//defer func() {
-	//	_ = netlink.LinkSetDown(linkGRE)
-	//	_ = netlink.LinkDel(linkGRE)
-	//}()
-
-	pinger, err := ping.NewPinger("60.60.0.101")
-	for {
-		// Ping remote
-
-		//pinger, err := ping.NewPinger("8.8.8.8")
-		if err != nil {
-			log.Fatal(err)
-			panic(err)
-		}
-
-		// Run with root
-		pinger.SetPrivileged(true)
-
+	n_loop := 1
+	for n_loop < 20 {
+		fmt.Println("..ping ", n_loop)
 		pinger.OnRecv = func(pkt *ping.Packet) {
 			fmt.Println("")
 			fmt.Println("............................")
@@ -1015,42 +1001,54 @@ func UENon3GPPConnection() {
 			fmt.Println(pkt.Rtt)
 		}
 
-		pinger.OnFinish = func(stats *ping.Statistics) {
-			fmt.Println("")
-			fmt.Println("............................")
-			fmt.Println("------Estatísticas----------")
-			fmt.Println("Pacotes transmitidos:")
-			fmt.Println(stats.PacketsSent)
-			fmt.Println("Pacotes recebidos:")
-			fmt.Println(stats.PacketsRecv)
-			fmt.Println("Pacotes perdidos:")
-			fmt.Println(stats.PacketLoss)
-			fmt.Println("round-trip min:")
-			fmt.Println(stats.MinRtt)
-			fmt.Println("round-trip avg:")
-			fmt.Println(stats.AvgRtt)
-			fmt.Println("round-trip max:")
-			fmt.Println(stats.MaxRtt)
-			fmt.Println("round-trip stddev:")
-			fmt.Println(stats.StdDevRtt)
-		}
+		//pinger.OnFinish = func(stats *ping.Statistics) {
+		//	fmt.Println("")
+		//	fmt.Println("............................")
+		//	fmt.Println("------Estatísticas----------")
+		//	fmt.Println("Pacotes transmitidos:")
+		//	fmt.Println(stats.PacketsSent)
+		//	fmt.Println("Pacotes recebidos:")
+		//	fmt.Println(stats.PacketsRecv)
+		//	fmt.Println("Pacotes perdidos:")
+		//	fmt.Println(stats.PacketLoss)
+		//	fmt.Println("round-trip min:")
+		//	fmt.Println(stats.MinRtt)
+		//	fmt.Println("round-trip avg:")
+		//	fmt.Println(stats.AvgRtt)
+		//	fmt.Println("round-trip max:")
+		//	fmt.Println(stats.MaxRtt)
+		//	fmt.Println("round-trip stddev:")
+		//	fmt.Println(stats.StdDevRtt)
+		//}
 
 		pinger.Count = 5
-		pinger.Timeout = 10 * time.Second
+		pinger.Timeout = 5 * time.Second
 		pinger.Source = "60.60.0.1"
-
 		time.Sleep(3 * time.Second)
-
 		pinger.Run()
-
 		time.Sleep(1 * time.Second)
-
 		stats := pinger.Statistics()
+
 		if stats.PacketsSent != stats.PacketsRecv {
 			log.Fatal("Ping Failed")
 			panic("Ping Failed")
 		}
+		fmt.Println("              ")
+		fmt.Println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+		fmt.Println("              ")
 	}
+
+	/* remove os links */
+	defer func() {
+		_ = netlink.AddrDel(linkIPSec, linkIPSecAddr)
+		_ = netlink.XfrmPolicyFlush()
+		_ = netlink.XfrmStateFlush(netlink.XFRM_PROTO_IPSEC_ANY)
+	}()
+
+	defer func() {
+		_ = netlink.LinkSetDown(linkGRE)
+		_ = netlink.LinkDel(linkGRE)
+	}()
 
 }
 
