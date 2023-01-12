@@ -1,4 +1,4 @@
-u---
+---
     -   hosts: fee5gc-core, fee5gc-n3iwf
         become: yes
         remote_user: root
@@ -60,10 +60,6 @@ u---
             N3IWF_IPSEC_INTERFACE_XFRM_MARK: "5"
             
         tasks:
-#            - name: "Ansible | Print a variable"
-#              debug:
-#                  msg: "The operating system is {{ n3iwf_install }}"
-
 #            - fail:
 #                msg: "'internet_network_interface' not found, this parameter is required!"
 #              when: internet_network_interface == '' and n3iwf_install == 'false'
@@ -86,6 +82,18 @@ u---
             - set_fact:
                 MASCARA_REDE_DECIMAL: "20"
               when: ansible_default_ipv4.netmask == '255.255.240.0'
+
+            - set_fact:
+                MASCARA_REDE_DECIMAL: "24"
+              when: ansible_default_ipv4.netmask == '255.255.255.0'
+
+            - set_fact:
+                MASCARA_REDE_DECIMAL: "32"
+              when: ansible_default_ipv4.netmask == '255.255.255.255'
+
+            - name: "Ansible | Print a Variables"
+              debug:
+                  msg: "Network Mask: {{ MASCARA_REDE_DECIMAL }}"
 
             - name: Upgrade all apt packages
               apt: upgrade=dist force_apt_get=yes

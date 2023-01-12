@@ -11,7 +11,7 @@ The content described in this repository was tested on 3 VM's in the [Digital Oc
 #### Before starting
 The development environment setup is exec by Ansible. Before starting it is necessary to access via SSH each one of the VM's and execute the following command to install  __python + git + ansible__.
 ```
-sudo apt update && apt -y install python && sudo apt -y install git && sudo apt -y install ansible
+sudo apt update && apt -y install python && sudo apt -y install git && sudo apt -y install ansible && sudo apt -y install net-tools
 ```
 
 ### Dev Environment Setup
