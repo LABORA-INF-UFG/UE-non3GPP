@@ -2313,7 +2313,7 @@
               ignore_errors: true
               when: n3iwf_install == 'true'
 
-            - name  : Config N3IWF env
+            - name  : Create N3IWF ipsec0 interface
               shell : |
                 sudo ip link add name {{ N3IWF_IPSEC_INTERFACE_NAME }} type vti local {{ N3IWF_IKE_BIND_ADDRESS }} remote 0.0.0.0 key {{ N3IWF_IPSEC_INTERFACE_XFRM_MARK }}
                 sudo ip addr add {{ N3IWF_IP_SEC_INTERFACE_ADDRESS }}/{{ MASCARA_REDE_DECIMAL }} dev {{ N3IWF_IPSEC_INTERFACE_NAME }}
@@ -2333,6 +2333,12 @@
                 rm -rf {{ UPF_DIR }}
               when: n3iwf_install == 'true'
 
+            - name: Remove virtual interface UPF (if exist)
+              shell: sudo ip addr dell {{ GRE_TUN_IP_ADDRESS_UPF_UE_NON3GGP }} dev {{ internet_network_interface }}
+              ignore_errors: true
+              when: n3iwf_install == 'false'
+
+
             - name: Create virtual interface - UPF
               shell: sudo ip addr add {{ GRE_TUN_IP_ADDRESS_UPF_UE_NON3GGP }} dev {{ internet_network_interface }}
               when: n3iwf_install == 'false'
@@ -2343,7 +2349,6 @@
                 chdir: "{{ FREE5GC_DIR_INSTALL }}"
               ignore_errors: true
               when: n3iwf_install == 'false'
-
 
             - name: Build Webconsole
               shell: make webconsole
