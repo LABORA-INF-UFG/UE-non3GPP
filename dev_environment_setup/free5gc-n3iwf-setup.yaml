@@ -2341,7 +2341,9 @@
               shell: make upf
               args:
                 chdir: "{{ FREE5GC_DIR_INSTALL }}"
+              ignore_errors: true
               when: n3iwf_install == 'false'
+
 
             - name: Build Webconsole
               shell: make webconsole
