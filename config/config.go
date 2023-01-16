@@ -38,6 +38,8 @@ type Config struct {
 			Sst int32  `yaml: "sst"`
 			Sd  string `yaml: "sd"`
 		} `yaml: "snssai"`
+		PDUSessionId uint8  `yaml: "pdusessionid"`
+		DNNString    string `yaml: "dnnstring"`
 	} `yaml:"ue"`
 
 	N3iwfInfo struct {

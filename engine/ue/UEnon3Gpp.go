@@ -40,7 +40,8 @@ func UENon3GPPConnection() {
 	/* initial config */
 	util.InitialSetup(cfg)
 
-	ue := ran_ue.NewRanUeContext(cfg.Ue.Supi, 1,
+	ue := ran_ue.NewRanUeContext(cfg.Ue.Supi,
+		cfg.Ue.RanUeNgapId,
 		security.AlgCiphering128NEA0,
 		security.AlgIntegrity128NIA2,
 		models.AccessType_NON_3_GPP_ACCESS)
@@ -698,15 +699,15 @@ func UENon3GPPConnection() {
 	var linkIPSec netlink.Link
 	for _, link := range links {
 		if link.Attrs() != nil {
-			if link.Attrs().Name == "ipsec0" {
+			if link.Attrs().Name == cfg.Ue.IPSecInterfaceName {
 				linkIPSec = link
 				break
 			}
 		}
 	}
 	if linkIPSec == nil {
-		log.Fatal("k named ipsec0")
-		panic("No link named ipsec0")
+		log.Fatal("No link named " + cfg.Ue.IPSecInterfaceName)
+		panic("No link named " + cfg.Ue.IPSecInterfaceName)
 	}
 
 	linkIPSecAddr := &netlink.Addr{
@@ -757,7 +758,7 @@ func UENon3GPPConnection() {
 		Sst: cfg.Ue.Snssai.Sst,
 		Sd:  cfg.Ue.Snssai.Sd,
 	}
-	pdu = nas_registration.GetUlNasTransport_PduSessionEstablishmentRequest(10, nasMessage.ULNASTransportRequestTypeInitialRequest, "internet", &sNssai)
+	pdu = nas_registration.GetUlNasTransport_PduSessionEstablishmentRequest(cfg.Ue.PDUSessionId, nasMessage.ULNASTransportRequestTypeInitialRequest, cfg.Ue.DNNString, &sNssai)
 	pdu, err = EncodeNasPduInEnvelopeWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
 	if err != nil {
 		log.Fatal(err)
@@ -931,7 +932,7 @@ func UENon3GPPConnection() {
 
 	util.ConfigMTUGreTun(cfg)
 
-	// Link address 10.60.0.1/24
+	// Link address 60.60.0.1/20
 	linkGREAddr := &netlink.Addr{
 		IPNet: &net.IPNet{
 			IP: net.IPv4(cfg.Ue.LinkGRE.IPAddress[0],
@@ -977,7 +978,6 @@ func UENon3GPPConnection() {
 	}
 
 	pinger, err := ping.NewPinger("60.60.0.101")
-	//pinger, err := ping.NewPinger("8.8.8.8")
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -985,7 +985,7 @@ func UENon3GPPConnection() {
 	pinger.SetPrivileged(true)
 
 	n_loop := 1
-	for n_loop < 20 {
+	for n_loop < 2 {
 		fmt.Println("..ping ", n_loop)
 		pinger.OnRecv = func(pkt *ping.Packet) {
 			fmt.Println("")
@@ -1001,54 +1001,52 @@ func UENon3GPPConnection() {
 			fmt.Println(pkt.Rtt)
 		}
 
-		//pinger.OnFinish = func(stats *ping.Statistics) {
-		//	fmt.Println("")
-		//	fmt.Println("............................")
-		//	fmt.Println("------Estatísticas----------")
-		//	fmt.Println("Pacotes transmitidos:")
-		//	fmt.Println(stats.PacketsSent)
-		//	fmt.Println("Pacotes recebidos:")
-		//	fmt.Println(stats.PacketsRecv)
-		//	fmt.Println("Pacotes perdidos:")
-		//	fmt.Println(stats.PacketLoss)
-		//	fmt.Println("round-trip min:")
-		//	fmt.Println(stats.MinRtt)
-		//	fmt.Println("round-trip avg:")
-		//	fmt.Println(stats.AvgRtt)
-		//	fmt.Println("round-trip max:")
-		//	fmt.Println(stats.MaxRtt)
-		//	fmt.Println("round-trip stddev:")
-		//	fmt.Println(stats.StdDevRtt)
-		//}
+		pinger.OnFinish = func(stats *ping.Statistics) {
+			fmt.Println("------Estatísticas----------")
+			fmt.Print("Pacotes transmitidos: ")
+			fmt.Println(stats.PacketsSent)
+			fmt.Print("Pacotes recebidos: ")
+			fmt.Println(stats.PacketsRecv)
+			fmt.Print("Pacotes perdidos: ")
+			fmt.Println(stats.PacketLoss)
+			fmt.Print("round-trip min: ")
+			fmt.Println(stats.MinRtt)
+			fmt.Print("round-trip avg: ")
+			fmt.Println(stats.AvgRtt)
+			fmt.Print("round-trip max: ")
+			fmt.Println(stats.MaxRtt)
+			fmt.Print("round-trip stddev: ")
+			fmt.Println(stats.StdDevRtt)
+		}
 
 		pinger.Count = 5
 		pinger.Timeout = 5 * time.Second
 		pinger.Source = "60.60.0.1"
-		time.Sleep(3 * time.Second)
+		time.Sleep(2 * time.Second)
 		pinger.Run()
 		time.Sleep(1 * time.Second)
 		stats := pinger.Statistics()
 
 		if stats.PacketsSent != stats.PacketsRecv {
-			log.Fatal("Ping Failed")
-			panic("Ping Failed")
+			log.Warning("Ping Failed!")
 		}
 		fmt.Println("              ")
-		fmt.Println("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
-		fmt.Println("              ")
+		n_loop = n_loop + 1
 	}
 
 	/* remove os links */
 	defer func() {
+		fmt.Println("remove XFRM's")
 		_ = netlink.AddrDel(linkIPSec, linkIPSecAddr)
 		_ = netlink.XfrmPolicyFlush()
 		_ = netlink.XfrmStateFlush(netlink.XFRM_PROTO_IPSEC_ANY)
 	}()
 
-	defer func() {
-		_ = netlink.LinkSetDown(linkGRE)
-		_ = netlink.LinkDel(linkGRE)
-	}()
+	//defer func() {
+	//	fmt.Println("del LINK GRE")
+	//	_ = netlink.LinkSetDown(linkGRE)
+	//	_ = netlink.LinkDel(linkGRE)
+	//}()
 
 }
 

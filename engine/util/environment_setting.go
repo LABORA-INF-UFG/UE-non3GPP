@@ -8,13 +8,13 @@ import (
 
 func ConfigMTUGreTun(cfg config.Config) {
 	//remove a interface de rede GRE (se existir)
-	dropGreTunInterface := "ifconfig " + cfg.Ue.LinkGRE.Name + " mtu 1200"
+	dropGreTunInterface := "ifconfig " + cfg.Ue.LinkGRE.Name + " mtu 1300"
 	cmd := execabs.Command("bash", "-c", dropGreTunInterface)
 	err := cmd.Run()
 	if err != nil {
 		log.Info(cfg.Ue.LinkGRE.Name + " not found!")
 	} else {
-		log.Info(cfg.Ue.LinkGRE.Name + " mtu set 1300!")
+		log.Info(cfg.Ue.LinkGRE.Name + " mtu set 1000!")
 	}
 }
 
