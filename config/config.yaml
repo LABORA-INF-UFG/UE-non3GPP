@@ -8,7 +8,7 @@ ue:
   ranuengapid: 1
   amfuengapid: 1
   authenticationmanagementfield : "8000"
-  localpublicipaddr : "24.199.123.118"
+  localpublicipaddr : "134.122.116.111"
   localpublicportudpconnection : "500"
   linkgre:
     name: "gretun0"
@@ -21,12 +21,12 @@ ue:
     sd: "010203" # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
                      
 n3iwfinfo:
-  ikebindaddress: "24.199.123.124" # IP address of Nwu interface (IKE) on N3IWF
+  ikebindaddress: "146.190.144.213" # IP address of Nwu interface (IKE) on N3IWF
   ikebindport: "500"
   ipsecifaceprotocol: "udp"
 
 upfinfo:
-  networkaddress: [24, 199, 112, 0] # Network address where the UPF is located. It will be used to build the access route via GRE tunnel
+  networkaddress: [146, 190, 144, 0] # Network address where the UPF is located. It will be used to build the access route via GRE tunnel
   networkmask: [255, 255, 240, 0] # Network mask where the UPF is located. It will be used to build the access route via GRE tunnel
 
 logs:
