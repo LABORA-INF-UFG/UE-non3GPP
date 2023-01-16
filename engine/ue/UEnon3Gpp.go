@@ -955,22 +955,32 @@ func UENon3GPPConnection() {
 		panic(err)
 	}
 	// Add route
+	//upRoute := &netlink.Route{
+	//	LinkIndex: linkGRE.Attrs().Index,
+	//	Dst: &net.IPNet{
+	//		//IP: net.IPv4zero,
+	//		/*ip da rede do ip publico da UPF - */
+	//		/*comando: route --> pegar o último endereço da pilha */
+	//		IP: net.IPv4(cfg.UPFInfo.NetworkAddress[0],
+	//			cfg.UPFInfo.NetworkAddress[1],
+	//			cfg.UPFInfo.NetworkAddress[2],
+	//			cfg.UPFInfo.NetworkAddress[3]),
+	//		/* máscara de rede da UPF - verificar na Digital Occean */
+	//		Mask: net.IPv4Mask(cfg.UPFInfo.NetworkMask[0],
+	//			cfg.UPFInfo.NetworkMask[1],
+	//			cfg.UPFInfo.NetworkMask[2],
+	//			cfg.UPFInfo.NetworkMask[3]),
+	//	},
+	//}
+
 	upRoute := &netlink.Route{
 		LinkIndex: linkGRE.Attrs().Index,
+		Src:       net.ParseIP("60.60.0.1").To4(),
 		Dst: &net.IPNet{
-			//IP: net.IPv4zero,
-			/*ip da rede do ip publico da UPF - */
-			/*comando: route --> pegar o último endereço da pilha */
-			IP: net.IPv4(cfg.UPFInfo.NetworkAddress[0],
-				cfg.UPFInfo.NetworkAddress[1],
-				cfg.UPFInfo.NetworkAddress[2],
-				cfg.UPFInfo.NetworkAddress[3]),
-			/* máscara de rede da UPF - verificar na Digital Occean */
-			Mask: net.IPv4Mask(cfg.UPFInfo.NetworkMask[0],
-				cfg.UPFInfo.NetworkMask[1],
-				cfg.UPFInfo.NetworkMask[2],
-				cfg.UPFInfo.NetworkMask[3]),
+			IP:   net.IPv4zero,
+			Mask: net.IPv4Mask(0, 0, 0, 0),
 		},
+		Table: 1,
 	}
 
 	if err := netlink.RouteAdd(upRoute); err != nil {
@@ -978,6 +988,7 @@ func UENon3GPPConnection() {
 	}
 
 	pinger, err := ping.NewPinger("60.60.0.101")
+	//pinger, err := ping.NewPinger("8.8.8.8")
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -1042,12 +1053,11 @@ func UENon3GPPConnection() {
 		_ = netlink.XfrmStateFlush(netlink.XFRM_PROTO_IPSEC_ANY)
 	}()
 
-	//defer func() {
-	//	fmt.Println("del LINK GRE")
-	//	_ = netlink.LinkSetDown(linkGRE)
-	//	_ = netlink.LinkDel(linkGRE)
-	//}()
-
+	defer func() {
+		fmt.Println("del LINK GRE")
+		_ = netlink.LinkSetDown(linkGRE)
+		_ = netlink.LinkDel(linkGRE)
+	}()
 }
 
 func parse5GQoSInfoNotify(n *message.Notification) (info *PDUQoSInfo, err error) {
