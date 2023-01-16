@@ -3,7 +3,7 @@ ue:
     permanentkeyvalue: "5122250214c33e723a5dd523fc145fc0"
     opcvalue: "981d464c7c52eb6e5036234984ad0bcf"
     opvalue: "c9e8763286b5b9ffbdf56e1297d0887b"
-    sequencenumber: "16f3b3f70fca"
+    sequencenumber: "16f3b3f70fcf"
   supi: "imsi-2089300007487"
   ranuengapid: 1
   amfuengapid: 1
@@ -11,9 +11,9 @@ ue:
   localpublicipaddr : "134.122.116.111"
   localpublicportudpconnection : "500"
   linkgre:
-    name: "gretun0"
-    ipaddress: [60, 60, 0, 1 ]
-    mask: [255, 255, 255, 0 ]
+    name : "gretun0"
+    ipaddress: [60,60,0,1]
+    mask: [255,255,255,0]
   ipsecinterfacename : "ipsec0"
   ipsecinterfacemark: "5" # IPSec virtual interface mark (Any value except to 0, default value is 7 if not defined)
   snssai: # Single Network Slice Selection Assistance Information
@@ -26,8 +26,8 @@ n3iwfinfo:
   ipsecifaceprotocol: "udp"
 
 upfinfo:
-  networkaddress: [146, 190, 144, 0] # Network address where the UPF is located. It will be used to build the access route via GRE tunnel
-  networkmask: [255, 255, 240, 0] # Network mask where the UPF is located. It will be used to build the access route via GRE tunnel
+  networkaddress: [146, 190, 144, 0] # Network address where the UPF is located (route command). It will be used to build the access route via GRE tunnel
+  networkmask: [255, 255, 240, 0] # Network mask where the UPF is located (route command). It will be used to build the access route via GRE tunnel
 
 logs:
   level: 4
