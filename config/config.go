@@ -47,12 +47,7 @@ type Config struct {
 		IKEBindPort        string `yaml: "ikebindport"`
 		IPSecIfaceProtocol string `yaml: "ipsecifaceprotocol"`
 	} `yaml:"n3iwfinfo"`
-
-	UPFInfo struct {
-		NetworkAddress []byte `yaml: "networkaddress,flow"`
-		NetworkMask    []byte `yaml: "networkmask,flow"`
-	} `yaml:"upfinfo"`
-
+	
 	Logs struct {
 		Level int `yaml: "level"`
 	} `yaml:"logs"`

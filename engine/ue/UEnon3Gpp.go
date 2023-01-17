@@ -15,7 +15,6 @@ import (
 	"fmt"
 	"github.com/free5gc/nas"
 	"github.com/free5gc/nas/nasMessage"
-	"github.com/free5gc/nas/nasType"
 	"github.com/free5gc/nas/security"
 	"github.com/free5gc/openapi/models"
 	"github.com/go-ping/ping"
@@ -40,55 +39,32 @@ func UENon3GPPConnection() {
 	/* initial config */
 	util.InitialSetup(cfg)
 
-	ue := ran_ue.NewRanUeContext(cfg.Ue.Supi,
-		cfg.Ue.RanUeNgapId,
-		security.AlgCiphering128NEA0,
-		security.AlgIntegrity128NIA2,
-		models.AccessType_NON_3_GPP_ACCESS)
+	/*new ran ue context */
+	ue := util.CreateRanUEContext(cfg)
 
-	ue.AmfUeNgapId = cfg.Ue.AmfUeNgapId
-	ue.AuthenticationSubs = getAuthSubscription(cfg)
-	mobileIdentity5GS := nasType.MobileIdentity5GS{
-		Len:    12, // suci
-		Buffer: []uint8{0x01, 0x02, 0xf8, 0x39, 0xf0, 0xff, 0x00, 0x00, 0x00, 0x00, 0x47, 0x78},
-	}
+	/* new N3IWF Ue*/
+	n3ue := util.CreateN3IWFUe()
 
-	n3ue := new(context.N3IWFUe)
-	n3ue.PduSessionList = make(map[int64]*context.PDUSession)
-	n3ue.N3IWFChildSecurityAssociation = make(map[uint32]*context.ChildSecurityAssociation)
-	n3ue.TemporaryExchangeMsgIDChildSAMapping = make(map[uint32]*context.ChildSecurityAssociation)
+	/* create N3IWF IKE connection */
+	n3iwfUDPAddr := util.CreateN3IWFIKEConnection(cfg)
 
-	address := cfg.N3iwfInfo.IKEBindAddress + ":" + cfg.N3iwfInfo.IKEBindPort
+	/* create Local UE UDP Listener */
+	udpConnection := util.CreateUEUDPListener(cfg)
 
-	n3iwfUDPAddr, err := net.ResolveUDPAddr(cfg.N3iwfInfo.IPSecIfaceProtocol, address)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	udpConnection := setupUDPSocket(cfg)
-
-	// IKE_SA_INIT
-	ikeInitiatorSPI := uint64(123123)
-	ikeMessage := new(message.IKEMessage)
-	ikeMessage.BuildIKEHeader(ikeInitiatorSPI, 0, message.IKE_SA_INIT, message.InitiatorBitCheck, 0)
-
-	// Security Association
-	securityAssociation := ikeMessage.Payloads.BuildSecurityAssociation()
-	// Proposal 1
-	proposal := securityAssociation.Proposals.BuildProposal(1, message.TypeIKE, nil)
+	/* build the first message to be sent to N3IWF - IKE SA Init */
+	ikeMessage, _proposal := util.CreateIKEMessageSAInit()
 
 	// ENCR
 	var attributeType uint16 = message.AttributeTypeKeyLength
-	var keyLength uint16 = 256
-	proposal.EncryptionAlgorithm.BuildTransform(message.TypeEncryptionAlgorithm, message.ENCR_AES_CBC, &attributeType, &keyLength, nil)
+	var _keyLength uint16 = 256
+	_proposal.EncryptionAlgorithm.BuildTransform(message.TypeEncryptionAlgorithm, message.ENCR_AES_CBC, &attributeType, &_keyLength, nil)
 
 	// INTEG
-	proposal.IntegrityAlgorithm.BuildTransform(message.TypeIntegrityAlgorithm, message.AUTH_HMAC_SHA1_96, nil, nil, nil)
+	_proposal.IntegrityAlgorithm.BuildTransform(message.TypeIntegrityAlgorithm, message.AUTH_HMAC_SHA1_96, nil, nil, nil)
 	// PRF
-	proposal.PseudorandomFunction.BuildTransform(message.TypePseudorandomFunction, message.PRF_HMAC_SHA1, nil, nil, nil)
+	_proposal.PseudorandomFunction.BuildTransform(message.TypePseudorandomFunction, message.PRF_HMAC_SHA1, nil, nil, nil)
 	// DH
-	proposal.DiffieHellmanGroup.BuildTransform(message.TypeDiffieHellmanGroup, message.DH_2048_BIT_MODP, nil, nil, nil)
+	_proposal.DiffieHellmanGroup.BuildTransform(message.TypeDiffieHellmanGroup, message.DH_2048_BIT_MODP, nil, nil, nil)
 
 	// Key exchange data
 	generator := new(big.Int).SetUint64(handler.Group14Generator)
@@ -155,14 +131,14 @@ func UENon3GPPConnection() {
 	}
 
 	ikeSecurityAssociation := &context.IKESecurityAssociation{
-		LocalSPI:               ikeInitiatorSPI,
+		LocalSPI:               util.CreateIKEInitiatorSPI(),
 		RemoteSPI:              ikeMessage.ResponderSPI,
 		InitiatorMessageID:     0,
 		ResponderMessageID:     0,
-		EncryptionAlgorithm:    proposal.EncryptionAlgorithm[0],
-		IntegrityAlgorithm:     proposal.IntegrityAlgorithm[0],
-		PseudorandomFunction:   proposal.PseudorandomFunction[0],
-		DiffieHellmanGroup:     proposal.DiffieHellmanGroup[0],
+		EncryptionAlgorithm:    _proposal.EncryptionAlgorithm[0],
+		IntegrityAlgorithm:     _proposal.IntegrityAlgorithm[0],
+		PseudorandomFunction:   _proposal.PseudorandomFunction[0],
+		DiffieHellmanGroup:     _proposal.DiffieHellmanGroup[0],
 		ConcatenatedNonce:      append(localNonce, remoteNonce...),
 		DiffieHellmanSharedKey: sharedKeyExchangeData,
 	}
@@ -187,16 +163,16 @@ func UENon3GPPConnection() {
 	ikePayload.BuildIdentificationInitiator(message.ID_FQDN, []byte("UE"))
 
 	// Security Association
-	securityAssociation = ikePayload.BuildSecurityAssociation()
+	securityAssociation := ikePayload.BuildSecurityAssociation()
 	// Proposal 1
 	inboundSPI := generateSPI(n3ue)
-	proposal = securityAssociation.Proposals.BuildProposal(1, message.TypeESP, inboundSPI)
+	_proposal = securityAssociation.Proposals.BuildProposal(1, message.TypeESP, inboundSPI)
 	// ENCR
-	proposal.EncryptionAlgorithm.BuildTransform(message.TypeEncryptionAlgorithm, message.ENCR_AES_CBC, &attributeType, &keyLength, nil)
+	_proposal.EncryptionAlgorithm.BuildTransform(message.TypeEncryptionAlgorithm, message.ENCR_AES_CBC, &attributeType, &_keyLength, nil)
 	// INTEG
-	proposal.IntegrityAlgorithm.BuildTransform(message.TypeIntegrityAlgorithm, message.AUTH_HMAC_SHA1_96, nil, nil, nil)
+	_proposal.IntegrityAlgorithm.BuildTransform(message.TypeIntegrityAlgorithm, message.AUTH_HMAC_SHA1_96, nil, nil, nil)
 	// ESN
-	proposal.ExtendedSequenceNumbers.BuildTransform(message.TypeExtendedSequenceNumbers, message.ESN_NO, nil, nil, nil)
+	_proposal.ExtendedSequenceNumbers.BuildTransform(message.TypeExtendedSequenceNumbers, message.ESN_NO, nil, nil, nil)
 
 	// Traffic Selector
 	tsi := ikePayload.BuildTrafficSelectorInitiator()
@@ -287,8 +263,9 @@ func UENon3GPPConnection() {
 
 	// NAS
 	ueSecurityCapability := ue.GetUESecurityCapability()
+
 	registrationRequest := nas_registration.GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
-		mobileIdentity5GS,
+		util.CreateMobileIdentity(),
 		nil,
 		ueSecurityCapability,
 		nil,
@@ -459,7 +436,7 @@ func UENon3GPPConnection() {
 
 	// Send NAS Security Mode Complete Msg
 	registrationRequestWith5GMM := nas_registration.GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
-		mobileIdentity5GS,
+		util.CreateMobileIdentity(),
 		nil,
 		ueSecurityCapability,
 		ue.Get5GMMCapability(),
@@ -954,24 +931,6 @@ func UENon3GPPConnection() {
 		log.Fatal(err)
 		panic(err)
 	}
-	// Add route
-	//upRoute := &netlink.Route{
-	//	LinkIndex: linkGRE.Attrs().Index,
-	//	Dst: &net.IPNet{
-	//		//IP: net.IPv4zero,
-	//		/*ip da rede do ip publico da UPF - */
-	//		/*comando: route --> pegar o último endereço da pilha */
-	//		IP: net.IPv4(cfg.UPFInfo.NetworkAddress[0],
-	//			cfg.UPFInfo.NetworkAddress[1],
-	//			cfg.UPFInfo.NetworkAddress[2],
-	//			cfg.UPFInfo.NetworkAddress[3]),
-	//		/* máscara de rede da UPF - verificar na Digital Occean */
-	//		Mask: net.IPv4Mask(cfg.UPFInfo.NetworkMask[0],
-	//			cfg.UPFInfo.NetworkMask[1],
-	//			cfg.UPFInfo.NetworkMask[2],
-	//			cfg.UPFInfo.NetworkMask[3]),
-	//	},
-	//}
 
 	upRoute := &netlink.Route{
 		LinkIndex: linkGRE.Attrs().Index,
@@ -1531,36 +1490,36 @@ func concatenateNonceAndSPI(nonce []byte, SPI_initiator uint64, SPI_responder ui
 	return newSlice
 }
 
-func setupUDPSocket(cfg config.Config) *net.UDPConn {
-	bindAddr := cfg.Ue.LocalPublicIPAddr + ":" + cfg.Ue.LocalPublicPortUDPConnection
-	udpAddr, err := net.ResolveUDPAddr("udp", bindAddr)
-	if err != nil {
-		log.Fatal("Resolve UDP address failed")
-	}
-	udpListener, err := net.ListenUDP("udp", udpAddr)
-	if err != nil {
-		log.Fatalf("Listen UDP socket failed: %+v", err)
-	}
-	return udpListener
-}
+//func setupUDPSocket(cfg config.Config) *net.UDPConn {
+//	bindAddr := cfg.Ue.LocalPublicIPAddr + ":" + cfg.Ue.LocalPublicPortUDPConnection
+//	udpAddr, err := net.ResolveUDPAddr("udp", bindAddr)
+//	if err != nil {
+//		log.Fatal("Resolve UDP address failed")
+//	}
+//	udpListener, err := net.ListenUDP("udp", udpAddr)
+//	if err != nil {
+//		log.Fatalf("Listen UDP socket failed: %+v", err)
+//	}
+//	return udpListener
+//}
 
-func getAuthSubscription(cfg config.Config) (authSubs models.AuthenticationSubscription) {
-	authSubs.PermanentKey = &models.PermanentKey{
-		PermanentKeyValue: cfg.Ue.AuthSubscription.PermanentKeyValue,
-	}
-	authSubs.Opc = &models.Opc{
-		OpcValue: cfg.Ue.AuthSubscription.OpcValue,
-	}
-	authSubs.Milenage = &models.Milenage{
-		Op: &models.Op{
-			OpValue: cfg.Ue.AuthSubscription.OpValue,
-		},
-	}
-	authSubs.AuthenticationManagementField = cfg.Ue.AuthenticationManagementField //"8000"
-	authSubs.SequenceNumber = cfg.Ue.AuthSubscription.SequenceNumber
-	authSubs.AuthenticationMethod = models.AuthMethod__5_G_AKA
-	return
-}
+//func getAuthSubscription(cfg config.Config) (authSubs models.AuthenticationSubscription) {
+//	authSubs.PermanentKey = &models.PermanentKey{
+//		PermanentKeyValue: cfg.Ue.AuthSubscription.PermanentKeyValue,
+//	}
+//	authSubs.Opc = &models.Opc{
+//		OpcValue: cfg.Ue.AuthSubscription.OpcValue,
+//	}
+//	authSubs.Milenage = &models.Milenage{
+//		Op: &models.Op{
+//			OpValue: cfg.Ue.AuthSubscription.OpValue,
+//		},
+//	}
+//	authSubs.AuthenticationManagementField = cfg.Ue.AuthenticationManagementField //"8000"
+//	authSubs.SequenceNumber = cfg.Ue.AuthSubscription.SequenceNumber
+//	authSubs.AuthenticationMethod = models.AuthMethod__5_G_AKA
+//	return
+//}
 
 type PDUQoSInfo struct {
 	pduSessionID    uint8
