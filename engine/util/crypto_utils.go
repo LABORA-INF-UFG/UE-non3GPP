@@ -1,9 +1,9 @@
 package util
 
 import (
-	"UE-non3GPP/free5gc/n3iwf/pkg/context"
-	"UE-non3GPP/free5gc/n3iwf/pkg/ike/handler"
-	"UE-non3GPP/free5gc/n3iwf/pkg/ike/message"
+	"UE-non3GPP/engine/exchange/pkg/context"
+	"UE-non3GPP/engine/exchange/pkg/ike/handler"
+	"UE-non3GPP/engine/exchange/pkg/ike/message"
 	"errors"
 )
 

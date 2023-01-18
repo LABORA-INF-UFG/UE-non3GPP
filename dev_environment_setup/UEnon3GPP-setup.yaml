@@ -70,10 +70,6 @@
                     ikebindaddress: "{{ n3iwf_ike_ip_address }}" # IP address of Nwu interface (IKE) on N3IWF
                     ikebindport: "500"
                     ipsecifaceprotocol: "udp"
-
-                  upfinfo:
-                    networkaddress: [146, 190, 144, 0] # Network address where the UPF is located (route command). It will be used to build the access route via GRE tunnel
-                    networkmask: [255, 255, 240, 0] # Network mask where the UPF is located (route command). It will be used to build the access route via GRE tunnel
                   
                   logs:
                     level: 4

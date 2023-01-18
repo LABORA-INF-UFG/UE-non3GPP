@@ -6,9 +6,9 @@ import (
 	ran_ue "UE-non3GPP/engine/ran"
 	util "UE-non3GPP/engine/util"
 
-	"UE-non3GPP/free5gc/n3iwf/pkg/context"
-	"UE-non3GPP/free5gc/n3iwf/pkg/ike/handler"
-	"UE-non3GPP/free5gc/n3iwf/pkg/ike/message"
+	"UE-non3GPP/engine/exchange/pkg/context"
+	"UE-non3GPP/engine/exchange/pkg/ike/handler"
+	"UE-non3GPP/engine/exchange/pkg/ike/message"
 
 	"encoding/binary"
 	"errors"
@@ -39,6 +39,9 @@ func UENon3GPPConnection() {
 	/* initial config */
 	util.InitialSetup(cfg)
 
+	/*1º Registration */
+	/* Fig 7: https://www.wipro.com/network-edge-providers/untrusted-non-3gpp-access-network-interworking-with-5g-core */
+
 	/*new ran ue context */
 	ue := util.CreateRanUEContext(cfg)
 
@@ -54,41 +57,9 @@ func UENon3GPPConnection() {
 	/* build the first message to be sent to N3IWF - IKE SA Init */
 	ikeMessage, _proposal := util.CreateIKEMessageSAInit()
 
-	// ENCR
-	var attributeType uint16 = message.AttributeTypeKeyLength
-	var _keyLength uint16 = 256
-	_proposal.EncryptionAlgorithm.BuildTransform(message.TypeEncryptionAlgorithm, message.ENCR_AES_CBC, &attributeType, &_keyLength, nil)
+	/* Key exchange data */
+	secret, factor, _localNonce, ikeMessageData := util.BuildInitIKEMessageData(ikeMessage)
 
-	// INTEG
-	_proposal.IntegrityAlgorithm.BuildTransform(message.TypeIntegrityAlgorithm, message.AUTH_HMAC_SHA1_96, nil, nil, nil)
-	// PRF
-	_proposal.PseudorandomFunction.BuildTransform(message.TypePseudorandomFunction, message.PRF_HMAC_SHA1, nil, nil, nil)
-	// DH
-	_proposal.DiffieHellmanGroup.BuildTransform(message.TypeDiffieHellmanGroup, message.DH_2048_BIT_MODP, nil, nil, nil)
-
-	// Key exchange data
-	generator := new(big.Int).SetUint64(handler.Group14Generator)
-	factor, ok := new(big.Int).SetString(handler.Group14PrimeString, 16)
-	if !ok {
-		log.Fatal("Generate key exchange datd failed")
-		return
-	}
-	secert := handler.GenerateRandomNumber()
-	localPublicKeyExchangeValue := new(big.Int).Exp(generator, secert, factor).Bytes()
-	prependZero := make([]byte, len(factor.Bytes())-len(localPublicKeyExchangeValue))
-	localPublicKeyExchangeValue = append(prependZero, localPublicKeyExchangeValue...)
-	ikeMessage.Payloads.BUildKeyExchange(message.DH_2048_BIT_MODP, localPublicKeyExchangeValue)
-
-	// Nonce
-	localNonce := handler.GenerateRandomNumber().Bytes()
-	ikeMessage.Payloads.BuildNonce(localNonce)
-
-	// Send to N3IWF
-	ikeMessageData, err := ikeMessage.Encode()
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
 	if _, err := udpConnection.WriteToUDP(ikeMessageData, n3iwfUDPAddr); err != nil {
 		log.Fatal(err)
 		return
@@ -124,7 +95,7 @@ func UENon3GPPConnection() {
 			}
 			remotePublicKeyExchangeValue = remotePublicKeyExchangeValue[i:]
 			remotePublicKeyExchangeValueBig := new(big.Int).SetBytes(remotePublicKeyExchangeValue)
-			sharedKeyExchangeData = new(big.Int).Exp(remotePublicKeyExchangeValueBig, secert, factor).Bytes()
+			sharedKeyExchangeData = new(big.Int).Exp(remotePublicKeyExchangeValueBig, secret, factor).Bytes()
 		case message.TypeNiNr:
 			remoteNonce = ikePayload.(*message.Nonce).NonceData
 		}
@@ -139,7 +110,7 @@ func UENon3GPPConnection() {
 		IntegrityAlgorithm:     _proposal.IntegrityAlgorithm[0],
 		PseudorandomFunction:   _proposal.PseudorandomFunction[0],
 		DiffieHellmanGroup:     _proposal.DiffieHellmanGroup[0],
-		ConcatenatedNonce:      append(localNonce, remoteNonce...),
+		ConcatenatedNonce:      append(_localNonce, remoteNonce...),
 		DiffieHellmanSharedKey: sharedKeyExchangeData,
 	}
 
@@ -162,13 +133,16 @@ func UENon3GPPConnection() {
 	// Identification
 	ikePayload.BuildIdentificationInitiator(message.ID_FQDN, []byte("UE"))
 
+	var _attributeType uint16 = message.AttributeTypeKeyLength
+	var _keyLength uint16 = 256
+
 	// Security Association
 	securityAssociation := ikePayload.BuildSecurityAssociation()
 	// Proposal 1
 	inboundSPI := generateSPI(n3ue)
 	_proposal = securityAssociation.Proposals.BuildProposal(1, message.TypeESP, inboundSPI)
 	// ENCR
-	_proposal.EncryptionAlgorithm.BuildTransform(message.TypeEncryptionAlgorithm, message.ENCR_AES_CBC, &attributeType, &_keyLength, nil)
+	_proposal.EncryptionAlgorithm.BuildTransform(message.TypeEncryptionAlgorithm, message.ENCR_AES_CBC, &_attributeType, &_keyLength, nil)
 	// INTEG
 	_proposal.IntegrityAlgorithm.BuildTransform(message.TypeIntegrityAlgorithm, message.AUTH_HMAC_SHA1_96, nil, nil, nil)
 	// ESN
@@ -830,7 +804,7 @@ func UENon3GPPConnection() {
 	ikePayload = append(ikePayload, responseTrafficSelectorResponder)
 
 	// Nonce
-	localNonce = handler.GenerateRandomNumber().Bytes()
+	localNonce := handler.GenerateRandomNumber().Bytes()
 	ikeSecurityAssociation.ConcatenatedNonce = append(ikeSecurityAssociation.ConcatenatedNonce, localNonce...)
 	ikePayload.BuildNonce(localNonce)
 

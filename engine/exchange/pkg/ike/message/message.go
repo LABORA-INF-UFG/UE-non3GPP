@@ -8,7 +8,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"UE-non3GPP/free5gc/n3iwf/internal/logger"
+	"UE-non3GPP/engine/exchange/internal/logger"
 )
 
 // Log

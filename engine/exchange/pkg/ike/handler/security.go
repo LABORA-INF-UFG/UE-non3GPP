@@ -17,8 +17,8 @@ import (
 	"math/big"
 	"strings"
 
-	"UE-non3GPP/free5gc/n3iwf/pkg/context"
-	"UE-non3GPP/free5gc/n3iwf/pkg/ike/message"
+	"UE-non3GPP/engine/exchange/pkg/context"
+	"UE-non3GPP/engine/exchange/pkg/ike/message"
 )
 
 // General data

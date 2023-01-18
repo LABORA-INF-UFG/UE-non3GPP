@@ -12,7 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"golang.org/x/net/ipv4"
 
-	"UE-non3GPP/free5gc/n3iwf/internal/logger"
+	"UE-non3GPP/engine/exchange/internal/logger"
 	"github.com/free5gc/ngap/ngapType"
 	"github.com/free5gc/util/idgenerator"
 )

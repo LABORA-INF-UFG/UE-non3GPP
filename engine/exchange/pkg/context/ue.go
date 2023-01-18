@@ -7,7 +7,7 @@ import (
 
 	gtpv1 "github.com/wmnsk/go-gtp/gtpv1"
 
-	ike_message "UE-non3GPP/free5gc/n3iwf/pkg/ike/message"
+	ike_message "UE-non3GPP/engine/exchange/pkg/ike/message"
 	"github.com/free5gc/ngap/ngapType"
 )
 

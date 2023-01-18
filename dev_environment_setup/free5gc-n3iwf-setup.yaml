@@ -1,7 +1,7 @@
 ---
     -   hosts: fee5gc-core, fee5gc-n3iwf
         become: yes
-        remote_user: root
+        remote_debuser: root
         vars:
             GTP5G_DIR_INSTALL : "/root/gtp5g"
             FREE5GC_DIR_INSTALL : "/root/go/src/free5gc"
@@ -13,7 +13,7 @@
             NRF_DIR : "/root/go/src/free5gc/NFs/nrf"
             UDR_DIR : "/root/go/src/free5gc/NFs/udr"
             UDM_DIR : "/root/go/src/free5gc/NFs/udm"
-            AUSF_DIR : "/root/go/src/free5gc/NFs/ausf"
+            AUSF_DIR : "/uproot/go/src/free5gc/NFs/ausf"
             NSSF_DIR : "/root/go/src/free5gc/NFs/nssf"
             AMF_DIR : "/root/go/src/free5gc/NFs/amf"
             PCF_DIR : "/root/go/src/free5gc/NFs/pcf"
@@ -239,7 +239,7 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     NRF:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -280,7 +280,7 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     NRF:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -327,7 +327,7 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     UDR:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -364,7 +364,7 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     UDR:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -423,7 +423,7 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     UDM:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -472,7 +472,7 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     UDM:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -525,7 +525,7 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     AUSF:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -568,7 +568,7 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     AUSF:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -946,7 +946,7 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     NSSF:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -1313,7 +1313,7 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     NSSF:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -1645,7 +1645,7 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     PCF:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -1695,7 +1695,7 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     PCF:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -1795,19 +1795,19 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     SMF:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
                     NAS:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
                     NGAP:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
                     Aper:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
                     PFCP:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -1899,19 +1899,19 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     SMF:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
                     NAS:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
                     NGAP:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
                     Aper:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
                     PFCP:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -2074,13 +2074,13 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     N3IWF: # The default log level is DEBUG to print SA keys. Please change it to INFO when deployed.
-                      debugLevel: debug
+                      debugLevel: warn
                       ReportCaller: false
                     NGAP:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
                     Aper:
-                      debugLevel: info
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'true'
 
@@ -2123,7 +2123,7 @@
                     # the kind of log output
                       # debugLevel: how detailed to output, value: trace, debug, info, warn, error, fatal, panic
                       # ReportCaller: enable the caller report or not, value: true or false
-                    debugLevel: debug
+                    debugLevel: info
                     ReportCaller: false
                   
                     # The IP list of the N4 interface on this UPF (Can't set to 0.0.0.0)

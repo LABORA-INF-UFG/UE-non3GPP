@@ -2,13 +2,15 @@ package util
 
 import (
 	"UE-non3GPP/config"
+	"UE-non3GPP/engine/exchange/pkg/context"
+	"UE-non3GPP/engine/exchange/pkg/ike/handler"
+	"UE-non3GPP/engine/exchange/pkg/ike/message"
 	ran_ue "UE-non3GPP/engine/ran"
-	"UE-non3GPP/free5gc/n3iwf/pkg/context"
-	"UE-non3GPP/free5gc/n3iwf/pkg/ike/message"
-	"fmt"
 	"github.com/free5gc/nas/nasType"
 	"github.com/free5gc/nas/security"
 	"github.com/free5gc/openapi/models"
+	log "github.com/sirupsen/logrus"
+	"math/big"
 	"net"
 )
 
@@ -61,7 +63,7 @@ func CreateN3IWFIKEConnection(cfg config.Config) *net.UDPAddr {
 	address := cfg.N3iwfInfo.IKEBindAddress + ":" + cfg.N3iwfInfo.IKEBindPort
 	UDPAddr, err := net.ResolveUDPAddr(cfg.N3iwfInfo.IPSecIfaceProtocol, address)
 	if err != nil {
-		fmt.Println("UDP Connection N3IWF failed!")
+		log.Fatal("UDP Connection N3IWF failed!")
 		panic(err)
 	}
 	return UDPAddr
@@ -71,12 +73,12 @@ func CreateUEUDPListener(cfg config.Config) *net.UDPConn {
 	bindAddr := cfg.Ue.LocalPublicIPAddr + ":" + cfg.Ue.LocalPublicPortUDPConnection
 	udpAddr, err := net.ResolveUDPAddr("udp", bindAddr)
 	if err != nil {
-		fmt.Println("Resolve UDP address failed")
+		log.Fatal("Resolve UDP address failed")
 		panic(err)
 	}
 	udpListener, err := net.ListenUDP("udp", udpAddr)
 	if err != nil {
-		fmt.Println("Listen UDP socket failed: %+v", err)
+		log.Fatal("Listen UDP socket failed: %+v", err)
 		panic(err)
 	}
 	return udpListener
@@ -90,9 +92,47 @@ func CreateIKEMessageSAInit() (*message.IKEMessage, *message.Proposal) {
 	securityAssociation := ikeMessage.Payloads.BuildSecurityAssociation()
 	proposal := securityAssociation.Proposals.BuildProposal(1, message.TypeIKE, nil)
 
+	// ENCR
+	var attributeType uint16 = message.AttributeTypeKeyLength
+	var keyLength uint16 = 256
+	proposal.EncryptionAlgorithm.BuildTransform(message.TypeEncryptionAlgorithm, message.ENCR_AES_CBC, &attributeType, &keyLength, nil)
+	// INTEG
+	proposal.IntegrityAlgorithm.BuildTransform(message.TypeIntegrityAlgorithm, message.AUTH_HMAC_SHA1_96, nil, nil, nil)
+	// PRF
+	proposal.PseudorandomFunction.BuildTransform(message.TypePseudorandomFunction, message.PRF_HMAC_SHA1, nil, nil, nil)
+	// DH
+	proposal.DiffieHellmanGroup.BuildTransform(message.TypeDiffieHellmanGroup, message.DH_2048_BIT_MODP, nil, nil, nil)
+
 	return ikeMessage, proposal
 }
 
 func CreateIKEInitiatorSPI() uint64 {
 	return uint64(123123)
+}
+
+func BuildInitIKEMessageData(ikeMessage *message.IKEMessage) (*big.Int, *big.Int, []byte, []byte) {
+	secret := handler.GenerateRandomNumber()
+	factor, ok := new(big.Int).SetString(handler.Group14PrimeString, 16)
+	// Key exchange data
+	if !ok {
+		log.Fatal("Generate key exchange data failed")
+		panic("Generate key exchange data failed")
+	}
+	_generator := new(big.Int).SetUint64(handler.Group14Generator)
+	localPublicKeyExchangeValue := new(big.Int).Exp(_generator, secret, factor).Bytes()
+	prependZero := make([]byte, len(factor.Bytes())-len(localPublicKeyExchangeValue))
+	localPublicKeyExchangeValue = append(prependZero, localPublicKeyExchangeValue...)
+
+	ikeMessage.Payloads.BUildKeyExchange(message.DH_2048_BIT_MODP, localPublicKeyExchangeValue)
+
+	localNonce := handler.GenerateRandomNumber().Bytes()
+	ikeMessage.Payloads.BuildNonce(localNonce)
+
+	ikeMessageData, err := ikeMessage.Encode()
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+
+	return secret, factor, localNonce, ikeMessageData
 }

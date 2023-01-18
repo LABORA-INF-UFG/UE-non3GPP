@@ -1,6 +1,6 @@
 package handler
 
-import "UE-non3GPP/free5gc/n3iwf/pkg/ike/message"
+import "UE-non3GPP/engine/exchange/pkg/ike/message"
 
 type XFRMEncryptionAlgorithmType uint16
 
