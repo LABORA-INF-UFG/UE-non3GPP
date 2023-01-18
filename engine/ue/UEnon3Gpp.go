@@ -23,7 +23,7 @@ import (
 
 	"golang.org/x/sys/unix"
 	"hash"
-	"math/big"
+
 	"net"
 	"time"
 	//"net"
@@ -60,64 +60,7 @@ func UENon3GPPConnection() {
 	/* Key exchange data */
 	secret, factor, _localNonce, ikeMessageData := util.BuildInitIKEMessageData(ikeMessage)
 
-	if _, err := udpConnection.WriteToUDP(ikeMessageData, n3iwfUDPAddr); err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	// Receive N3IWF reply
-	buffer := make([]byte, 65535)
-	n, _, err := udpConnection.ReadFromUDP(buffer)
-	if err != nil {
-		log.Fatal(err)
-	}
-	ikeMessage.Payloads.Reset()
-	err = ikeMessage.Decode(buffer[:n])
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-
-	var sharedKeyExchangeData []byte
-	var remoteNonce []byte
-
-	for _, ikePayload := range ikeMessage.Payloads {
-		switch ikePayload.Type() {
-		case message.TypeSA:
-			log.Info("Get SA payload")
-		case message.TypeKE:
-			remotePublicKeyExchangeValue := ikePayload.(*message.KeyExchange).KeyExchangeData
-			var i int = 0
-			for {
-				if remotePublicKeyExchangeValue[i] != 0 {
-					break
-				}
-			}
-			remotePublicKeyExchangeValue = remotePublicKeyExchangeValue[i:]
-			remotePublicKeyExchangeValueBig := new(big.Int).SetBytes(remotePublicKeyExchangeValue)
-			sharedKeyExchangeData = new(big.Int).Exp(remotePublicKeyExchangeValueBig, secret, factor).Bytes()
-		case message.TypeNiNr:
-			remoteNonce = ikePayload.(*message.Nonce).NonceData
-		}
-	}
-
-	ikeSecurityAssociation := &context.IKESecurityAssociation{
-		LocalSPI:               util.CreateIKEInitiatorSPI(),
-		RemoteSPI:              ikeMessage.ResponderSPI,
-		InitiatorMessageID:     0,
-		ResponderMessageID:     0,
-		EncryptionAlgorithm:    _proposal.EncryptionAlgorithm[0],
-		IntegrityAlgorithm:     _proposal.IntegrityAlgorithm[0],
-		PseudorandomFunction:   _proposal.PseudorandomFunction[0],
-		DiffieHellmanGroup:     _proposal.DiffieHellmanGroup[0],
-		ConcatenatedNonce:      append(_localNonce, remoteNonce...),
-		DiffieHellmanSharedKey: sharedKeyExchangeData,
-	}
-
-	if err := generateKeyForIKESA(ikeSecurityAssociation); err != nil {
-		log.Fatalf("Generate key for IKE SA failed: %+v", err)
-		return
-	}
+	ikeSecurityAssociation := util.CreateN3IWFSecurityAssociation(_proposal, _localNonce, udpConnection, ikeMessageData, n3iwfUDPAddr, ikeMessage, secret, factor)
 
 	n3ue.N3IWFIKESecurityAssociation = ikeSecurityAssociation
 
@@ -173,7 +116,8 @@ func UENon3GPPConnection() {
 	n3ue.CreateHalfChildSA(n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID, binary.BigEndian.Uint32(inboundSPI))
 
 	// Receive N3IWF reply
-	n, _, err = udpConnection.ReadFromUDP(buffer)
+	buffer := make([]byte, 65535)
+	n, _, err := udpConnection.ReadFromUDP(buffer)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -1390,79 +1334,79 @@ func generateSPI(n3ue *context.N3IWFUe) []byte {
 	return spiByte
 }
 
-func generateKeyForIKESA(ikeSecurityAssociation *context.IKESecurityAssociation) error {
-	// Transforms
-	transformPseudorandomFunction := ikeSecurityAssociation.PseudorandomFunction
+//func generateKeyForIKESA(ikeSecurityAssociation *context.IKESecurityAssociation) error {
+//	// Transforms
+//	transformPseudorandomFunction := ikeSecurityAssociation.PseudorandomFunction
+//
+//	// Get key length of SK_d, SK_ai, SK_ar, SK_ei, SK_er, SK_pi, SK_pr
+//	var length_SK_d, length_SK_ai, length_SK_ar, length_SK_ei, length_SK_er, length_SK_pi, length_SK_pr, totalKeyLength int
+//	var ok bool
+//
+//	length_SK_d = 20
+//	length_SK_ai = 20
+//	length_SK_ar = length_SK_ai
+//	length_SK_ei = 32
+//	length_SK_er = length_SK_ei
+//	length_SK_pi, length_SK_pr = length_SK_d, length_SK_d
+//	totalKeyLength = length_SK_d + length_SK_ai + length_SK_ar + length_SK_ei + length_SK_er + length_SK_pi + length_SK_pr
+//
+//	// Generate IKE SA key as defined in RFC7296 Section 1.3 and Section 1.4
+//	var pseudorandomFunction hash.Hash
+//
+//	if pseudorandomFunction, ok = handler.NewPseudorandomFunction(ikeSecurityAssociation.ConcatenatedNonce, transformPseudorandomFunction.TransformID); !ok {
+//		return errors.New("New pseudorandom function failed")
+//	}
+//
+//	if _, err := pseudorandomFunction.Write(ikeSecurityAssociation.DiffieHellmanSharedKey); err != nil {
+//		return errors.New("Pseudorandom function write failed")
+//	}
+//
+//	SKEYSEED := pseudorandomFunction.Sum(nil)
+//
+//	seed := concatenateNonceAndSPI(ikeSecurityAssociation.ConcatenatedNonce, ikeSecurityAssociation.LocalSPI, ikeSecurityAssociation.RemoteSPI)
+//
+//	var keyStream, generatedKeyBlock []byte
+//	var index byte
+//	for index = 1; len(keyStream) < totalKeyLength; index++ {
+//		if pseudorandomFunction, ok = handler.NewPseudorandomFunction(SKEYSEED, transformPseudorandomFunction.TransformID); !ok {
+//			return errors.New("New pseudorandom function failed")
+//		}
+//		if _, err := pseudorandomFunction.Write(append(append(generatedKeyBlock, seed...), index)); err != nil {
+//			return errors.New("Pseudorandom function write failed")
+//		}
+//		generatedKeyBlock = pseudorandomFunction.Sum(nil)
+//		keyStream = append(keyStream, generatedKeyBlock...)
+//	}
+//
+//	// Assign keys into context
+//	ikeSecurityAssociation.SK_d = keyStream[:length_SK_d]
+//	keyStream = keyStream[length_SK_d:]
+//	ikeSecurityAssociation.SK_ai = keyStream[:length_SK_ai]
+//	keyStream = keyStream[length_SK_ai:]
+//	ikeSecurityAssociation.SK_ar = keyStream[:length_SK_ar]
+//	keyStream = keyStream[length_SK_ar:]
+//	ikeSecurityAssociation.SK_ei = keyStream[:length_SK_ei]
+//	keyStream = keyStream[length_SK_ei:]
+//	ikeSecurityAssociation.SK_er = keyStream[:length_SK_er]
+//	keyStream = keyStream[length_SK_er:]
+//	ikeSecurityAssociation.SK_pi = keyStream[:length_SK_pi]
+//	keyStream = keyStream[length_SK_pi:]
+//	ikeSecurityAssociation.SK_pr = keyStream[:length_SK_pr]
+//	keyStream = keyStream[length_SK_pr:]
+//
+//	return nil
+//}
 
-	// Get key length of SK_d, SK_ai, SK_ar, SK_ei, SK_er, SK_pi, SK_pr
-	var length_SK_d, length_SK_ai, length_SK_ar, length_SK_ei, length_SK_er, length_SK_pi, length_SK_pr, totalKeyLength int
-	var ok bool
-
-	length_SK_d = 20
-	length_SK_ai = 20
-	length_SK_ar = length_SK_ai
-	length_SK_ei = 32
-	length_SK_er = length_SK_ei
-	length_SK_pi, length_SK_pr = length_SK_d, length_SK_d
-	totalKeyLength = length_SK_d + length_SK_ai + length_SK_ar + length_SK_ei + length_SK_er + length_SK_pi + length_SK_pr
-
-	// Generate IKE SA key as defined in RFC7296 Section 1.3 and Section 1.4
-	var pseudorandomFunction hash.Hash
-
-	if pseudorandomFunction, ok = handler.NewPseudorandomFunction(ikeSecurityAssociation.ConcatenatedNonce, transformPseudorandomFunction.TransformID); !ok {
-		return errors.New("New pseudorandom function failed")
-	}
-
-	if _, err := pseudorandomFunction.Write(ikeSecurityAssociation.DiffieHellmanSharedKey); err != nil {
-		return errors.New("Pseudorandom function write failed")
-	}
-
-	SKEYSEED := pseudorandomFunction.Sum(nil)
-
-	seed := concatenateNonceAndSPI(ikeSecurityAssociation.ConcatenatedNonce, ikeSecurityAssociation.LocalSPI, ikeSecurityAssociation.RemoteSPI)
-
-	var keyStream, generatedKeyBlock []byte
-	var index byte
-	for index = 1; len(keyStream) < totalKeyLength; index++ {
-		if pseudorandomFunction, ok = handler.NewPseudorandomFunction(SKEYSEED, transformPseudorandomFunction.TransformID); !ok {
-			return errors.New("New pseudorandom function failed")
-		}
-		if _, err := pseudorandomFunction.Write(append(append(generatedKeyBlock, seed...), index)); err != nil {
-			return errors.New("Pseudorandom function write failed")
-		}
-		generatedKeyBlock = pseudorandomFunction.Sum(nil)
-		keyStream = append(keyStream, generatedKeyBlock...)
-	}
-
-	// Assign keys into context
-	ikeSecurityAssociation.SK_d = keyStream[:length_SK_d]
-	keyStream = keyStream[length_SK_d:]
-	ikeSecurityAssociation.SK_ai = keyStream[:length_SK_ai]
-	keyStream = keyStream[length_SK_ai:]
-	ikeSecurityAssociation.SK_ar = keyStream[:length_SK_ar]
-	keyStream = keyStream[length_SK_ar:]
-	ikeSecurityAssociation.SK_ei = keyStream[:length_SK_ei]
-	keyStream = keyStream[length_SK_ei:]
-	ikeSecurityAssociation.SK_er = keyStream[:length_SK_er]
-	keyStream = keyStream[length_SK_er:]
-	ikeSecurityAssociation.SK_pi = keyStream[:length_SK_pi]
-	keyStream = keyStream[length_SK_pi:]
-	ikeSecurityAssociation.SK_pr = keyStream[:length_SK_pr]
-	keyStream = keyStream[length_SK_pr:]
-
-	return nil
-}
-
-func concatenateNonceAndSPI(nonce []byte, SPI_initiator uint64, SPI_responder uint64) []byte {
-	spi := make([]byte, 8)
-
-	binary.BigEndian.PutUint64(spi, SPI_initiator)
-	newSlice := append(nonce, spi...)
-	binary.BigEndian.PutUint64(spi, SPI_responder)
-	newSlice = append(newSlice, spi...)
-
-	return newSlice
-}
+//func concatenateNonceAndSPI(nonce []byte, SPI_initiator uint64, SPI_responder uint64) []byte {
+//	spi := make([]byte, 8)
+//
+//	binary.BigEndian.PutUint64(spi, SPI_initiator)
+//	newSlice := append(nonce, spi...)
+//	binary.BigEndian.PutUint64(spi, SPI_responder)
+//	newSlice = append(newSlice, spi...)
+//
+//	return newSlice
+//}
 
 //func setupUDPSocket(cfg config.Config) *net.UDPConn {
 //	bindAddr := cfg.Ue.LocalPublicIPAddr + ":" + cfg.Ue.LocalPublicPortUDPConnection
