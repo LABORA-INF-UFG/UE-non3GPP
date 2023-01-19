@@ -1,7 +1,7 @@
 ---
     -   hosts: fee5gc-core, fee5gc-n3iwf
         become: yes
-        remote_debuser: root
+        remote_user: root
         vars:
             GTP5G_DIR_INSTALL : "/root/gtp5g"
             FREE5GC_DIR_INSTALL : "/root/go/src/free5gc"
@@ -13,7 +13,7 @@
             NRF_DIR : "/root/go/src/free5gc/NFs/nrf"
             UDR_DIR : "/root/go/src/free5gc/NFs/udr"
             UDM_DIR : "/root/go/src/free5gc/NFs/udm"
-            AUSF_DIR : "/uproot/go/src/free5gc/NFs/ausf"
+            AUSF_DIR : "/root/go/src/free5gc/NFs/ausf"
             NSSF_DIR : "/root/go/src/free5gc/NFs/nssf"
             AMF_DIR : "/root/go/src/free5gc/NFs/amf"
             PCF_DIR : "/root/go/src/free5gc/NFs/pcf"
