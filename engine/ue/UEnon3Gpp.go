@@ -5,6 +5,7 @@ import (
 	nas_registration "UE-non3GPP/engine/nas"
 	ran_ue "UE-non3GPP/engine/ran"
 	util "UE-non3GPP/engine/util"
+	"golang.org/x/sys/execabs"
 
 	"UE-non3GPP/engine/exchange/pkg/context"
 	"UE-non3GPP/engine/exchange/pkg/ike/handler"
@@ -17,7 +18,6 @@ import (
 	"github.com/free5gc/nas/nasMessage"
 	"github.com/free5gc/nas/security"
 	"github.com/free5gc/openapi/models"
-	"github.com/go-ping/ping"
 	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 
@@ -29,52 +29,43 @@ import (
 	//"net"
 )
 
-func UENon3GPPConnection() {
-	cfg, err := config.GetConfig()
-	if err != nil {
-		log.Fatal("Could not resolve config file")
-		return
-	}
+/* Global Variable */
+var cfg config.Config
+var n3ue *context.N3IWFUe
+var ue *ran_ue.RanUeContext
+var n3iwfUDPAddr *net.UDPAddr
+var udpConnection *net.UDPConn
 
-	/* initial config */
-	util.InitialSetup(cfg)
-
-	/*1º Registration */
-	/* Fig 7: https://www.wipro.com/network-edge-providers/untrusted-non-3gpp-access-network-interworking-with-5g-core */
-
-	/*new ran ue context */
-	ue := util.CreateRanUEContext(cfg)
-
+func InitCommunicationElements() {
+	ue = util.CreateRanUEContext(cfg)
 	/* new N3IWF Ue*/
-	n3ue := util.CreateN3IWFUe()
-
+	n3ue = util.CreateN3IWFUe()
 	/* create N3IWF IKE connection */
-	n3iwfUDPAddr := util.CreateN3IWFIKEConnection(cfg)
-
+	n3iwfUDPAddr = util.CreateN3IWFIKEConnection(cfg)
 	/* create Local UE UDP Listener */
-	udpConnection := util.CreateUEUDPListener(cfg)
+	udpConnection = util.CreateUEUDPListener(cfg)
 
-	/* build the first message to be sent to N3IWF - IKE SA Init */
-	ikeMessage, _proposal := util.CreateIKEMessageSAInit()
+}
 
-	/* Key exchange data */
-	secret, factor, _localNonce, ikeMessageData := util.BuildInitIKEMessageData(ikeMessage)
-
-	ikeSecurityAssociation := util.CreateN3IWFSecurityAssociation(_proposal, _localNonce, udpConnection, ikeMessageData, n3iwfUDPAddr, ikeMessage, secret, factor)
-
+func IkeSaInit() (*message.IKEMessage, *message.Proposal, *context.IKESecurityAssociation, message.IKEPayloadContainer) {
+	ikeMessage, proposal := util.CreateIKEMessageSAInit()
+	/* N3IWF Security Association request */
+	ikeSecurityAssociation := util.CreateN3IWFSecurityAssociation(proposal, udpConnection, n3iwfUDPAddr, ikeMessage)
 	n3ue.N3IWFIKESecurityAssociation = ikeSecurityAssociation
 
-	// IKE_AUTH
+	var ikePayload message.IKEPayloadContainer
+	ikePayload.BuildIdentificationInitiator(message.ID_FQDN, []byte("UE"))
+
+	return ikeMessage, proposal, ikeSecurityAssociation, ikePayload
+}
+
+func IkeAuthRequest(ikeMessage *message.IKEMessage, _proposal *message.Proposal, ikeSecurityAssociation *context.IKESecurityAssociation, ikePayload message.IKEPayloadContainer) uint8 {
+
 	ikeMessage.Payloads.Reset()
 	n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
 	ikeMessage.BuildIKEHeader(
 		n3ue.N3IWFIKESecurityAssociation.LocalSPI, n3ue.N3IWFIKESecurityAssociation.RemoteSPI,
 		message.IKE_AUTH, message.InitiatorBitCheck, n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
-
-	var ikePayload message.IKEPayloadContainer
-
-	// Identification
-	ikePayload.BuildIdentificationInitiator(message.ID_FQDN, []byte("UE"))
 
 	var _attributeType uint16 = message.AttributeTypeKeyLength
 	var _keyLength uint16 = 256
@@ -99,18 +90,18 @@ func UENon3GPPConnection() {
 
 	if err := util.EncryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage); err != nil {
 		log.Fatalf("Encrypting IKE message failed: %+v", err)
-		return
+		panic(err)
 	}
 
 	// Send to N3IWF
-	ikeMessageData, err = ikeMessage.Encode()
+	ikeMessageData, err := ikeMessage.Encode()
 	if err != nil {
 		log.Fatal(err)
-		return
+		panic(err)
 	}
 	if _, err := udpConnection.WriteToUDP(ikeMessageData, n3iwfUDPAddr); err != nil {
 		log.Fatal(err)
-		return
+		panic(err)
 	}
 
 	n3ue.CreateHalfChildSA(n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID, binary.BigEndian.Uint32(inboundSPI))
@@ -120,25 +111,25 @@ func UENon3GPPConnection() {
 	n, _, err := udpConnection.ReadFromUDP(buffer)
 	if err != nil {
 		log.Fatal(err)
-		return
+		panic(err)
 	}
 	ikeMessage.Payloads.Reset()
 	err = ikeMessage.Decode(buffer[:n])
 	if err != nil {
 		log.Fatal(err)
-		return
+		panic(err)
 	}
 
 	encryptedPayload, ok := ikeMessage.Payloads[0].(*message.Encrypted)
 	if !ok {
 		log.Fatal("Received payload is not an encrypted payload")
-		return
+		panic(err)
 	}
 
 	decryptedIKEPayload, err := util.DecryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
 	if err != nil {
 		log.Fatalf("Decrypt IKE message failed: %+v", err)
-		return
+		panic(err)
 	}
 
 	var eapIdentifier uint8
@@ -156,8 +147,12 @@ func UENon3GPPConnection() {
 			log.Info("Get EAP")
 		}
 	}
+	return eapIdentifier
+}
 
-	// IKE_AUTH - EAP exchange
+func IkeAuthEapExchange(ikeMessage *message.IKEMessage, ikePayload message.IKEPayloadContainer, eapIdentifier uint8, ikeSecurityAssociation *context.IKESecurityAssociation) ([]byte, *message.EAP) {
+
+	/* 1º Registration Request */
 	ikeMessage.Payloads.Reset()
 	n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
 	ikeMessage.BuildIKEHeader(n3ue.N3IWFIKESecurityAssociation.LocalSPI,
@@ -173,7 +168,7 @@ func UENon3GPPConnection() {
 	eapVendorTypeData[0] = message.EAP5GType5GNAS
 
 	// AN Parameters
-	anParameters := buildEAP5GANParameters()
+	anParameters := util.CreateEAP5GANParameters()
 	anParametersLength := make([]byte, 2)
 	binary.BigEndian.PutUint16(anParametersLength, uint16(len(anParameters)))
 	eapVendorTypeData = append(eapVendorTypeData, anParametersLength...)
@@ -200,41 +195,42 @@ func UENon3GPPConnection() {
 
 	if err := util.EncryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage); err != nil {
 		log.Fatal(err)
-		return
+		panic(err)
 	}
 
 	// Send to N3IWF
-	ikeMessageData, err = ikeMessage.Encode()
+	ikeMessageData, err := ikeMessage.Encode()
 	if err != nil {
 		log.Fatal(err)
-		return
+		panic(err)
 	}
 	if _, err := udpConnection.WriteToUDP(ikeMessageData, n3iwfUDPAddr); err != nil {
 		log.Fatal(err)
-		return
+		panic(err)
 	}
 
 	// Receive N3IWF reply - Neste ponte é necessário o UE estar cadastrado no CORE com mesmo SUPI do arquivo de configuração, caso contrário teremos um erro de autenticação no AUSF
-	n, _, err = udpConnection.ReadFromUDP(buffer)
+	buffer := make([]byte, 65535)
+	n, _, err := udpConnection.ReadFromUDP(buffer)
 	if err != nil {
 		log.Fatal(err)
-		return
+		panic(err)
 	}
 	ikeMessage.Payloads.Reset()
 	err = ikeMessage.Decode(buffer[:n])
 	if err != nil {
 		log.Fatal(err)
-		return
+		panic(err)
 	}
-	encryptedPayload, ok = ikeMessage.Payloads[0].(*message.Encrypted)
+	encryptedPayload, ok := ikeMessage.Payloads[0].(*message.Encrypted)
 	if !ok {
 		log.Fatal("Received payload is not an encrypted payload")
-		return
+		panic(err)
 	}
-	decryptedIKEPayload, err = util.DecryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
+	decryptedIKEPayload, err := util.DecryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
 	if err != nil {
 		log.Fatalf("Decrypt IKE message failed: %+v", err)
-		return
+		panic(err)
 	}
 
 	var eapReq *message.EAP
@@ -243,7 +239,7 @@ func UENon3GPPConnection() {
 	eapReq, ok = decryptedIKEPayload[0].(*message.EAP)
 	if !ok {
 		log.Fatal("Received packet is not an EAP payload")
-		return
+		panic(err)
 	}
 
 	var decodedNAS *nas.Message
@@ -251,7 +247,7 @@ func UENon3GPPConnection() {
 	eapExpanded, ok = eapReq.EAPTypeData[0].(*message.EAPExpanded)
 	if !ok {
 		log.Fatal("The EAP data is not an EAP expended.")
-		return
+		panic(err)
 	}
 
 	// Decode NAS - Authentication Request
@@ -259,7 +255,7 @@ func UENon3GPPConnection() {
 	decodedNAS = new(nas.Message)
 	if err := decodedNAS.PlainNasDecode(&nasData); err != nil {
 		log.Fatal(err)
-		return
+		panic(err)
 	}
 
 	// Calculate for RES*
@@ -273,7 +269,7 @@ func UENon3GPPConnection() {
 	// send NAS Authentication Response
 	pdu := nas_registration.GetAuthenticationResponse(resStat, "")
 
-	// IKE_AUTH - EAP exchange
+	/* 2º Registration Request */
 	ikeMessage.Payloads.Reset()
 	n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
 	ikeMessage.BuildIKEHeader(n3ue.N3IWFIKESecurityAssociation.LocalSPI,
@@ -316,6 +312,7 @@ func UENon3GPPConnection() {
 	}
 
 	// Receive N3IWF reply
+	buffer = make([]byte, 65535)
 	n, _, err = udpConnection.ReadFromUDP(buffer)
 	if err != nil {
 		log.Fatal(err)
@@ -344,7 +341,7 @@ func UENon3GPPConnection() {
 		log.Fatal("Received packet is not an EAP payload")
 		panic("Received packet is not an EAP payload")
 	}
-	eapExpanded, ok = eapReq.EAPTypeData[0].(*message.EAPExpanded)
+	_, ok = eapReq.EAPTypeData[0].(*message.EAPExpanded)
 	if !ok {
 		log.Fatal("Received packet is not an EAP expended payload")
 		panic("Received packet is not an EAP expended payload")
@@ -365,9 +362,36 @@ func UENon3GPPConnection() {
 
 	pdu, err = nas_registration.EncodeNasPduWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCipheredWithNew5gNasSecurityContext, true, true)
 	if err != nil {
-		//assert.Nil(t, err
 		panic(err)
 	}
+	return pdu, eapReq
+}
+
+func UENon3GPPConnection() {
+	/* initial config */
+	cfg = config.GetConfig()
+	util.CleanEnvironment(cfg)
+
+	/* create communitcaion elements */
+	InitCommunicationElements()
+
+	/* Fig 7: https://www.wipro.com/network-edge-providers/untrusted-non-3gpp-access-network-interworking-with-5g-core */
+	/* ----------------------- */
+	/* ---- 1º IKE SA INIT --- */
+	/* ----------------------- */
+	ikeMessage, proposal, ikeSecurityAssociation, ikePayload := IkeSaInit()
+
+	/* -------------------------- */
+	/* -- 2º IKE AUTH Request --- */
+	/* -------------------------- */
+	eapIdentifier := IkeAuthRequest(ikeMessage, proposal, ikeSecurityAssociation, ikePayload)
+
+	/* -------------------------- */
+	/* -- 3º IKE_AUTH - EAP exchange --- */
+	/* -------------------------- */
+	pdu, eapReq := IkeAuthEapExchange(ikeMessage, ikePayload, eapIdentifier, ikeSecurityAssociation)
+
+	// ************************************************
 
 	// IKE_AUTH - EAP exchange
 	ikeMessage.Payloads.Reset()
@@ -381,28 +405,28 @@ func UENon3GPPConnection() {
 	ikePayload.Reset()
 
 	// EAP-5G vendor type data
-	eapVendorTypeData = make([]byte, 4)
+	eapVendorTypeData := make([]byte, 4)
 	eapVendorTypeData[0] = message.EAP5GType5GNAS
 
 	// NAS - Authentication Response
-	nasLength = make([]byte, 2)
+	nasLength := make([]byte, 2)
 	binary.BigEndian.PutUint16(nasLength, uint16(len(pdu)))
 	eapVendorTypeData = append(eapVendorTypeData, nasLength...)
 	eapVendorTypeData = append(eapVendorTypeData, pdu...)
 
-	eap = ikePayload.BuildEAP(message.EAPCodeResponse, eapReq.Identifier)
+	eap := ikePayload.BuildEAP(message.EAPCodeResponse, eapReq.Identifier)
 	eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP,
 		message.VendorTypeEAP5G,
 		eapVendorTypeData)
 
-	err = util.EncryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage)
+	err := util.EncryptProcedure(ikeSecurityAssociation, ikePayload, ikeMessage)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
 
 	// Send to N3IWF
-	ikeMessageData, err = ikeMessage.Encode()
+	ikeMessageData, err := ikeMessage.Encode()
 
 	if err != nil {
 		log.Fatal(err)
@@ -415,25 +439,27 @@ func UENon3GPPConnection() {
 	}
 
 	// Receive N3IWF reply
-	n, _, err = udpConnection.ReadFromUDP(buffer)
+	buffer := make([]byte, 65535)
+	n, _, err := udpConnection.ReadFromUDP(buffer)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
 
 	ikeMessage.Payloads.Reset()
+
 	err = ikeMessage.Decode(buffer[:n])
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
 
-	encryptedPayload, ok = ikeMessage.Payloads[0].(*message.Encrypted)
+	encryptedPayload, ok := ikeMessage.Payloads[0].(*message.Encrypted)
 	if !ok {
 		log.Fatal("Received pakcet is not and encrypted payload")
 		panic("Received pakcet is not and encrypted payload")
 	}
-	decryptedIKEPayload, err = util.DecryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
+	decryptedIKEPayload, err := util.DecryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -737,7 +763,7 @@ func UENon3GPPConnection() {
 	ikePayload.Reset()
 
 	// SA
-	inboundSPI = generateSPI(n3ue)
+	inboundSPI := generateSPI(n3ue)
 	responseSecurityAssociation.Proposals[0].SPI = inboundSPI
 	ikePayload = append(ikePayload, responseSecurityAssociation)
 
@@ -864,77 +890,81 @@ func UENon3GPPConnection() {
 		log.Warning("UPF Route exist!")
 	}
 
-	pinger, err := ping.NewPinger("60.60.0.101")
-	//pinger, err := ping.NewPinger("8.8.8.8")
-	if err != nil {
-		log.Fatal(err)
-		panic(err)
-	}
-	pinger.SetPrivileged(true)
-
-	n_loop := 1
-	for n_loop < 2 {
-		fmt.Println("..ping ", n_loop)
-		pinger.OnRecv = func(pkt *ping.Packet) {
-			fmt.Println("")
-			fmt.Println("............................")
-			fmt.Println("------PING 60.60.0.101----------")
-			fmt.Println("Bytes recebidos:")
-			fmt.Println(pkt.Nbytes)
-			fmt.Println("Host Origem:")
-			fmt.Println(pkt.IPAddr)
-			fmt.Println("ICMP Seq:")
-			fmt.Println(pkt.Seq)
-			fmt.Println("RTT:")
-			fmt.Println(pkt.Rtt)
+	for {
+		downGreTunInterface := "ping -I " + cfg.Ue.LinkGRE.Name + " 8.8.8.8"
+		cmd := execabs.Command("bash", "-c", downGreTunInterface)
+		err := cmd.Run()
+		if err != nil {
+			log.Info(" não pingou!")
+		} else {
+			log.Info(" pingou!")
 		}
-
-		pinger.OnFinish = func(stats *ping.Statistics) {
-			fmt.Println("------Estatísticas----------")
-			fmt.Print("Pacotes transmitidos: ")
-			fmt.Println(stats.PacketsSent)
-			fmt.Print("Pacotes recebidos: ")
-			fmt.Println(stats.PacketsRecv)
-			fmt.Print("Pacotes perdidos: ")
-			fmt.Println(stats.PacketLoss)
-			fmt.Print("round-trip min: ")
-			fmt.Println(stats.MinRtt)
-			fmt.Print("round-trip avg: ")
-			fmt.Println(stats.AvgRtt)
-			fmt.Print("round-trip max: ")
-			fmt.Println(stats.MaxRtt)
-			fmt.Print("round-trip stddev: ")
-			fmt.Println(stats.StdDevRtt)
-		}
-
-		pinger.Count = 5
-		pinger.Timeout = 5 * time.Second
-		pinger.Source = "60.60.0.1"
-		time.Sleep(2 * time.Second)
-		pinger.Run()
 		time.Sleep(1 * time.Second)
-		stats := pinger.Statistics()
-
-		if stats.PacketsSent != stats.PacketsRecv {
-			log.Warning("Ping Failed!")
-		}
-		fmt.Println("              ")
-		n_loop = n_loop + 1
 	}
 
-	/* remove os links */
-	defer func() {
-		fmt.Println("remove XFRM's")
-		_ = netlink.AddrDel(linkIPSec, linkIPSecAddr)
-		_ = netlink.XfrmPolicyFlush()
-		_ = netlink.XfrmStateFlush(netlink.XFRM_PROTO_IPSEC_ANY)
-	}()
+	//pinger, err := ping.NewPinger("60.60.0.101")
+	////pinger, err := ping.NewPinger("8.8.8.8")
+	//if err != nil {
+	//	log.Fatal(err)
+	//	panic(err)
+	//}
+	//pinger.SetPrivileged(true)
+	//
+	//n_loop := 1
+	//for n_loop < 2 {
+	//	fmt.Println("..ping ", n_loop)
+	//	pinger.OnRecv = func(pkt *ping.Packet) {
+	//		fmt.Println("")
+	//		fmt.Println("............................")
+	//		fmt.Println("------PING 60.60.0.101----------")
+	//		fmt.Println("Bytes recebidos:")
+	//		fmt.Println(pkt.Nbytes)
+	//		fmt.Println("Host Origem:")
+	//		fmt.Println(pkt.IPAddr)
+	//		fmt.Println("ICMP Seq:")
+	//		fmt.Println(pkt.Seq)
+	//		fmt.Println("RTT:")
+	//		fmt.Println(pkt.Rtt)
+	//	}
+	//
+	//	pinger.OnFinish = func(stats *ping.Statistics) {
+	//		fmt.Println("------Estatísticas----------")
+	//		fmt.Print("Pacotes transmitidos: ")
+	//		fmt.Println(stats.PacketsSent)
+	//		fmt.Print("Pacotes recebidos: ")
+	//		fmt.Println(stats.PacketsRecv)
+	//		fmt.Print("Pacotes perdidos: ")
+	//		fmt.Println(stats.PacketLoss)
+	//		fmt.Print("round-trip min: ")
+	//		fmt.Println(stats.MinRtt)
+	//		fmt.Print("round-trip avg: ")
+	//		fmt.Println(stats.AvgRtt)
+	//		fmt.Print("round-trip max: ")
+	//		fmt.Println(stats.MaxRtt)
+	//		fmt.Print("round-trip stddev: ")
+	//		fmt.Println(stats.StdDevRtt)
+	//	}
+	//
+	//	pinger.Count = 5
+	//	pinger.Timeout = 5 * time.Second
+	//	pinger.Source = "60.60.0.1"
+	//	time.Sleep(2 * time.Second)
+	//	pinger.Run()
+	//	time.Sleep(1 * time.Second)
+	//	stats := pinger.Statistics()
+	//
+	//	if stats.PacketsSent != stats.PacketsRecv {
+	//		log.Warning("Ping Failed!")
+	//	}
+	//	fmt.Println("              ")
+	//	n_loop = n_loop + 1
+	//}
 
-	defer func() {
-		fmt.Println("del LINK GRE")
-		_ = netlink.LinkSetDown(linkGRE)
-		_ = netlink.LinkDel(linkGRE)
-	}()
+	//defer func() {
+	//	fmt.Println("del LINK GRE")
+	//	_ = netlink.LinkSetDown(linkGRE)
+	//	_ = netlink.LinkDel(linkGRE)
+	//}()
 }
 
 func parse5GQoSInfoNotify(n *message.Notification) (info *PDUQoSInfo, err error) {
@@ -1247,79 +1277,6 @@ func parseIPAddressInformationToChildSecurityAssociation(cfg config.Config,
 	return nil
 }
 
-func buildEAP5GANParameters() []byte {
-	var anParameters []byte
-
-	// [TS 24.502] 9.3.2.2.2.3
-	// AN-parameter value field in GUAMI, PLMN ID and NSSAI is coded as value part
-	// Therefore, IEI of AN-parameter is not needed to be included.
-
-	// anParameter = AN-parameter Type | AN-parameter Length | Value part of IE
-
-	// Build GUAMI
-	anParameter := make([]byte, 2)
-	guami := make([]byte, 6)
-	guami[0] = 0x02
-	guami[1] = 0xf8
-	guami[2] = 0x39
-	guami[3] = 0xca
-	guami[4] = 0xfe
-	guami[5] = 0x0
-	anParameter[0] = message.ANParametersTypeGUAMI
-	anParameter[1] = byte(len(guami))
-	anParameter = append(anParameter, guami...)
-
-	anParameters = append(anParameters, anParameter...)
-
-	// Build Establishment Cause
-	anParameter = make([]byte, 2)
-	establishmentCause := make([]byte, 1)
-	establishmentCause[0] = message.EstablishmentCauseMO_Signalling
-	anParameter[0] = message.ANParametersTypeEstablishmentCause
-	anParameter[1] = byte(len(establishmentCause))
-	anParameter = append(anParameter, establishmentCause...)
-
-	anParameters = append(anParameters, anParameter...)
-
-	// Build PLMN ID
-	anParameter = make([]byte, 2)
-	plmnID := make([]byte, 3)
-	plmnID[0] = 0x02
-	plmnID[1] = 0xf8
-	plmnID[2] = 0x39
-	anParameter[0] = message.ANParametersTypeSelectedPLMNID
-	anParameter[1] = byte(len(plmnID))
-	anParameter = append(anParameter, plmnID...)
-
-	anParameters = append(anParameters, anParameter...)
-
-	// Build NSSAI
-	anParameter = make([]byte, 2)
-	var nssai []byte
-	// s-nssai = s-nssai length(1 byte) | SST(1 byte) | SD(3 bytes)
-	snssai := make([]byte, 5)
-	snssai[0] = 4
-	snssai[1] = 1
-	snssai[2] = 0x01
-	snssai[3] = 0x02
-	snssai[4] = 0x03
-	nssai = append(nssai, snssai...)
-	snssai = make([]byte, 5)
-	snssai[0] = 4
-	snssai[1] = 1
-	snssai[2] = 0x11
-	snssai[3] = 0x22
-	snssai[4] = 0x33
-	nssai = append(nssai, snssai...)
-	anParameter[0] = message.ANParametersTypeRequestedNSSAI
-	anParameter[1] = byte(len(nssai))
-	anParameter = append(anParameter, nssai...)
-
-	anParameters = append(anParameters, anParameter...)
-
-	return anParameters
-}
-
 func generateSPI(n3ue *context.N3IWFUe) []byte {
 	var spi uint32
 	spiByte := make([]byte, 4)
@@ -1333,111 +1290,6 @@ func generateSPI(n3ue *context.N3IWFUe) []byte {
 	}
 	return spiByte
 }
-
-//func generateKeyForIKESA(ikeSecurityAssociation *context.IKESecurityAssociation) error {
-//	// Transforms
-//	transformPseudorandomFunction := ikeSecurityAssociation.PseudorandomFunction
-//
-//	// Get key length of SK_d, SK_ai, SK_ar, SK_ei, SK_er, SK_pi, SK_pr
-//	var length_SK_d, length_SK_ai, length_SK_ar, length_SK_ei, length_SK_er, length_SK_pi, length_SK_pr, totalKeyLength int
-//	var ok bool
-//
-//	length_SK_d = 20
-//	length_SK_ai = 20
-//	length_SK_ar = length_SK_ai
-//	length_SK_ei = 32
-//	length_SK_er = length_SK_ei
-//	length_SK_pi, length_SK_pr = length_SK_d, length_SK_d
-//	totalKeyLength = length_SK_d + length_SK_ai + length_SK_ar + length_SK_ei + length_SK_er + length_SK_pi + length_SK_pr
-//
-//	// Generate IKE SA key as defined in RFC7296 Section 1.3 and Section 1.4
-//	var pseudorandomFunction hash.Hash
-//
-//	if pseudorandomFunction, ok = handler.NewPseudorandomFunction(ikeSecurityAssociation.ConcatenatedNonce, transformPseudorandomFunction.TransformID); !ok {
-//		return errors.New("New pseudorandom function failed")
-//	}
-//
-//	if _, err := pseudorandomFunction.Write(ikeSecurityAssociation.DiffieHellmanSharedKey); err != nil {
-//		return errors.New("Pseudorandom function write failed")
-//	}
-//
-//	SKEYSEED := pseudorandomFunction.Sum(nil)
-//
-//	seed := concatenateNonceAndSPI(ikeSecurityAssociation.ConcatenatedNonce, ikeSecurityAssociation.LocalSPI, ikeSecurityAssociation.RemoteSPI)
-//
-//	var keyStream, generatedKeyBlock []byte
-//	var index byte
-//	for index = 1; len(keyStream) < totalKeyLength; index++ {
-//		if pseudorandomFunction, ok = handler.NewPseudorandomFunction(SKEYSEED, transformPseudorandomFunction.TransformID); !ok {
-//			return errors.New("New pseudorandom function failed")
-//		}
-//		if _, err := pseudorandomFunction.Write(append(append(generatedKeyBlock, seed...), index)); err != nil {
-//			return errors.New("Pseudorandom function write failed")
-//		}
-//		generatedKeyBlock = pseudorandomFunction.Sum(nil)
-//		keyStream = append(keyStream, generatedKeyBlock...)
-//	}
-//
-//	// Assign keys into context
-//	ikeSecurityAssociation.SK_d = keyStream[:length_SK_d]
-//	keyStream = keyStream[length_SK_d:]
-//	ikeSecurityAssociation.SK_ai = keyStream[:length_SK_ai]
-//	keyStream = keyStream[length_SK_ai:]
-//	ikeSecurityAssociation.SK_ar = keyStream[:length_SK_ar]
-//	keyStream = keyStream[length_SK_ar:]
-//	ikeSecurityAssociation.SK_ei = keyStream[:length_SK_ei]
-//	keyStream = keyStream[length_SK_ei:]
-//	ikeSecurityAssociation.SK_er = keyStream[:length_SK_er]
-//	keyStream = keyStream[length_SK_er:]
-//	ikeSecurityAssociation.SK_pi = keyStream[:length_SK_pi]
-//	keyStream = keyStream[length_SK_pi:]
-//	ikeSecurityAssociation.SK_pr = keyStream[:length_SK_pr]
-//	keyStream = keyStream[length_SK_pr:]
-//
-//	return nil
-//}
-
-//func concatenateNonceAndSPI(nonce []byte, SPI_initiator uint64, SPI_responder uint64) []byte {
-//	spi := make([]byte, 8)
-//
-//	binary.BigEndian.PutUint64(spi, SPI_initiator)
-//	newSlice := append(nonce, spi...)
-//	binary.BigEndian.PutUint64(spi, SPI_responder)
-//	newSlice = append(newSlice, spi...)
-//
-//	return newSlice
-//}
-
-//func setupUDPSocket(cfg config.Config) *net.UDPConn {
-//	bindAddr := cfg.Ue.LocalPublicIPAddr + ":" + cfg.Ue.LocalPublicPortUDPConnection
-//	udpAddr, err := net.ResolveUDPAddr("udp", bindAddr)
-//	if err != nil {
-//		log.Fatal("Resolve UDP address failed")
-//	}
-//	udpListener, err := net.ListenUDP("udp", udpAddr)
-//	if err != nil {
-//		log.Fatalf("Listen UDP socket failed: %+v", err)
-//	}
-//	return udpListener
-//}
-
-//func getAuthSubscription(cfg config.Config) (authSubs models.AuthenticationSubscription) {
-//	authSubs.PermanentKey = &models.PermanentKey{
-//		PermanentKeyValue: cfg.Ue.AuthSubscription.PermanentKeyValue,
-//	}
-//	authSubs.Opc = &models.Opc{
-//		OpcValue: cfg.Ue.AuthSubscription.OpcValue,
-//	}
-//	authSubs.Milenage = &models.Milenage{
-//		Op: &models.Op{
-//			OpValue: cfg.Ue.AuthSubscription.OpValue,
-//		},
-//	}
-//	authSubs.AuthenticationManagementField = cfg.Ue.AuthenticationManagementField //"8000"
-//	authSubs.SequenceNumber = cfg.Ue.AuthSubscription.SequenceNumber
-//	authSubs.AuthenticationMethod = models.AuthMethod__5_G_AKA
-//	return
-//}
 
 type PDUQoSInfo struct {
 	pduSessionID    uint8

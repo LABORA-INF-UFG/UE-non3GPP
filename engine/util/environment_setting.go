@@ -3,6 +3,7 @@ package util
 import (
 	"UE-non3GPP/config"
 	log "github.com/sirupsen/logrus"
+	"github.com/vishvananda/netlink"
 	"golang.org/x/sys/execabs"
 )
 
@@ -18,7 +19,12 @@ func ConfigMTUGreTun(cfg config.Config) {
 	}
 }
 
-func InitialSetup(cfg config.Config) {
+func CleanEnvironment(cfg config.Config) {
+
+	/* clear XFRM interfaces */
+	_ = netlink.XfrmPolicyFlush()
+	_ = netlink.XfrmStateFlush(netlink.XFRM_PROTO_IPSEC_ANY)
+
 	//remove a interface de rede GRE (se existir)
 	downGreTunInterface := "ip link set " + cfg.Ue.LinkGRE.Name + " down"
 	cmd := execabs.Command("bash", "-c", downGreTunInterface)

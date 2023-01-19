@@ -12,10 +12,7 @@ import (
 const version = "1.0.0"
 
 func init() {
-	cfg, err := config.GetConfig()
-	if err != nil {
-		log.Fatal("Config file not found!")
-	}
+	cfg := config.GetConfig()
 
 	// Output to stdout instead of the default stderr
 	log.SetOutput(os.Stdout)

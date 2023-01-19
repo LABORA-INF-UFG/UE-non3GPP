@@ -28,7 +28,9 @@ func GetLinkGRE(cfg config.Config) netlink.Link {
 	return linkGRE
 }
 
-func CreateN3IWFSecurityAssociation(_proposal *message.Proposal, _localNonce []byte, udpConnection *net.UDPConn, ikeMessageData []byte, n3iwfUDPAddr *net.UDPAddr, ikeMessage *message.IKEMessage, secret *big.Int, factor *big.Int) *context.IKESecurityAssociation {
+func CreateN3IWFSecurityAssociation(proposal *message.Proposal, udpConnection *net.UDPConn, n3iwfUDPAddr *net.UDPAddr, ikeMessage *message.IKEMessage) *context.IKESecurityAssociation {
+	secret, factor, _localNonce, ikeMessageData := BuildInitIKEMessageData(ikeMessage)
+
 	/*Send to N3IWF */
 	if _, err := udpConnection.WriteToUDP(ikeMessageData, n3iwfUDPAddr); err != nil {
 		log.Fatal(err)
@@ -70,22 +72,22 @@ func CreateN3IWFSecurityAssociation(_proposal *message.Proposal, _localNonce []b
 			_remoteNonce = ikePayload.(*message.Nonce).NonceData
 		}
 	}
-	_ikeSecurityAssociation := &context.IKESecurityAssociation{
+	ikeSecurityAssociation := &context.IKESecurityAssociation{
 		LocalSPI:               CreateIKEInitiatorSPI(),
 		RemoteSPI:              ikeMessage.ResponderSPI,
 		InitiatorMessageID:     0,
 		ResponderMessageID:     0,
-		EncryptionAlgorithm:    _proposal.EncryptionAlgorithm[0],
-		IntegrityAlgorithm:     _proposal.IntegrityAlgorithm[0],
-		PseudorandomFunction:   _proposal.PseudorandomFunction[0],
-		DiffieHellmanGroup:     _proposal.DiffieHellmanGroup[0],
+		EncryptionAlgorithm:    proposal.EncryptionAlgorithm[0],
+		IntegrityAlgorithm:     proposal.IntegrityAlgorithm[0],
+		PseudorandomFunction:   proposal.PseudorandomFunction[0],
+		DiffieHellmanGroup:     proposal.DiffieHellmanGroup[0],
 		ConcatenatedNonce:      append(_localNonce, _remoteNonce...),
 		DiffieHellmanSharedKey: _sharedKeyExchangeData,
 	}
 
-	if err := GgenerateKeyForIKESA(_ikeSecurityAssociation); err != nil {
+	if err := GgenerateKeyForIKESA(ikeSecurityAssociation); err != nil {
 		log.Fatalf("Generate key for IKE SA failed: %+v", err)
 		panic(err)
 	}
-	return _ikeSecurityAssociation
+	return ikeSecurityAssociation
 }

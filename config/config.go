@@ -47,7 +47,7 @@ type Config struct {
 		IKEBindPort        string `yaml: "ikebindport"`
 		IPSecIfaceProtocol string `yaml: "ipsecifaceprotocol"`
 	} `yaml:"n3iwfinfo"`
-	
+
 	Logs struct {
 		Level int `yaml: "level"`
 	} `yaml:"logs"`
@@ -76,19 +76,18 @@ func getConfig() Config {
 	return cfg
 }
 
-func GetConfig() (Config, error) {
+func GetConfig() Config {
 	var cfg = Config{}
 	Ddir := RootDir()
 	configPath, err := filepath.Abs(Ddir + "/config/config.yaml")
 	log.Debug(configPath)
 	if err != nil {
-		return Config{}, nil
+		panic(err)
 	}
 	file, err := ioutil.ReadFile(configPath)
 	err = yaml.Unmarshal([]byte(file), &cfg)
 	if err != nil {
-		return Config{}, nil
+		panic(err)
 	}
-
-	return cfg, nil
+	return cfg
 }
