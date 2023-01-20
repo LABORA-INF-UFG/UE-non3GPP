@@ -1442,19 +1442,19 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     AMF:
-                      debugLevel: debug
+                      debugLevel: warn
                       ReportCaller: false
                     NAS:
-                      debugLevel: debug
+                      debugLevel: warn
                       ReportCaller: false
                     FSM:
-                      debugLevel: debug
+                      debugLevel: warn
                       ReportCaller: false
                     NGAP:
-                      debugLevel: debug
+                      debugLevel: warn
                       ReportCaller: false
                     Aper:
-                      debugLevel: debug
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 
@@ -1573,19 +1573,19 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     AMF:
-                      debugLevel: debug
+                      debugLevel: warn
                       ReportCaller: false
                     NAS:
-                      debugLevel: debug
+                      debugLevel: warn
                       ReportCaller: false
                     FSM:
-                      debugLevel: debug
+                      debugLevel: warn
                       ReportCaller: false
                     NGAP:
-                      debugLevel: debug
+                      debugLevel: warn
                       ReportCaller: false
                     Aper:
-                      debugLevel: debug
+                      debugLevel: warn
                       ReportCaller: false
               when: n3iwf_install == 'false'
 

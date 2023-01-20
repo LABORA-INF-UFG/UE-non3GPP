@@ -3,12 +3,12 @@ ue:
     permanentkeyvalue: "5122250214c33e723a5dd523fc145fc0"
     opcvalue: "981d464c7c52eb6e5036234984ad0bcf"
     opvalue: "c9e8763286b5b9ffbdf56e1297d0887b"
-    sequencenumber: "16f3b3f70fca"
+    sequencenumber: "16f3b3f70fc6"
   supi: "imsi-2089300007487"
   ranuengapid: 1
   amfuengapid: 1
   authenticationmanagementfield : "8000"
-  localpublicipaddr : "68.183.37.239"
+  localpublicipaddr : "161.35.106.206"
   localpublicportudpconnection : "500"
   linkgre:
     name : "gretun0"
@@ -23,7 +23,7 @@ ue:
   dnnstring: "internet"
 
 n3iwfinfo:
-  ikebindaddress: "147.182.252.131" # IP address of Nwu interface (IKE) on N3IWF
+  ikebindaddress: "24.199.121.125" # IP address of Nwu interface (IKE) on N3IWF
   ikebindport: "500"
   ipsecifaceprotocol: "udp"
 

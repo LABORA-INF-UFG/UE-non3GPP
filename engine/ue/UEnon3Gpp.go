@@ -35,6 +35,7 @@ var n3ue *context.N3IWFUe
 var ue *ran_ue.RanUeContext
 var n3iwfUDPAddr *net.UDPAddr
 var udpConnection *net.UDPConn
+var tcpConnWithN3IWF *net.TCPConn
 
 func InitCommunicationElements() {
 	ue = util.CreateRanUEContext(cfg)
@@ -150,7 +151,7 @@ func IkeAuthRequest(ikeMessage *message.IKEMessage, _proposal *message.Proposal,
 	return eapIdentifier
 }
 
-func IkeAuthEapExchange(ikeMessage *message.IKEMessage, ikePayload message.IKEPayloadContainer, eapIdentifier uint8, ikeSecurityAssociation *context.IKESecurityAssociation) []byte {
+func IkeAuthEapExchange(ikeMessage *message.IKEMessage, ikePayload message.IKEPayloadContainer, eapIdentifier uint8, ikeSecurityAssociation *context.IKESecurityAssociation) {
 
 	/* 1º Registration Request */
 	ikeMessage.Payloads.Reset()
@@ -448,36 +449,9 @@ func IkeAuthEapExchange(ikeMessage *message.IKEMessage, ikePayload message.IKEPa
 		log.Fatal("Not Success! Eap Req Code: ", eapReq.Code)
 		panic("Not Success")
 	}
-	return pdu
 }
 
-func UENon3GPPConnection() {
-	/* initial config */
-	cfg = config.GetConfig()
-	util.CleanEnvironment(cfg)
-
-	/* create communitcaion elements */
-	InitCommunicationElements()
-
-	/* Fig 7: https://www.wipro.com/network-edge-providers/untrusted-non-3gpp-access-network-interworking-with-5g-core */
-	/* ----------------------- */
-	/* ---- 1º IKE SA INIT --- */
-	/* ----------------------- */
-	ikeMessage, proposal, ikeSecurityAssociation, ikePayload := IkeSaInit()
-
-	/* -------------------------- */
-	/* -- 2º IKE AUTH Request --- */
-	/* -------------------------- */
-	eapIdentifier := IkeAuthRequest(ikeMessage, proposal, ikeSecurityAssociation, ikePayload)
-
-	/* -------------------------- */
-	/* -- 3º IKE_AUTH - EAP exchange | 3 Requisições -- refatorar --- */
-	/* -------------------------- */
-	pdu := IkeAuthEapExchange(ikeMessage, ikePayload, eapIdentifier, ikeSecurityAssociation)
-
-	/* ---------------------------------------------------------------------- */
-
-	// IKE_AUTH - Authentication
+func IkeAuth(ikeMessage *message.IKEMessage, ikePayload message.IKEPayloadContainer, ikeSecurityAssociation *context.IKESecurityAssociation) (*net.IPNet, *net.TCPAddr) {
 	ikeMessage.Payloads.Reset()
 	n3ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
 	ikeMessage.BuildIKEHeader(n3ue.N3IWFIKESecurityAssociation.LocalSPI,
@@ -610,8 +584,10 @@ func UENon3GPPConnection() {
 		log.Fatalf("Applying XFRM rules failed: %+v", err)
 		panic(err)
 	}
+	return ueAddr, n3iwfNASAddr
+}
 
-	// Get link ipsec0
+func NASRegistration(ueAddr *net.IPNet, n3iwfNASAddr *net.TCPAddr) {
 	links, err := netlink.LinkList()
 	if err != nil {
 		log.Fatal(err)
@@ -645,7 +621,7 @@ func UENon3GPPConnection() {
 		IP: ueAddr.IP,
 	}
 
-	tcpConnWithN3IWF, err := net.DialTCP("tcp", localTCPAddr, n3iwfNASAddr)
+	tcpConnWithN3IWF, err = net.DialTCP("tcp", localTCPAddr, n3iwfNASAddr)
 	if err != nil {
 		log.Warning("The error may be related to the ipsec0 interface that provides communication between UE and N3IWF. Try to recreate the interfaces")
 		log.Fatal(err)
@@ -653,15 +629,13 @@ func UENon3GPPConnection() {
 	}
 
 	nasMsg := make([]byte, 65535)
-
 	_, err = tcpConnWithN3IWF.Read(nasMsg)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
 
-	// send NAS Registration Complete Msg
-	pdu = nas_registration.GetRegistrationComplete(nil)
+	pdu := nas_registration.GetRegistrationComplete(nil)
 	pdu, err = EncodeNasPduInEnvelopeWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
 	if err != nil {
 		log.Fatal(err)
@@ -672,16 +646,16 @@ func UENon3GPPConnection() {
 		log.Fatal(err)
 		panic(err)
 	}
-
 	time.Sleep(500 * time.Millisecond)
+}
 
-	// UE request PDU session setup
+func UePDUSessionSetup(ikeMessage *message.IKEMessage, ikePayload message.IKEPayloadContainer, ikeSecurityAssociation *context.IKESecurityAssociation) (*PDUQoSInfo, net.IP) {
 	sNssai := models.Snssai{
 		Sst: cfg.Ue.Snssai.Sst,
 		Sd:  cfg.Ue.Snssai.Sd,
 	}
-	pdu = nas_registration.GetUlNasTransport_PduSessionEstablishmentRequest(cfg.Ue.PDUSessionId, nasMessage.ULNASTransportRequestTypeInitialRequest, cfg.Ue.DNNString, &sNssai)
-	pdu, err = EncodeNasPduInEnvelopeWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
+	pdu := nas_registration.GetUlNasTransport_PduSessionEstablishmentRequest(cfg.Ue.PDUSessionId, nasMessage.ULNASTransportRequestTypeInitialRequest, cfg.Ue.DNNString, &sNssai)
+	pdu, err := EncodeNasPduInEnvelopeWithSecurity(ue, pdu, nas.SecurityHeaderTypeIntegrityProtectedAndCiphered, true, false)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -692,7 +666,8 @@ func UENon3GPPConnection() {
 		panic(err)
 	}
 	// Receive N3IWF reply
-	n, _, err = udpConnection.ReadFromUDP(buffer)
+	buffer := make([]byte, 65535)
+	n, _, err := udpConnection.ReadFromUDP(buffer)
 	if err != nil {
 		log.Warning("This error could be related to the data plane configuration involving AMF, SMF and UPF. Check the logs of these microservices for any anomalies. Re-creating the GTP5 tunnel may also be an option!")
 		log.Fatal(err)
@@ -706,20 +681,25 @@ func UENon3GPPConnection() {
 	}
 	log.Info("IKE message exchange type: ", ikeMessage.ExchangeType)
 	log.Info("IKE message ID: ", ikeMessage.MessageID)
-	encryptedPayload, ok = ikeMessage.Payloads[0].(*message.Encrypted)
+	encryptedPayload, ok := ikeMessage.Payloads[0].(*message.Encrypted)
 	if !ok {
 		log.Fatal("Received pakcet is not and encrypted payload")
 		panic("Received pakcet is not and encrypted payload")
 	}
-	decryptedIKEPayload, err = util.DecryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
+	decryptedIKEPayload, err := util.DecryptProcedure(ikeSecurityAssociation, ikeMessage, encryptedPayload)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
 
-	var QoSInfo *PDUQoSInfo
+	var responseSecurityAssociation *message.SecurityAssociation
+	var responseTrafficSelectorInitiator *message.TrafficSelectorInitiator
+	var responseTrafficSelectorResponder *message.TrafficSelectorResponder
 
+	var QoSInfo *PDUQoSInfo
 	var upIPAddr net.IP
+	OutboundSPI := binary.BigEndian.Uint32(n3ue.N3IWFIKESecurityAssociation.IKEAuthResponseSA.Proposals[0].SPI)
+
 	for _, ikePayload := range decryptedIKEPayload {
 		switch ikePayload.Type() {
 		case message.TypeSA:
@@ -753,7 +733,6 @@ func UENon3GPPConnection() {
 		}
 	}
 
-	// IKE CREATE_CHILD_SA response
 	ikeMessage.Payloads.Reset()
 	ikeMessage.BuildIKEHeader(ikeMessage.InitiatorSPI,
 		ikeMessage.ResponderSPI,
@@ -785,7 +764,7 @@ func UENon3GPPConnection() {
 	}
 
 	// Send to N3IWF
-	ikeMessageData, err = ikeMessage.Encode()
+	ikeMessageData, err := ikeMessage.Encode()
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -822,7 +801,10 @@ func UENon3GPPConnection() {
 		log.Fatalf("Applying XFRM rules failed: %+v", err)
 		panic(err)
 	}
+	return QoSInfo, upIPAddr
+}
 
+func GRETunSetup(QoSInfo *PDUQoSInfo, upIPAddr net.IP, ueAddr *net.IPNet) {
 	var greKeyField uint32
 
 	if QoSInfo != nil {
@@ -879,7 +861,6 @@ func UENon3GPPConnection() {
 
 	upRoute := &netlink.Route{
 		LinkIndex: linkGRE.Attrs().Index,
-		Src:       net.ParseIP("60.60.0.1").To4(),
 		Dst: &net.IPNet{
 			IP:   net.IPv4zero,
 			Mask: net.IPv4Mask(0, 0, 0, 0),
@@ -890,6 +871,51 @@ func UENon3GPPConnection() {
 	if err := netlink.RouteAdd(upRoute); err != nil {
 		log.Warning("UPF Route exist!")
 	}
+}
+
+func UENon3GPPConnection() {
+	/* initial config */
+	cfg = config.GetConfig()
+	util.CleanEnvironment(cfg)
+
+	/* create communitcaion elements */
+	InitCommunicationElements()
+
+	/* Fig 7: https://www.wipro.com/network-edge-providers/untrusted-non-3gpp-access-network-interworking-with-5g-core */
+	/* ----------------------- */
+	/* ---- 1º IKE SA INIT --- */
+	/* ----------------------- */
+	ikeMessage, proposal, ikeSecurityAssociation, ikePayload := IkeSaInit()
+
+	/* -------------------------- */
+	/* -- 2º IKE AUTH Request --- */
+	/* -------------------------- */
+	eapIdentifier := IkeAuthRequest(ikeMessage, proposal, ikeSecurityAssociation, ikePayload)
+
+	/* -------------------------- */
+	/* -- 3º IKE_AUTH - EAP exchange | 3 Requisições -- refatorar --- */
+	/* -------------------------- */
+	IkeAuthEapExchange(ikeMessage, ikePayload, eapIdentifier, ikeSecurityAssociation)
+
+	/* ----------------------------------- */
+	/* -- 4º IKE_AUTH - Authentication --- */
+	/* ----------------------------------- */
+	ueAddr, n3iwfNASAddr := IkeAuth(ikeMessage, ikePayload, ikeSecurityAssociation)
+
+	/* ------------------------------------ */
+	/* -- 5º Stablish TCP communication + NAS Registration --- */
+	/* ------------------------------------ */
+	NASRegistration(ueAddr, n3iwfNASAddr)
+
+	/* -------------------------------------- */
+	/* -- 6º UE request PDU session setup --- */
+	/* ------------------------------------ */
+	QoSInfo, upIPAddr := UePDUSessionSetup(ikeMessage, ikePayload, ikeSecurityAssociation)
+
+	/* ------------------------------------ */
+	/* -- 7º Data Communication Setup  --- */
+	/* ------------------------------------ */
+	GRETunSetup(QoSInfo, upIPAddr, ueAddr)
 
 	for {
 		downGreTunInterface := "ping -I " + cfg.Ue.LinkGRE.Name + " 8.8.8.8"
