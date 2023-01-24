@@ -18,10 +18,9 @@
               shell:  sudo rm -rf /usr/local/go
               ignore_errors: true
 
-            - name: Remove Go-lang install 1/2
+            - name: Remove Go-lang install 2/2
               shell:  apt remove golang-go
               ignore_errors: true
-
 
             - name: Install Go 1.14.4 - 1/5
               shell:  wget https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
@@ -35,6 +34,7 @@
                 mkdir ~/go/bin
                 mkdir ~/go/pkg
                 mkdir ~/go/src    
+              ignore_errors: true
 
             - name: Install Go 1.14.4 - 4/5
               shell:  |
@@ -43,5 +43,5 @@
                 echo 'export PATH=$PATH:$GOPATH/bin:$GOROOT/bin' >> ~/.bashrc
                 echo 'export GO111MODULE=auto' >> ~/.bashrc
 
-            - name: Remove GO install file
+            - name: Remove GO install file - 5/5
               shell:  rm -rf go1.14.4.linux-amd64.tar.gz

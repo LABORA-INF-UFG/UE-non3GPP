@@ -2333,15 +2333,14 @@
                 rm -rf {{ UPF_DIR }}
               when: n3iwf_install == 'true'
 
-            - name: Remove virtual interface UPF (if exist)
-              shell: sudo ip addr dell {{ GRE_TUN_IP_ADDRESS_UPF_UE_NON3GGP }} dev {{ internet_network_interface }}
-              ignore_errors: true
-              when: n3iwf_install == 'false'
+#            - name: Remove virtual interface UPF (if exist)
+#              shell: sudo ip addr dell {{ GRE_TUN_IP_ADDRESS_UPF_UE_NON3GGP }} dev {{ internet_network_interface }}
+#              ignore_errors: true
+#              when: n3iwf_install == 'false'
 
-
-            - name: Create virtual interface - UPF
-              shell: sudo ip addr add {{ GRE_TUN_IP_ADDRESS_UPF_UE_NON3GGP }} dev {{ internet_network_interface }}
-              when: n3iwf_install == 'false'
+#            - name: Create virtual interface - UPF
+#              shell: sudo ip addr add {{ GRE_TUN_IP_ADDRESS_UPF_UE_NON3GGP }} dev {{ internet_network_interface }}
+#              when: n3iwf_install == 'false'
 
             - name: Build UPF
               shell: make upf
