@@ -60,10 +60,6 @@
             N3IWF_IPSEC_INTERFACE_XFRM_MARK: "5"
             
         tasks:
-#            - fail:
-#                msg: "'internet_network_interface' not found, this parameter is required!"
-#              when: internet_network_interface == '' and n3iwf_install == 'false'
-
 
             - name: Environment validation!
               assert:
@@ -2333,24 +2329,34 @@
                 rm -rf {{ UPF_DIR }}
               when: n3iwf_install == 'true'
 
-#            - name: Remove virtual interface UPF (if exist)
-#              shell: sudo ip addr dell {{ GRE_TUN_IP_ADDRESS_UPF_UE_NON3GGP }} dev {{ internet_network_interface }}
-#              ignore_errors: true
-#              when: n3iwf_install == 'false'
-
-#            - name: Create virtual interface - UPF
-#              shell: sudo ip addr add {{ GRE_TUN_IP_ADDRESS_UPF_UE_NON3GGP }} dev {{ internet_network_interface }}
-#              when: n3iwf_install == 'false'
-
-            - name: Build UPF
-              shell: make upf
-              args:
-                chdir: "{{ FREE5GC_DIR_INSTALL }}"
-              ignore_errors: true
-              when: n3iwf_install == 'false'
-
-            - name: Build Webconsole
-              shell: make webconsole
-              args:
-                chdir: "{{ FREE5GC_DIR_INSTALL }}"
-              when: n3iwf_install == 'false'
+            - name: Remove Unused config files form N3IWF VM
+              shell: |
+                rm -rf {{ NFS_DIR_CONFIG }}/multiUPF
+                rm {{ NFS_DIR_CONFIG }}/TLS/amf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/amf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/ausf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/ausf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/nrf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/nrf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/nssf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/nssf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/pcf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/pcf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/smf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/smf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/udm.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/udm.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/udr.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/udr.pem
+                rm {{ NFS_DIR_CONFIG }}/amfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/ausfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/nrfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/nssfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/pcfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/smfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/udmfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/udrcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/uerouting.yaml
+                rm {{ NFS_DIR_CONFIG }}/upfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/webuicfg.yaml
+              when: n3iwf_install == 'true'
