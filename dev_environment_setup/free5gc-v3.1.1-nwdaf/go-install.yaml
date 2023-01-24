@@ -3,7 +3,7 @@
         become: yes
         remote_user: root
         vars:
-            GO_VERSION: "1.17.8"
+            GO_VERSION: "1.14.4"
         tasks:
             - name: Upgrade all apt packages
               apt: upgrade=dist
@@ -18,30 +18,30 @@
               shell:  sudo rm -rf /usr/local/go
               ignore_errors: true
 
-            - name: Remove Go-lang install 1/2
+            - name: Remove Go-lang install 2/2
               shell:  apt remove golang-go
               ignore_errors: true
 
+            - name: Install Go 1.14.4 - 1/5
+              shell:  wget https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
 
-            - name: Install Go 1.17.8 - 1/5
-              shell:  wget https://dl.google.com/go/go1.17.8.linux-amd64.tar.gz
+            - name: Install Go 1.14.4 - 2/5
+              shell:  sudo tar -C /usr/local -zxvf go1.14.4.linux-amd64.tar.gz
 
-            - name: Install Go 1.17.8 - 2/5
-              shell:  sudo tar -C /usr/local -zxvf go1.17.8.linux-amd64.tar.gz
-
-            - name: Install Go 1.17.8 - 3/5
+            - name: Install Go 1.14.4 - 3/5
               shell: |
                 mkdir ~/go
                 mkdir ~/go/bin
                 mkdir ~/go/pkg
                 mkdir ~/go/src    
+              ignore_errors: true
 
-            - name: Install Go 1.17.8 - 4/5
+            - name: Install Go 1.14.4 - 4/5
               shell:  |
                 echo 'export GOPATH=$HOME/go' >> ~/.bashrc
                 echo 'export GOROOT=/usr/local/go' >> ~/.bashrc
                 echo 'export PATH=$PATH:$GOPATH/bin:$GOROOT/bin' >> ~/.bashrc
                 echo 'export GO111MODULE=auto' >> ~/.bashrc
 
-            - name: Remove GO install file
-              shell:  rm -rf go1.17.8.linux-amd64.tar.gz
+            - name: Remove GO install file - 5/5
+              shell:  rm -rf go1.14.4.linux-amd64.tar.gz

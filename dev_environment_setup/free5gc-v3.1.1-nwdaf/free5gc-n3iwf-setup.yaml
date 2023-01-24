@@ -22,9 +22,11 @@
             GO_SRC_DIR : "/root/go/src"
             HOME_DIR: "/root"
             CLASSLESS_INTER_DOMAIN_ROUTING_IPV4_POOL_OF_UE : "60.60.0.0"
-            FREE5GC_GIT_CHECKOUT_URL_FREEGC_TAG_VERSION: "--recursive -b v3.2.1 -j `nproc` https://github.com/free5gc/free5gc.git"
+            FREE5GC_GIT_CHECKOUT_URL_FREEGC_TAG_VERSION: "--recursive -b v3.1.1 -j `nproc` https://github.com/free5gc/free5gc.git"
+            CUSTON_N3IWF_BY_CIROMACEDO: "https://github.com/ciromacedo/n3iwf.git"
             LABORA_UE_NON3GPP_GIT_REPO: "https://github.com/LABORA-INF-UFG/UE-non3GPP.git"
             FREE5GC_CHECKOUT_FOLDER_NAME: "free5gc"
+            N3IWF_CHECKOUT_FOLDER_NAME: "n3iwf"
             PREDEFINED_IP_ADDRESS: "false"
             MONGO_URL_CONNECTION: "mongodb://127.0.0.1:27017"
             NRF_IP_ADDRESS: "127.0.0.10"
@@ -60,9 +62,6 @@
             N3IWF_IPSEC_INTERFACE_XFRM_MARK: "5"
             
         tasks:
-            - fail:
-                msg: "'internet_network_interface' not found, this parameter is required!"
-              when: internet_network_interface == ''
 
             - name: Environment validation!
               assert:
@@ -185,11 +184,83 @@
               args:
                 chdir: "{{ GO_SRC_DIR }}"
               ignore_errors: true
+              when: n3iwf_install == 'false'
+
+            - name: Remove n3iwf old dir if exist
+              shell: rm -rf {{ N3IWF_CHECKOUT_FOLDER_NAME }}
+              args:
+                chdir: "{{ GO_SRC_DIR }}"
+              ignore_errors: true
+              when: n3iwf_install == 'true'
 
             - name  : Git Clone by free5gc TAG Version
               shell : git clone {{ FREE5GC_GIT_CHECKOUT_URL_FREEGC_TAG_VERSION }} {{ FREE5GC_CHECKOUT_FOLDER_NAME }}
               args:
                 chdir: "{{ GO_SRC_DIR }}"
+              when: n3iwf_install == 'false'
+
+            - name: Git Clone by n3iwf custom by ciromacedo
+              shell: git clone {{ CUSTON_N3IWF_BY_CIROMACEDO }} {{ N3IWF_CHECKOUT_FOLDER_NAME }}
+              args:
+                chdir: "{{ GO_SRC_DIR }}"
+              when: n3iwf_install == 'true'
+
+
+            - name: Change .gitmodules in free5gc
+              shell: |
+                rm  {{ FREE5GC_DIR_INSTALL }}/.gitmodules
+              when: n3iwf_install == 'false'
+
+            - name  : Create custom .gitmodules in gree5gc
+              copy:
+                dest: "{{ FREE5GC_DIR_INSTALL }}/.gitmodules"
+                content: |
+                  [submodule "amf"]
+                      path = NFs/amf
+                      url = https://github.com/free5gc/amf.git
+                  [submodule "ausf"]
+                      path = NFs/ausf
+                      url = https://github.com/free5gc/ausf.git
+                  [submodule "n3iwf"]
+                      path = NFs/n3iwf
+                      url = https://github.com/free5gc/n3iwf.git
+                  [submodule "nrf"]
+                      path = NFs/nrf
+                      url = https://github.com/free5gc/nrf.git
+                  [submodule "nssf"]
+                      path = NFs/nssf
+                      url = https://github.com/free5gc/nssf.git
+                  [submodule "pcf"]
+                      path = NFs/pcf
+                      url = https://github.com/free5gc/pcf.git
+                  [submodule "smf"]
+                      path = NFs/smf
+                      url = https://github.com/free5gc/smf.git
+                  [submodule "udm"]
+                      path = NFs/udm
+                      url = https://github.com/free5gc/udm.git
+                  [submodule "udr"]
+                      path = NFs/udr
+                      url = https://github.com/free5gc/udr.git
+                  [submodule "upf"]
+                      path = NFs/upf
+                      url = https://github.com/free5gc/upf.git
+                  [submodule "webconsole"]
+                      path = webconsole
+                      url = https://github.com/free5gc/webconsole.git
+                  [submodule "nwdaf"]
+                      path = NFs/nwdaf
+                      url = https://github.com/ciromacedo/nwdaf.git
+
+              when: n3iwf_install == 'false'
+
+
+            - name: Submodules update in free5gc
+              shell: |
+                git submodule sync
+                git submodule update --init --recursive --remote
+              when: n3iwf_install == 'false'
+
 
             - name  : Create NRF config dir
               shell : |
@@ -2319,37 +2390,3 @@
                 sudo ip link set {{ N3IWF_IPSEC_INTERFACE_NAME }} up
               when: n3iwf_install == 'true'
 
-            - name: Remove Unused NFs dir form N3IWF VM
-              shell: |
-                rm -rf {{ AMF_DIR }}
-                rm -rf {{ AUSF_DIR }}
-                rm -rf {{ NRF_DIR }}
-                rm -rf {{ NSSF_DIR }}
-                rm -rf {{ PCF_DIR }}
-                rm -rf {{ SMF_DIR }}
-                rm -rf {{ UDM_DIR }}
-                rm -rf {{ UDR_DIR }}
-                rm -rf {{ UPF_DIR }}
-              when: n3iwf_install == 'true'
-
-#            - name: Remove virtual interface UPF (if exist)
-#              shell: sudo ip addr dell {{ GRE_TUN_IP_ADDRESS_UPF_UE_NON3GGP }} dev {{ internet_network_interface }}
-#              ignore_errors: true
-#              when: n3iwf_install == 'false'
-
-#            - name: Create virtual interface - UPF
-#              shell: sudo ip addr add {{ GRE_TUN_IP_ADDRESS_UPF_UE_NON3GGP }} dev {{ internet_network_interface }}
-#              when: n3iwf_install == 'false'
-
-            - name: Build UPF
-              shell: make upf
-              args:
-                chdir: "{{ FREE5GC_DIR_INSTALL }}"
-              ignore_errors: true
-              when: n3iwf_install == 'false'
-
-            - name: Build Webconsole
-              shell: make webconsole
-              args:
-                chdir: "{{ FREE5GC_DIR_INSTALL }}"
-              when: n3iwf_install == 'false'
