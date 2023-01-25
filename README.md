@@ -42,7 +42,7 @@ Obs: Keep n3iwf_install parameter with value FALSE for host _fee5gc-core_
 * Replace the 3º marker ```<IP-address>```, illustrated in the following figure in yellow color, with the IP address of the VM where _fee5gc-n3iwf_ will be configured.
 * Replace the 4º marker ```<free5gc-core-IP-address>```, illustrated in the following figure in yellow color, with the IP address of the VM where _fee5gc-core_ will be configured (the same IP address informed in the 1st marker).
 <p align="center">
-    <img src="images/ip_n3iwf_hosts.png"/> 
+    <img src="images/ip_free5gc_hosts.png"/> 
 </p>
 
 #### SSH Key exchange
@@ -81,8 +81,5 @@ Now let's run the script responsible for configuring free5gc (except the N3IWF n
 ansible-playbook dev_environment_setup/free5gc-v3.1.1/free5gc-n3iwf-setup.yaml -i dev_environment_setup/free5gc-v3.1.1/hosts
 ```
 
-### Run Ansible UE-non3GPP Setup
-Now let's run the script that configures the UE-non3GPP code, with all the interconnection configuration with the other 2 VMs
-```
-ansible-playbook dev_environment_setup/UEnon3GPP-setup.yaml -i dev_environment_setup/free5gc-v3.1.1/hosts
-```
+### Start Free5GC
+TODO
