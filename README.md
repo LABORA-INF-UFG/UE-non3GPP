@@ -68,18 +68,30 @@ ansible -i ./hosts -m ping all -u root
 ### Go Install with Ansible
 The command below installs GO v.1.14 on each of VMs
 ```
-ansible-playbook dev_environment_setup/free5gc-v3.1.1/go-install.yaml -i dev_environment_setup/free5gc-v3.1.1/hosts
+ansible-playbook dev/free5gc-v3.1.1/go-install.yaml -i dev/free5gc-v3.1.1/hosts
 ```
 Now it is necessary to access each of the VMs and update bashrc
 ```
 source ~/.bashrc
 ```
 
-### Run Ansible Free5GC and N3IWF Setup
+### Setup Free5GC and N3IWF with Ansible
 Now let's run the script responsible for configuring free5gc (except the N3IWF network function) and a version of free5gc containing only the N3IWF network function
 ```
-ansible-playbook dev_environment_setup/free5gc-v3.1.1/free5gc-n3iwf-setup.yaml -i dev_environment_setup/free5gc-v3.1.1/hosts
+ansible-playbook dev/free5gc-v3.1.1/free5gc-n3iwf-setup.yaml -i dev/free5gc-v3.1.1/hosts
 ```
 
-### Start Free5GC
+### Setup UE-non3GPP with Ansible
+ansible-playbook dev/UEnon3GPP.yaml -i dev/free5gc-v3.1.1/hosts
+
+### Start Free5GC and N3IWF
+TODO
+
+### Register UE-non3GPP into Free5GC
+TODO
+
+### Config UE-non3GPP
+TODO
+
+### Start UE-non3GPP
 TODO
