@@ -20,9 +20,9 @@ Clone the project with the following command:
 apt update && git clone https://github.com/LABORA-INF-UFG/UE-non3GPP.git 
 ```
 
-After cloning the project, you need to edit the **hosts** file, located in the __UE-non3GPP/dev/free5gc-v3.1.1__ . The __host__ file contains 3 mapped hosts (fee5gc-core, fee5gc-n3iwf and labora-UE-non3GPP).
-Let's configure __fee5gc-core__ and __fee5gc-n3iwf__, the __labora-UE-non3GPP__ host serves to deploy a UE version on a 3rd machine (considering for example a case where the operator's machine does not have access to the __fee5gc-core__ and __fee5gc-n3iwf__ VMs).
-Let's assume that the operator's machine has full access to the __fee5gc-core__ and __fee5gc-n3iwf__ machines and is not behind **NAT**.
+After cloning the project, you need to edit the **hosts** file, located in the _UE-non3GPP/dev/free5gc-v3.1.1_ . The __host__ file contains 3 mapped hosts (fee5gc-core, fee5gc-n3iwf and labora-UE-non3GPP). Let's configure _fee5gc-core_ and _fee5gc-n3iwf_. The _labora-UE-non3GPP_ host is used to deploy a UE version on a 3rd machine (considering for example a case where the operator's machine does not have access to the _fee5gc-core_ and _fee5gc-n3iwf_ VMs).
+Let's assume that the operator's machine has full access to the _fee5gc-core_ and _fee5gc-n3iwf_ machines and is not behind **NAT**.
+
 Let's start with the settings of the host responsible for running __fee5gc-core__.
 * Replace the marker ```<IP-address>``` with the IP address of the VM where __fee5gc-core__ will be configured as shown in the figure below.
 <p align="center">
