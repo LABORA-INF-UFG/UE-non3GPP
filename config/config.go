@@ -41,7 +41,7 @@ type Config struct {
 		} `yaml: "linkgre"`
 
 		IPSecInterfaceName string `yaml: "ipsecinterfacename"`
-		IPSecInterfaceMark string `yaml: "ipsecinterfacemark"`
+		IPSecInterfaceMark uint32 `yaml: "ipsecinterfacemark"`
 
 		PDUSessionId uint8  `yaml: "pdusessionid"`
 		DNNString    string `yaml: "dnnstring"`

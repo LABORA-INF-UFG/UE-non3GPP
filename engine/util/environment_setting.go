@@ -65,7 +65,8 @@ func CleanEnvironment(cfg config.Config) {
 	}
 
 	//cria ipsec0
-	createIpsec0Interface := "sudo ip link add " + cfg.Ue.IPSecInterfaceName + " type vti local " + cfg.Ue.LocalPublicIPAddr + " remote " + cfg.N3iwfInfo.IKEBindAddress + " key " + cfg.Ue.IPSecInterfaceMark
+	ipSecInterfaceMark := StrConverter(cfg.Ue.IPSecInterfaceMark)
+	createIpsec0Interface := "sudo ip link add " + cfg.Ue.IPSecInterfaceName + " type vti local " + cfg.Ue.LocalPublicIPAddr + " remote " + cfg.N3iwfInfo.IKEBindAddress + " key " + ipSecInterfaceMark
 	cmd = execabs.Command("bash", "-c", createIpsec0Interface)
 	err = cmd.Run()
 	if err != nil {

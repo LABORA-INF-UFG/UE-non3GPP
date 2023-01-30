@@ -581,7 +581,7 @@ func IkeAuth(ikeMessage *message.IKEMessage, ikePayload message.IKEPayloadContai
 	}
 
 	// Aplly XFRM rules
-	if err = applyXFRMRule(true, childSecurityAssociationContext); err != nil {
+	if err = applyXFRMRule(true, cfg, childSecurityAssociationContext); err != nil {
 		log.Fatalf("Applying XFRM rules failed: %+v", err)
 		panic(err)
 	}
@@ -798,7 +798,7 @@ func UePDUSessionSetup(ikeMessage *message.IKEMessage, ikePayload message.IKEPay
 	}
 
 	// Aplly XFRM rules
-	if err = applyXFRMRule(false, childSecurityAssociationContextUserPlane); err != nil {
+	if err = applyXFRMRule(false, cfg, childSecurityAssociationContextUserPlane); err != nil {
 		log.Fatalf("Applying XFRM rules failed: %+v", err)
 		panic(err)
 	}
@@ -1108,12 +1108,12 @@ func encapNasMsgToEnvelope(nasPDU []byte) []byte {
 	return nasEnv
 }
 
-func applyXFRMRule(ue_is_initiator bool, childSecurityAssociation *context.ChildSecurityAssociation) error {
+func applyXFRMRule(ue_is_initiator bool, cfg config.Config, childSecurityAssociation *context.ChildSecurityAssociation) error {
 	// Build XFRM information data structure for incoming traffic.
 
 	// Mark
 	mark := &netlink.XfrmMark{
-		Value: 5,
+		Value: cfg.Ue.IPSecInterfaceMark,
 	}
 
 	// Direction: N3IWF -> UE
