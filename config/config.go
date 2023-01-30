@@ -20,7 +20,15 @@ type Config struct {
 			OpValue           string `yaml: "opvalue"`
 			SequenceNumber    string `yaml: "sequencenumber"`
 		} `yaml: "authsubscription"`
-		Supi                          string `yaml: "supi"`
+		Msin  string `yaml: "msin"`
+		Hplmn struct {
+			Mcc string `yaml: "mcc"`
+			Mnc string `yaml: "mnc"`
+		} `yaml: "hplmn"`
+		Snssai struct {
+			Sst int32  `yaml: "sst"`
+			Sd  string `yaml: "sd"`
+		} `yaml: "snssai"`
 		RanUeNgapId                   int64  `yaml: "ranuengapid"`
 		AmfUeNgapId                   int64  `yaml: "amfuengapid"`
 		AuthenticationManagementField string `yaml: "authenticationmanagementfield"`
@@ -34,10 +42,7 @@ type Config struct {
 
 		IPSecInterfaceName string `yaml: "ipsecinterfacename"`
 		IPSecInterfaceMark string `yaml: "ipsecinterfacemark"`
-		Snssai             struct {
-			Sst int32  `yaml: "sst"`
-			Sd  string `yaml: "sd"`
-		} `yaml: "snssai"`
+
 		PDUSessionId uint8  `yaml: "pdusessionid"`
 		DNNString    string `yaml: "dnnstring"`
 	} `yaml:"ue"`

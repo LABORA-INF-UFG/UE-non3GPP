@@ -6,6 +6,8 @@ import (
 	"UE-non3GPP/engine/exchange/pkg/ike/handler"
 	"UE-non3GPP/engine/exchange/pkg/ike/message"
 	ran_ue "UE-non3GPP/engine/ran"
+	"encoding/hex"
+	"fmt"
 	"github.com/free5gc/nas/nasType"
 	"github.com/free5gc/nas/security"
 	"github.com/free5gc/openapi/models"
@@ -15,7 +17,7 @@ import (
 )
 
 func CreateRanUEContext(cfg config.Config) *ran_ue.RanUeContext {
-	ue := ran_ue.NewRanUeContext(cfg.Ue.Supi,
+	ue := ran_ue.NewRanUeContext(GetSupi(cfg),
 		cfg.Ue.RanUeNgapId,
 		security.AlgCiphering128NEA0,
 		security.AlgIntegrity128NIA2,
@@ -24,6 +26,11 @@ func CreateRanUEContext(cfg config.Config) *ran_ue.RanUeContext {
 	ue.AmfUeNgapId = cfg.Ue.AmfUeNgapId
 	ue.AuthenticationSubs = CreateAuthSubscription(cfg)
 	return ue
+}
+
+func GetSupi(cfg config.Config) string {
+	supi := "imsi-" + cfg.Ue.Hplmn.Mcc + cfg.Ue.Hplmn.Mnc + cfg.Ue.Msin
+	return supi
 }
 
 func CreateAuthSubscription(cfg config.Config) (authSubs models.AuthenticationSubscription) {
@@ -44,11 +51,74 @@ func CreateAuthSubscription(cfg config.Config) (authSubs models.AuthenticationSu
 	return
 }
 
-func CreateMobileIdentity() nasType.MobileIdentity5GS {
-	return nasType.MobileIdentity5GS{
-		Len:    12, // suci
-		Buffer: []uint8{0x01, 0x02, 0xf8, 0x39, 0xf0, 0xff, 0x00, 0x00, 0x00, 0x00, 0x47, 0x78},
+func CreateMobileIdentity(cfg config.Config) nasType.MobileIdentity5GS {
+
+	suciV1, suciV2, suciV3, suciV4 := EncodeUeSuci(cfg)
+	resu := GetMccAndMncInOctets(cfg)
+
+	if len(cfg.Ue.Msin) == 8 {
+
+		return nasType.MobileIdentity5GS{
+			Len: 12, // suci
+			//Buffer: []uint8{0x01, resu[0], resu[1], resu[2], 0xf0, 0xff, 0x00, 0x00, 0x00, 0x00, 0x47, 0x78},
+			Buffer: []uint8{0x01, resu[0], resu[1], resu[2], 0xf0, 0xff, 0x00, 0x00, suciV4, suciV3, suciV2, suciV1},
+		}
+
+		//ue.UeSecurity.Suci = nasType.MobileIdentity5GS{
+		//	Len:    12,
+		//	Buffer: []uint8{0x01, resu[0], resu[1], resu[2], 0xf0, 0xff, 0x00, 0x00, suciV4, suciV3, suciV2, suciV1},
+		//}
+	} else {
+		panic("cfg.Ue.Msin size not suport!")
 	}
+
+	//return nasType.MobileIdentity5GS{
+	//	Len:    12, // suci
+	//	Buffer: []uint8{0x01, 0x02, 0xf8, 0x39, 0xf0, 0xff, 0x00, 0x00, 0x00, 0x00, 0x47, 0x78},
+	//}
+}
+
+func EncodeUeSuci(cfg config.Config) (uint8, uint8, uint8, uint8) {
+
+	aux := StrReverse(cfg.Ue.Msin)
+
+	suci, error := hex.DecodeString(aux)
+	if error != nil {
+		panic("cfg.Ue.Msin decade fail!")
+	}
+
+	if len(cfg.Ue.Msin) == 8 {
+		return uint8(suci[0]), uint8(suci[1]), uint8(suci[2]), uint8(suci[3])
+	} else {
+		panic("cfg.Ue.Msin size not suport!")
+	}
+}
+
+func GetMccAndMncInOctets(cfg config.Config) []byte {
+
+	// reverse mcc and mnc
+	mcc := StrReverse(cfg.Ue.Hplmn.Mcc)
+	mnc := StrReverse(cfg.Ue.Hplmn.Mnc)
+
+	// include mcc and mnc in octets
+	oct5 := mcc[1:3]
+	var oct6 string
+	var oct7 string
+	if len(cfg.Ue.Hplmn.Mnc) == 2 {
+		oct6 = "f" + string(mcc[0])
+		oct7 = mnc
+	} else {
+		oct6 = string(mnc[0]) + string(mcc[0])
+		oct7 = mnc[1:3]
+	}
+
+	// changed for bytes.
+	resu, err := hex.DecodeString(oct5 + oct6 + oct7)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return resu
 }
 
 func CreateN3IWFUe() *context.N3IWFUe {

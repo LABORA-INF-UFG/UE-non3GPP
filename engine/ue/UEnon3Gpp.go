@@ -177,9 +177,10 @@ func IkeAuthEapExchange(ikeMessage *message.IKEMessage, ikePayload message.IKEPa
 
 	// NAS
 	ueSecurityCapability := ue.GetUESecurityCapability()
+	mobileIdentity := util.CreateMobileIdentity(cfg)
 
 	registrationRequest := nas_registration.GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
-		util.CreateMobileIdentity(),
+		mobileIdentity,
 		nil,
 		ueSecurityCapability,
 		nil,
@@ -352,7 +353,7 @@ func IkeAuthEapExchange(ikeMessage *message.IKEMessage, ikePayload message.IKEPa
 
 	// Send NAS Security Mode Complete Msg
 	registrationRequestWith5GMM := nas_registration.GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
-		util.CreateMobileIdentity(),
+		mobileIdentity,
 		nil,
 		ueSecurityCapability,
 		ue.Get5GMMCapability(),

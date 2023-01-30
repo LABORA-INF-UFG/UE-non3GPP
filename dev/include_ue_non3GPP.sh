@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HOST=146.190.120.112
+HOST=143.198.155.212
 PORT=5000
 
 BASE_URL="http://$HOST:$PORT/api/subscriber"
@@ -9,7 +9,7 @@ OPC=981d464c7c52eb6e5036234984ad0bcf
 OP=c9e8763286b5b9ffbdf56e1297d0887b
 SQN=16f3b3f70fc0
 
-imsi=2089300007487
+imsi=2089300007488
 plmnid=20893
 
 
