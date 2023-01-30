@@ -12,7 +12,6 @@ require (
 	github.com/free5gc/ngap v1.0.6
 	github.com/free5gc/openapi v1.0.4
 	github.com/free5gc/util v1.0.3
-	github.com/go-ping/ping v0.0.0-20210506233800-ff8be3320020
 	github.com/sirupsen/logrus v1.9.0
 	github.com/ugorji/go v1.2.1 // indirect
 	github.com/urfave/cli/v2 v2.23.7
