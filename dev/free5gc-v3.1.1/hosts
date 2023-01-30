@@ -3,10 +3,10 @@
 161.35.225.50 internet_network_interface=eth0 n3iwf_install=false
 
 [fee5gc-n3iwf]
-143.110.144.249 free5gc_ip_address=161.35.225.50 n3iwf_install=true
+137.184.233.179 free5gc_ip_address=161.35.225.50 n3iwf_install=true
 
 [labora-UE-non3GPP]
-137.184.119.146 n3iwf_ike_ip_address=137.184.233.179 free5gc_ip_address=161.35.225.50 msin=7488
-137.184.187.139 n3iwf_ike_ip_address=137.184.233.179 free5gc_ip_address=161.35.225.50 msin=7487
+143.244.181.142 n3iwf_ike_ip_address=137.184.233.179 free5gc_ip_address=161.35.225.50 msin=7488
+143.244.187.5 n3iwf_ike_ip_address=137.184.233.179 free5gc_ip_address=161.35.225.50 msin=7487
 
 
