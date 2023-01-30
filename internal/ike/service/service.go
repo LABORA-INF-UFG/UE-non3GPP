@@ -52,6 +52,6 @@ func listenAndServe(listener *net.UDPConn) {
 		copy(forwardData, data[:n])
 
 		// handle the message in ike handler
-		ike.Dispatch(listener, forwardData)
+		go ike.Dispatch(listener, forwardData)
 	}
 }
