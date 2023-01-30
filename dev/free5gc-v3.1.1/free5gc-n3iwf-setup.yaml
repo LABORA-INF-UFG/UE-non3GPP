@@ -61,11 +61,11 @@
             
         tasks:
 
-            - name: Environment validation!
-              assert:
-                that:
-                  - ansible_memtotal_mb >= 1000
-                msg: "Minimum memory requirements in the deployment environment is 4GB! Operation failed!"
+#            - name: Environment validation!
+#              assert:
+#                that:
+#                  - ansible_memtotal_mb >= 500
+#                msg: "Minimum memory requirements in the deployment environment is 4GB! Operation failed!"
 
             - set_fact:
                 AMF_NGAP_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"

@@ -36,7 +36,6 @@
               shell: rm config.yaml
               args:
                 chdir: "{{ UE_NON3GPPCONFIG_DIR }}"
-              
 
             - name: Build UE-non3GPP config.yaml
               copy:
@@ -48,7 +47,13 @@
                       opcvalue: "{{ OPC_VALUE }}"
                       opvalue: "{{ OP_VALUE }}"
                       sequencenumber: "{{ SEQ_NUMBER }}"
-                    supi: "{{ SUPI }}"
+                    msin: "00007487"
+                    hplmn:
+                      mcc: "208"
+                      mnc: "93"
+                    snssai: # Single Network Slice Selection Assistance Information
+                      sst: 1 # Slice/Service Type (1 byte hex string, range: 0~F)
+                      sd: "010203" # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
                     ranuengapid: 1
                     amfuengapid: 1
                     authenticationmanagementfield : "{{ AUTH_MN_FIELD }}"
@@ -60,9 +65,6 @@
                       mask: [255,255,255,0]
                     ipsecinterfacename : "{{ IPSEC_INTERFACE }}" # IP address of IPSec virtual interface (IPsec tunnel enpoint to N3IWF)
                     ipsecinterfacemark: "5" # IPSec virtual interface mark (Any value except to 0, default value is 7 if not defined)
-                    snssai: # Single Network Slice Selection Assistance Information
-                      sst: 1 # Slice/Service Type (1 byte hex string, range: 0~F)
-                      sd: "010203" # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
                     pdusessionid: 10
                     dnnstring: "internet"
                   
