@@ -31,4 +31,4 @@ n3iwfinfo:
   ipsecifaceprotocol: "udp"
 
 logs:
-  level: 4
+  level: 2

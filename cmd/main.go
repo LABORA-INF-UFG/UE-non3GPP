@@ -18,7 +18,7 @@ func init() {
 	log.SetOutput(os.Stdout)
 
 	if cfg.Logs.Level == 0 {
-		log.SetLevel(log.InfoLevel)
+		log.SetLevel(log.ErrorLevel)
 	} else {
 		log.SetLevel(log.Level(cfg.Logs.Level))
 	}

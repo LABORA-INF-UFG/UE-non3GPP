@@ -1923,6 +1923,10 @@
                     UE1: # Group Name
                       members:
                       - imsi-2089300007487 # Subscription Permanent Identifier of the UE
+                      - imsi-2089300007488
+                      - imsi-2089300007489
+                      - imsi-2089300007440
+                      - imsi-2089300007441
                       topology: # Network topology for this group (Uplink: A->B, Downlink: B->A)
                       # default path derived from this topology
                       # node name should be consistent with smfcfg.yaml
