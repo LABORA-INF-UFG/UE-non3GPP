@@ -85,6 +85,7 @@
                       opvalue: "{{ msin }}{{ OP_VALUE }}"
                       sequencenumber: "{{ msin }}{{ SEQ_NUMBER }}"
                     msin: "0000{{ msin }}"
+                    iddata: "UE"
                     hplmn:
                       mcc: "{{ MCC }}"
                       mnc: "{{ MNC }}"
