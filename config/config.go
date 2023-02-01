@@ -20,8 +20,9 @@ type Config struct {
 			OpValue           string `yaml: "opvalue"`
 			SequenceNumber    string `yaml: "sequencenumber"`
 		} `yaml: "authsubscription"`
-		Msin  string `yaml: "msin"`
-		Hplmn struct {
+		Msin   string `yaml: "msin"`
+		IdData string `yaml: "iddata"`
+		Hplmn  struct {
 			Mcc string `yaml: "mcc"`
 			Mnc string `yaml: "mnc"`
 		} `yaml: "hplmn"`

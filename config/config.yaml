@@ -5,6 +5,7 @@ ue:
     opvalue: "c9e8763286b5b9ffbdf56e1297d0887b"
     sequencenumber: "16f3b3f70fc0"
   msin: "00007487"
+  iddata: "UE1"
   hplmn:
     mcc: "208"
     mnc: "93"

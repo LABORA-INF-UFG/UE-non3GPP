@@ -48,14 +48,14 @@ func InitCommunicationElements() {
 
 }
 
-func IkeSaInit() (*message.IKEMessage, *message.Proposal, *context.IKESecurityAssociation, message.IKEPayloadContainer) {
+func IkeSaInit(cfg config.Config) (*message.IKEMessage, *message.Proposal, *context.IKESecurityAssociation, message.IKEPayloadContainer) {
 	ikeMessage, proposal := util.CreateIKEMessageSAInit()
 	/* N3IWF Security Association request */
 	ikeSecurityAssociation := util.CreateN3IWFSecurityAssociation(proposal, udpConnection, n3iwfUDPAddr, ikeMessage)
 	n3ue.N3IWFIKESecurityAssociation = ikeSecurityAssociation
 
 	var ikePayload message.IKEPayloadContainer
-	ikePayload.BuildIdentificationInitiator(message.ID_FQDN, []byte("UE"))
+	ikePayload.BuildIdentificationInitiator(message.ID_FQDN, []byte(cfg.Ue.IdData))
 
 	return ikeMessage, proposal, ikeSecurityAssociation, ikePayload
 }
@@ -886,7 +886,7 @@ func UENon3GPPConnection() {
 	/* ----------------------- */
 	/* ---- 1º IKE SA INIT --- */
 	/* ----------------------- */
-	ikeMessage, proposal, ikeSecurityAssociation, ikePayload := IkeSaInit()
+	ikeMessage, proposal, ikeSecurityAssociation, ikePayload := IkeSaInit(cfg)
 
 	/* -------------------------- */
 	/* -- 2º IKE AUTH Request --- */
