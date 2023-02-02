@@ -15,7 +15,7 @@ func ConfigMTUGreTun(cfg config.Config) {
 	if err != nil {
 		log.Info(cfg.Ue.LinkGRE.Name + " not found!")
 	} else {
-		log.Info(cfg.Ue.LinkGRE.Name + " mtu set 1000!")
+		log.Info(cfg.Ue.LinkGRE.Name + " mtu set 1300!")
 	}
 }
 
@@ -29,9 +29,7 @@ func CleanEnvironment(cfg config.Config) {
 	downGreTunInterface := "ip link set " + cfg.Ue.LinkGRE.Name + " down"
 	cmd := execabs.Command("bash", "-c", downGreTunInterface)
 	err := cmd.Run()
-	if err != nil {
-		log.Info(cfg.Ue.LinkGRE.Name + " not found!")
-	} else {
+	if err == nil {
 		log.Info(cfg.Ue.LinkGRE.Name + " was set down!")
 	}
 
@@ -39,18 +37,14 @@ func CleanEnvironment(cfg config.Config) {
 	dropGreTunInterface := "ip link del " + cfg.Ue.LinkGRE.Name
 	cmd = execabs.Command("bash", "-c", dropGreTunInterface)
 	err = cmd.Run()
-	if err != nil {
-		log.Info(cfg.Ue.LinkGRE.Name + " not found!")
-	} else {
+	if err == nil {
 		log.Info(cfg.Ue.LinkGRE.Name + " was droped!")
 	}
 
 	downIpsec0Interface := "sudo ip link set " + cfg.Ue.IPSecInterfaceName + " down"
 	cmd = execabs.Command("bash", "-c", downIpsec0Interface)
 	err = cmd.Run()
-	if err != nil {
-		log.Info(cfg.Ue.IPSecInterfaceName + " not found!")
-	} else {
+	if err == nil {
 		log.Info(cfg.Ue.IPSecInterfaceName + " was set down!")
 	}
 
@@ -58,9 +52,7 @@ func CleanEnvironment(cfg config.Config) {
 	dropIpsec0Interface := "sudo ip link del " + cfg.Ue.IPSecInterfaceName
 	cmd = execabs.Command("bash", "-c", dropIpsec0Interface)
 	err = cmd.Run()
-	if err != nil {
-		log.Info(cfg.Ue.IPSecInterfaceName + " not found!")
-	} else {
+	if err == nil {
 		log.Info(cfg.Ue.IPSecInterfaceName + " was droped!")
 	}
 
@@ -82,7 +74,7 @@ func CleanEnvironment(cfg config.Config) {
 	cmd = execabs.Command("bash", "-c", upIpsec0Interface)
 	err = cmd.Run()
 	if err != nil {
-		log.Info("up " + cfg.Ue.IPSecInterfaceName + " fail!")
+		log.Error("up " + cfg.Ue.IPSecInterfaceName + " fail!")
 		panic(err)
 	}
 }

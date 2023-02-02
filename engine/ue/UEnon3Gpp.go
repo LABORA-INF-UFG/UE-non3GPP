@@ -680,8 +680,7 @@ func UePDUSessionSetup(ikeMessage *message.IKEMessage, ikePayload message.IKEPay
 		log.Fatal(err)
 		panic(err)
 	}
-	log.Info("IKE message exchange type: ", ikeMessage.ExchangeType)
-	log.Info("IKE message ID: ", ikeMessage.MessageID)
+	
 	encryptedPayload, ok := ikeMessage.Payloads[0].(*message.Encrypted)
 	if !ok {
 		log.Fatal("Received pakcet is not and encrypted payload")
@@ -713,10 +712,8 @@ func UePDUSessionSetup(ikeMessage *message.IKEMessage, ikePayload message.IKEPay
 		case message.TypeN:
 			notification := ikePayload.(*message.Notification)
 			if notification.NotifyMessageType == message.Vendor3GPPNotifyType5G_QOS_INFO {
-				log.Info("Received Qos Flow settings")
 				if info, err := parse5GQoSInfoNotify(notification); err == nil {
 					QoSInfo = info
-					log.Info("NotificationData: ", notification.NotificationData)
 					if QoSInfo.isDSCPSpecified {
 						log.Info("DSCP is specified but test not support")
 					}
@@ -725,7 +722,6 @@ func UePDUSessionSetup(ikeMessage *message.IKEMessage, ikePayload message.IKEPay
 				}
 			}
 			if notification.NotifyMessageType == message.Vendor3GPPNotifyTypeUP_IP4_ADDRESS {
-				log.Info("UP IP Address: ", notification.NotificationData)
 				upIPAddr = notification.NotificationData[:4]
 			}
 		case message.TypeNiNr:
@@ -823,6 +819,15 @@ func GRETunSetup(QoSInfo *PDUQoSInfo, upIPAddr net.IP, ueAddr *net.IPNet) {
 		OKey:   greKeyField,
 	}
 
+	fmt.Println("............................")
+	fmt.Println("")
+	fmt.Print("ueAddr.IP: ")
+	fmt.Println(ueAddr.IP)
+	fmt.Print("upIPAddr: ")
+	fmt.Println(upIPAddr)
+	fmt.Println("")
+	
+
 	if err := netlink.LinkAdd(newGRETunnel); err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -918,14 +923,18 @@ func UENon3GPPConnection() {
 	/* ------------------------------------ */
 	GRETunSetup(QoSInfo, upIPAddr, ueAddr)
 
+	fmt.Println("")
+	fmt.Print("UE-non3GPP is ready! ")
+	fmt.Print("Try ping -I " + cfg.Ue.LinkGRE.Name + " 8.8.8.8 ")
+	fmt.Println("")
+	fmt.Println("............................")
+
 	for {
 		downGreTunInterface := "ping -I " + cfg.Ue.LinkGRE.Name + " 8.8.8.8"
 		cmd := execabs.Command("bash", "-c", downGreTunInterface)
 		err := cmd.Run()
 		if err != nil {
-			log.Info(" não pingou!")
-		} else {
-			log.Info(" pingou!")
+			log.Warning("Something wrong, Ping Failed!")
 		}
 		time.Sleep(1 * time.Second)
 	}
