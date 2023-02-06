@@ -1,12 +1,12 @@
 
 [fee5gc-core]
-143.110.231.163 internet_network_interface=eth0 n3iwf_install=false
+164.92.79.199 internet_network_interface=eth0 n3iwf_install=false
 
 [fee5gc-n3iwf]
-137.184.81.74 free5gc_ip_address=143.110.231.163 n3iwf_install=true
+143.110.158.169 free5gc_ip_address=164.92.79.199 n3iwf_install=true
 
 [labora-UE-non3GPP]
-137.184.88.67 n3iwf_ike_ip_address=137.184.81.74 free5gc_ip_address=143.110.231.163 msin=7487
-137.184.117.18 n3iwf_ike_ip_address=137.184.81.74 free5gc_ip_address=143.110.231.163 msin=7488
+146.190.54.249 n3iwf_ike_ip_address=143.110.158.169 free5gc_ip_address=164.92.79.199 msin=7487
+
 
 
