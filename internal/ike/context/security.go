@@ -1,6 +1,7 @@
-package handler
+package context
 
 import (
+	"UE-non3GPP/internal/ike/message"
 	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
@@ -16,9 +17,6 @@ import (
 	"io"
 	"math/big"
 	"strings"
-
-	"UE-non3GPP/engine/exchange/pkg/context"
-	"UE-non3GPP/engine/exchange/pkg/ike/message"
 )
 
 // General data
@@ -26,6 +24,58 @@ var (
 	randomNumberMaximum big.Int
 	randomNumberMinimum big.Int
 )
+
+type IKESecurityAssociation struct {
+	// SPI
+	RemoteSPI uint64
+	LocalSPI  uint64
+
+	// Message ID
+	InitiatorMessageID uint32
+	ResponderMessageID uint32
+
+	// Transforms for IKE SA
+	EncryptionAlgorithm    *message.Transform
+	PseudorandomFunction   *message.Transform
+	IntegrityAlgorithm     *message.Transform
+	DiffieHellmanGroup     *message.Transform
+	ExpandedSequenceNumber *message.Transform
+
+	// Used for key generating
+	ConcatenatedNonce      []byte
+	DiffieHellmanSharedKey []byte
+
+	// Keys
+	SK_d  []byte // used for child SA key deriving
+	SK_ai []byte // used by initiator for integrity checking
+	SK_ar []byte // used by responder for integrity checking
+	SK_ei []byte // used by initiator for encrypting
+	SK_er []byte // used by responder for encrypting
+	SK_pi []byte // used by initiator for IKE authentication
+	SK_pr []byte // used by responder for IKE authentication
+
+	// State for IKE_AUTH
+	State uint8
+
+	// Temporary data stored for the use in later exchange
+	InitiatorID              *message.IdentificationInitiator
+	InitiatorCertificate     *message.Certificate
+	IKEAuthResponseSA        *message.SecurityAssociation
+	TrafficSelectorInitiator *message.TrafficSelectorInitiator
+	TrafficSelectorResponder *message.TrafficSelectorResponder
+	LastEAPIdentifier        uint8
+
+	// Authentication data
+	LocalUnsignedAuthentication  []byte
+	RemoteUnsignedAuthentication []byte
+
+	// NAT detection
+	// If UEIsBehindNAT == true, N3IWF should enable NAT traversal and
+	// TODO: should support dynamic updating network address (MOBIKE)
+	UEIsBehindNAT bool
+	// If N3IWFIsBehindNAT == true, N3IWF should send UDP keepalive periodically
+	N3IWFIsBehindNAT bool
+}
 
 func init() {
 	randomNumberMaximum.SetString(strings.Repeat("F", 512), 16)
@@ -288,25 +338,8 @@ func PKCS7Padding(plainText []byte, blockSize int) []byte {
 	return append(plainText, paddingText...)
 }
 
-// Certificate
-func CompareRootCertificate(certificateEncoding uint8, requestedCertificateAuthorityHash []byte) bool {
-	if certificateEncoding != message.X509CertificateSignature {
-		log.Debugf("Not support certificate type: %d. Reject.", certificateEncoding)
-		return false
-	}
-
-	n3iwfSelf := context.N3IWFSelf()
-
-	if len(n3iwfSelf.CertificateAuthority) == 0 {
-		log.Error("Certificate authority in context is empty")
-		return false
-	}
-
-	return bytes.Equal(n3iwfSelf.CertificateAuthority, requestedCertificateAuthorityHash)
-}
-
 // Key Gen for IKE SA
-func GenerateKeyForIKESA(ikeSecurityAssociation *context.IKESecurityAssociation) error {
+func GenerateKeyForIKESA(ikeSecurityAssociation *IKESecurityAssociation) error {
 	// Check parameters
 	if ikeSecurityAssociation == nil {
 		return errors.New("IKE SA is nil")
@@ -437,8 +470,8 @@ func GenerateKeyForIKESA(ikeSecurityAssociation *context.IKESecurityAssociation)
 }
 
 // Key Gen for child SA
-func GenerateKeyForChildSA(ikeSecurityAssociation *context.IKESecurityAssociation,
-	childSecurityAssociation *context.ChildSecurityAssociation) error {
+func GenerateKeyForChildSA(ikeSecurityAssociation *IKESecurityAssociation,
+	childSecurityAssociation *ChildSecurityAssociation) error {
 	// Check parameters
 	if ikeSecurityAssociation == nil {
 		return errors.New("IKE SA is nil")
@@ -534,7 +567,7 @@ func GenerateKeyForChildSA(ikeSecurityAssociation *context.IKESecurityAssociatio
 }
 
 // Decrypt
-func DecryptProcedure(ikeSecurityAssociation *context.IKESecurityAssociation, ikeMessage *message.IKEMessage,
+func DecryptProcedure(ikeSecurityAssociation *IKESecurityAssociation, ikeMessage *message.IKEMessage,
 	encryptedPayload *message.Encrypted) (message.IKEPayloadContainer, error) {
 	// Check parameters
 	if ikeSecurityAssociation == nil {
@@ -615,7 +648,7 @@ func DecryptProcedure(ikeSecurityAssociation *context.IKESecurityAssociation, ik
 }
 
 // Encrypt
-func EncryptProcedure(ikeSecurityAssociation *context.IKESecurityAssociation,
+func EncryptProcedure(ikeSecurityAssociation *IKESecurityAssociation,
 	ikePayload message.IKEPayloadContainer, responseIKEMessage *message.IKEMessage) error {
 	// Check parameters
 	if ikeSecurityAssociation == nil {

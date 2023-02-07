@@ -1,8 +1,7 @@
 package context
 
 import (
-	"UE-non3GPP/engine/exchange/pkg/ike/message"
-	"UE-non3GPP/internal/ike/handler"
+	"UE-non3GPP/internal/ike/message"
 	"encoding/binary"
 	"github.com/vishvananda/netlink"
 	"net"
@@ -120,7 +119,7 @@ func (ue *Ue) GenerateSPI() []byte {
 	var spi uint32
 	spiByte := make([]byte, 4)
 	for {
-		randomUint64 := handler.GenerateRandomNumber().Uint64()
+		randomUint64 := GenerateRandomNumber().Uint64()
 		if _, ok := ue.N3IWFChildSecurityAssociation[uint32(randomUint64)]; !ok {
 			spi = uint32(randomUint64)
 			binary.BigEndian.PutUint32(spiByte, spi)

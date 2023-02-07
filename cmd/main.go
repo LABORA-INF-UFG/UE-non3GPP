@@ -2,7 +2,7 @@ package main
 
 import (
 	"UE-non3GPP/config"
-	"UE-non3GPP/engine/ue"
+	"UE-non3GPP/pkg/template"
 	"github.com/davecgh/go-spew/spew"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
@@ -41,7 +41,8 @@ func main() {
 					log.Info("[UE-non3GPP] Starting connect function: ", name)
 					log.Info("[UE-non3GPP][UE] Supi: ", cfg.Ue.Supi)
 
-					ue.UENon3GPPConnection()
+					//controlPlane.Run(cfg)
+					template.UENon3GPPConnection()
 
 					return nil
 				},

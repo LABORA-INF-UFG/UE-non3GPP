@@ -1,14 +1,16 @@
-package service
+package ike
 
 import (
 	"UE-non3GPP/config"
-	"UE-non3GPP/internal/context"
-	"UE-non3GPP/internal/ike"
+	"UE-non3GPP/internal/ike/context"
+	"UE-non3GPP/internal/ike/dispatch"
 	log "github.com/sirupsen/logrus"
 	"net"
 )
 
-func Run(cfg config.Config, ue *context.Ue) {
+func Run(cfg config.Config) {
+
+	ue := context.NewUe()
 
 	// n3wif UDP address
 	n3wifAddr := cfg.N3iwfInfo.IKEBindAddress + ":" + cfg.N3iwfInfo.IKEBindPort
@@ -56,6 +58,6 @@ func listenAndServe(ue *context.Ue) {
 		copy(forwardData, data[:n])
 
 		// handle the message in ike handler
-		go ike.Dispatch(ue, forwardData)
+		go dispatch.Dispatch(ue, forwardData)
 	}
 }

@@ -1,13 +1,12 @@
 package handler
 
 import (
-	"UE-non3GPP/engine/exchange/pkg/context"
-	"UE-non3GPP/engine/exchange/pkg/ike/message"
-	contextUE "UE-non3GPP/internal/context"
+	"UE-non3GPP/internal/ike/context"
+	"UE-non3GPP/internal/ike/message"
 	"fmt"
 )
 
-func HandleIKESAINIT(ue *contextUE.Ue, ikeMsg *message.IKEMessage) {
+func HandleIKESAINIT(ue *context.Ue, ikeMsg *message.IKEMessage) {
 
 	// handle IKE SA INIT Response
 	var securityAssociation *message.SecurityAssociation
@@ -112,12 +111,12 @@ func HandleIKESAINIT(ue *contextUE.Ue, ikeMsg *message.IKEMessage) {
 
 	// handle keyExchange
 	if keyExchange != nil {
-		_, sharedKeyData = CalculateDiffieHellmanMaterials(GenerateRandomNumber(),
+		_, sharedKeyData = context.CalculateDiffieHellmanMaterials(context.GenerateRandomNumber(),
 			keyExchange.KeyExchangeData, ue.GetDiffieHellmanGroup())
 	}
 
 	if nonce != nil {
-		localNonce := GenerateRandomNumber().Bytes()
+		localNonce := context.GenerateRandomNumber().Bytes()
 		concatenatedNonce = append(nonce.NonceData, localNonce...)
 	}
 
@@ -134,7 +133,7 @@ func HandleIKESAINIT(ue *contextUE.Ue, ikeMsg *message.IKEMessage) {
 		DiffieHellmanSharedKey: sharedKeyData,
 	}
 
-	if err := GenerateKeyForIKESA(ikeSecurityAssociation); err != nil {
+	if err := context.GenerateKeyForIKESA(ikeSecurityAssociation); err != nil {
 		// TODO handle errors
 		return
 	}
@@ -173,7 +172,7 @@ func HandleIKESAINIT(ue *contextUE.Ue, ikeMsg *message.IKEMessage) {
 	tsr := ikePayload.BuildTrafficSelectorResponder()
 	tsr.TrafficSelectors.BuildIndividualTrafficSelector(message.TS_IPV4_ADDR_RANGE, 0, 0, 65535, []byte{0, 0, 0, 0}, []byte{255, 255, 255, 255})
 
-	if err := EncryptProcedure(ikeSecurityAssociation, ikePayload, responseIKEMessage); err != nil {
+	if err := context.EncryptProcedure(ikeSecurityAssociation, ikePayload, responseIKEMessage); err != nil {
 		// TODO handle errors
 		return
 	}
@@ -193,12 +192,12 @@ func HandleIKESAINIT(ue *contextUE.Ue, ikeMsg *message.IKEMessage) {
 
 }
 
-func HandleIKEAUTH(ue *contextUE.Ue, ikeMsg *message.IKEMessage) {
+func HandleIKEAUTH(ue *context.Ue, ikeMsg *message.IKEMessage) {
 	fmt.Println(ue)
 	fmt.Println(ikeMsg)
 }
 
-func HandleCREATECHILDSA(ue *contextUE.Ue, ikeMsg *message.IKEMessage) {
+func HandleCREATECHILDSA(ue *context.Ue, ikeMsg *message.IKEMessage) {
 	fmt.Println(ue)
 	fmt.Println(ikeMsg)
 }

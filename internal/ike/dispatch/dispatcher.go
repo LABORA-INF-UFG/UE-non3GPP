@@ -1,9 +1,9 @@
-package ike
+package dispatch
 
 import (
-	ike_message "UE-non3GPP/engine/exchange/pkg/ike/message"
-	"UE-non3GPP/internal/context"
+	"UE-non3GPP/internal/ike/context"
 	"UE-non3GPP/internal/ike/handler"
+	ike_message "UE-non3GPP/internal/ike/message"
 	log "github.com/sirupsen/logrus"
 )
 
