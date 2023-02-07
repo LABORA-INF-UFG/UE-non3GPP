@@ -2,12 +2,12 @@ package ike
 
 import (
 	ike_message "UE-non3GPP/engine/exchange/pkg/ike/message"
+	"UE-non3GPP/internal/context"
 	"UE-non3GPP/internal/ike/handler"
 	log "github.com/sirupsen/logrus"
-	"net"
 )
 
-func Dispatch(udpConn *net.UDPConn, msg []byte) {
+func Dispatch(ue *context.Ue, msg []byte) {
 
 	// decode IKE message
 	ikeMessage := new(ike_message.IKEMessage)
@@ -19,11 +19,11 @@ func Dispatch(udpConn *net.UDPConn, msg []byte) {
 
 	switch ikeMessage.ExchangeType {
 	case ike_message.IKE_SA_INIT:
-		handler.HandleIKESAINIT(udpConn, ikeMessage)
+		handler.HandleIKESAINIT(ue, ikeMessage)
 	case ike_message.IKE_AUTH:
-		handler.HandleIKEAUTH(udpConn, ikeMessage)
+		handler.HandleIKEAUTH(ue, ikeMessage)
 	case ike_message.CREATE_CHILD_SA:
-		handler.HandleCREATECHILDSA(udpConn, ikeMessage)
+		handler.HandleCREATECHILDSA(ue, ikeMessage)
 	default:
 		log.Error("Unimplemented IKE message type, exchange type: %d", ikeMessage.ExchangeType)
 	}

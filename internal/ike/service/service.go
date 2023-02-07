@@ -2,12 +2,13 @@ package service
 
 import (
 	"UE-non3GPP/config"
+	"UE-non3GPP/internal/context"
 	"UE-non3GPP/internal/ike"
 	log "github.com/sirupsen/logrus"
 	"net"
 )
 
-func Run(cfg config.Config) *net.UDPConn {
+func Run(cfg config.Config, ue *context.Ue) {
 
 	// n3wif UDP address
 	n3wifAddr := cfg.N3iwfInfo.IKEBindAddress + ":" + cfg.N3iwfInfo.IKEBindPort
@@ -30,14 +31,17 @@ func Run(cfg config.Config) *net.UDPConn {
 		panic(err)
 	}
 
-	// handle messages in udp socket
-	go listenAndServe(connUdp)
+	// udp connection of UE
+	ue.SetUdpConn(connUdp)
 
-	return connUdp
+	// handle messages in udp socket
+	go listenAndServe(ue)
+
 }
 
-func listenAndServe(listener *net.UDPConn) {
+func listenAndServe(ue *context.Ue) {
 
+	listener := ue.GetUdpConn()
 	data := make([]byte, 65535)
 
 	for {
@@ -52,6 +56,6 @@ func listenAndServe(listener *net.UDPConn) {
 		copy(forwardData, data[:n])
 
 		// handle the message in ike handler
-		go ike.Dispatch(listener, forwardData)
+		go ike.Dispatch(ue, forwardData)
 	}
 }
