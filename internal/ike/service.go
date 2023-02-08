@@ -4,6 +4,7 @@ import (
 	"UE-non3GPP/config"
 	"UE-non3GPP/internal/ike/context"
 	"UE-non3GPP/internal/ike/dispatch"
+	"UE-non3GPP/internal/ike/trigger"
 	log "github.com/sirupsen/logrus"
 	"net"
 )
@@ -38,6 +39,9 @@ func Run(cfg config.Config) {
 
 	// handle messages in udp socket
 	go listenAndServe(ue)
+
+	// init the registration of UE
+	trigger.InitRegistration(ue)
 
 }
 
