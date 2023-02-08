@@ -4,6 +4,7 @@ import (
 	"UE-non3GPP/internal/ike/message"
 	"encoding/binary"
 	"github.com/vishvananda/netlink"
+	"math/big"
 	"net"
 )
 
@@ -12,6 +13,9 @@ type Ue struct {
 	stateIke                      uint8
 	ikeSecurity                   IkeSecurity
 	N3IWFChildSecurityAssociation map[uint32]*ChildSecurityAssociation // inbound SPI as key
+	secret                        *big.Int
+	factor                        *big.Int
+	localNonce                    []byte
 }
 
 type IkeSecurity struct {
@@ -58,6 +62,10 @@ type ChildSecurityAssociation struct {
 
 func NewUe() *Ue {
 	ue := &Ue{}
+	ue.NewDiffieHellmanGroup(true)
+	ue.NewEncryptionAlgoritm(true)
+	ue.NewPseudorandomFunction(true)
+	ue.NewIntegrityAlgorithm(true)
 	ue.N3IWFChildSecurityAssociation = make(map[uint32]*ChildSecurityAssociation)
 	return ue
 }
@@ -84,10 +92,10 @@ func (ue *Ue) NewDiffieHellmanGroup(DiffieHellmanGroup1 bool) {
 
 }
 
-func (ue *Ue) NewIntegrityAlgorithm(PseudorandomFunction1 bool) {
+func (ue *Ue) NewIntegrityAlgorithm(IntegrityFunction1 bool) {
 	// pseudo random function
-	if PseudorandomFunction1 {
-		ue.ikeSecurity.PseudorandomFunction = message.PRF_HMAC_SHA1
+	if IntegrityFunction1 {
+		ue.ikeSecurity.IntegrityAlgorithm = message.AUTH_HMAC_SHA1_96
 	}
 }
 
@@ -127,4 +135,28 @@ func (ue *Ue) GenerateSPI() []byte {
 		}
 	}
 	return spiByte
+}
+
+func (ue *Ue) SetSecret(secret *big.Int) {
+	ue.secret = secret
+}
+
+func (ue *Ue) GetSecret() *big.Int {
+	return ue.secret
+}
+
+func (ue *Ue) SetFactor(factor *big.Int) {
+	ue.factor = factor
+}
+
+func (ue *Ue) GetFactor() *big.Int {
+	return ue.factor
+}
+
+func (ue *Ue) SetLocalNonce(localNonce []byte) {
+	ue.localNonce = localNonce
+}
+
+func (ue *Ue) GetLocalNonce() []byte {
+	return ue.localNonce
 }

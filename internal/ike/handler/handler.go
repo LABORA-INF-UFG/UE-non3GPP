@@ -4,17 +4,16 @@ import (
 	"UE-non3GPP/internal/ike/context"
 	"UE-non3GPP/internal/ike/message"
 	"fmt"
+	"math/big"
 )
 
 func HandleIKESAINIT(ue *context.Ue, ikeMsg *message.IKEMessage) {
 
 	// handle IKE SA INIT Response
 	var securityAssociation *message.SecurityAssociation
-	var keyExchange *message.KeyExchange
-	var nonce *message.Nonce
 	var notifications []*message.Notification
 	var sharedKeyData []byte
-	var concatenatedNonce []byte
+	var remoteNonce []byte
 	var encryptionAlgorithmTransform, pseudorandomFunctionTransform *message.Transform
 	var integrityAlgorithmTransform, diffieHellmanGroupTransform *message.Transform
 
@@ -29,9 +28,18 @@ func HandleIKESAINIT(ue *context.Ue, ikeMsg *message.IKEMessage) {
 		case message.TypeSA:
 			securityAssociation = ikePayload.(*message.SecurityAssociation)
 		case message.TypeKE:
-			keyExchange = ikePayload.(*message.KeyExchange)
+			remotePublicKeyExchangeValue := ikePayload.(*message.KeyExchange).KeyExchangeData
+			var i int = 0
+			for {
+				if remotePublicKeyExchangeValue[i] != 0 {
+					break
+				}
+			}
+			remotePublicKeyExchangeValue = remotePublicKeyExchangeValue[i:]
+			remotePublicKeyExchangeValueBig := new(big.Int).SetBytes(remotePublicKeyExchangeValue)
+			sharedKeyData = new(big.Int).Exp(remotePublicKeyExchangeValueBig, ue.GetSecret(), ue.GetFactor()).Bytes()
 		case message.TypeNiNr:
-			nonce = ikePayload.(*message.Nonce)
+			remoteNonce = ikePayload.(*message.Nonce).NonceData
 		case message.TypeN:
 			notifications = append(notifications, ikePayload.(*message.Notification))
 		default:
@@ -40,7 +48,6 @@ func HandleIKESAINIT(ue *context.Ue, ikeMsg *message.IKEMessage) {
 	}
 
 	// retrieve client context
-
 	if securityAssociation != nil {
 
 		for _, proposal := range securityAssociation.Proposals {
@@ -109,27 +116,16 @@ func HandleIKESAINIT(ue *context.Ue, ikeMsg *message.IKEMessage) {
 		}
 	}
 
-	// handle keyExchange
-	if keyExchange != nil {
-		_, sharedKeyData = context.CalculateDiffieHellmanMaterials(context.GenerateRandomNumber(),
-			keyExchange.KeyExchangeData, ue.GetDiffieHellmanGroup())
-	}
-
-	if nonce != nil {
-		localNonce := context.GenerateRandomNumber().Bytes()
-		concatenatedNonce = append(nonce.NonceData, localNonce...)
-	}
-
 	ikeSecurityAssociation := &context.IKESecurityAssociation{
 		LocalSPI:               ikeMsg.InitiatorSPI,
 		RemoteSPI:              ikeMsg.ResponderSPI,
-		InitiatorMessageID:     ikeMsg.MessageID + 1,
-		ResponderMessageID:     ikeMsg.MessageID + 1,
+		InitiatorMessageID:     ikeMsg.MessageID,
+		ResponderMessageID:     ikeMsg.MessageID,
 		EncryptionAlgorithm:    encryptionAlgorithmTransform,
 		IntegrityAlgorithm:     integrityAlgorithmTransform,
 		PseudorandomFunction:   pseudorandomFunctionTransform,
 		DiffieHellmanGroup:     diffieHellmanGroupTransform,
-		ConcatenatedNonce:      concatenatedNonce,
+		ConcatenatedNonce:      append(ue.GetLocalNonce(), remoteNonce...),
 		DiffieHellmanSharedKey: sharedKeyData,
 	}
 
@@ -142,7 +138,7 @@ func HandleIKESAINIT(ue *context.Ue, ikeMsg *message.IKEMessage) {
 	responseIKEMessage := new(message.IKEMessage)
 	responseIKEMessage.BuildIKEHeader(
 		ikeSecurityAssociation.LocalSPI, ikeSecurityAssociation.RemoteSPI,
-		message.IKE_AUTH, message.InitiatorBitCheck, ikeSecurityAssociation.InitiatorMessageID)
+		message.IKE_AUTH, message.InitiatorBitCheck, ikeSecurityAssociation.InitiatorMessageID+1)
 
 	var ikePayload message.IKEPayloadContainer
 
@@ -174,6 +170,7 @@ func HandleIKESAINIT(ue *context.Ue, ikeMsg *message.IKEMessage) {
 
 	if err := context.EncryptProcedure(ikeSecurityAssociation, ikePayload, responseIKEMessage); err != nil {
 		// TODO handle errors
+		fmt.Println(err)
 		return
 	}
 
