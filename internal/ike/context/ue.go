@@ -8,7 +8,7 @@ import (
 	"net"
 )
 
-type Ue struct {
+type UeIke struct {
 	udpConn                       *net.UDPConn
 	stateIke                      uint8
 	ikeSecurity                   IkeSecurity
@@ -17,6 +17,7 @@ type Ue struct {
 	factor                        *big.Int
 	localNonce                    []byte
 	N3IWFIKESecurityAssociation   *IKESecurityAssociation
+	cacheNasMessages              []byte
 }
 
 type IkeSecurity struct {
@@ -61,8 +62,8 @@ type ChildSecurityAssociation struct {
 	PDUSessionIds []int64
 }
 
-func NewUe() *Ue {
-	ue := &Ue{}
+func NewUe() *UeIke {
+	ue := &UeIke{}
 	ue.NewDiffieHellmanGroup(true)
 	ue.NewEncryptionAlgoritm(true)
 	ue.NewPseudorandomFunction(true)
@@ -71,27 +72,27 @@ func NewUe() *Ue {
 	return ue
 }
 
-func (ue *Ue) CreateN3IWFIKESecurityAssociation(ikeSecurity *IKESecurityAssociation) {
+func (ue *UeIke) CreateN3IWFIKESecurityAssociation(ikeSecurity *IKESecurityAssociation) {
 	ue.N3IWFIKESecurityAssociation = ikeSecurity
 	ue.N3IWFIKESecurityAssociation.State = 0 // pre-signaling
 
 }
 
-func (ue *Ue) NewEncryptionAlgoritm(encryptionAlgorithm1 bool) {
+func (ue *UeIke) NewEncryptionAlgoritm(encryptionAlgorithm1 bool) {
 	// encryption algorithm
 	if encryptionAlgorithm1 {
 		ue.ikeSecurity.EncryptionAlgorithm = message.ENCR_AES_CBC
 	}
 }
 
-func (ue *Ue) NewPseudorandomFunction(PseudorandomFunction1 bool) {
+func (ue *UeIke) NewPseudorandomFunction(PseudorandomFunction1 bool) {
 	// pseudo random function
 	if PseudorandomFunction1 {
 		ue.ikeSecurity.PseudorandomFunction = message.PRF_HMAC_SHA1
 	}
 }
 
-func (ue *Ue) NewDiffieHellmanGroup(DiffieHellmanGroup1 bool) {
+func (ue *UeIke) NewDiffieHellmanGroup(DiffieHellmanGroup1 bool) {
 	// diffieHellman algorithm
 	if DiffieHellmanGroup1 {
 		ue.ikeSecurity.DiffieHellmanGroup = message.DH_2048_BIT_MODP
@@ -99,38 +100,38 @@ func (ue *Ue) NewDiffieHellmanGroup(DiffieHellmanGroup1 bool) {
 
 }
 
-func (ue *Ue) NewIntegrityAlgorithm(IntegrityFunction1 bool) {
+func (ue *UeIke) NewIntegrityAlgorithm(IntegrityFunction1 bool) {
 	// pseudo random function
 	if IntegrityFunction1 {
 		ue.ikeSecurity.IntegrityAlgorithm = message.AUTH_HMAC_SHA1_96
 	}
 }
 
-func (ue *Ue) GetIntegrityAlgorithm() uint16 {
+func (ue *UeIke) GetIntegrityAlgorithm() uint16 {
 	return ue.ikeSecurity.IntegrityAlgorithm
 }
 
-func (ue *Ue) GetDiffieHellmanGroup() uint16 {
+func (ue *UeIke) GetDiffieHellmanGroup() uint16 {
 	return ue.ikeSecurity.DiffieHellmanGroup
 }
 
-func (ue *Ue) GetPseudorandomFunction() uint16 {
+func (ue *UeIke) GetPseudorandomFunction() uint16 {
 	return ue.ikeSecurity.PseudorandomFunction
 }
 
-func (ue *Ue) GetEncryptionAlgoritm() uint16 {
+func (ue *UeIke) GetEncryptionAlgoritm() uint16 {
 	return ue.ikeSecurity.EncryptionAlgorithm
 }
 
-func (ue *Ue) GetUdpConn() *net.UDPConn {
+func (ue *UeIke) GetUdpConn() *net.UDPConn {
 	return ue.udpConn
 }
 
-func (ue *Ue) SetUdpConn(conn *net.UDPConn) {
+func (ue *UeIke) SetUdpConn(conn *net.UDPConn) {
 	ue.udpConn = conn
 }
 
-func (ue *Ue) GenerateSPI() []byte {
+func (ue *UeIke) GenerateSPI() []byte {
 	var spi uint32
 	spiByte := make([]byte, 4)
 	for {
@@ -144,26 +145,26 @@ func (ue *Ue) GenerateSPI() []byte {
 	return spiByte
 }
 
-func (ue *Ue) SetSecret(secret *big.Int) {
+func (ue *UeIke) SetSecret(secret *big.Int) {
 	ue.secret = secret
 }
 
-func (ue *Ue) GetSecret() *big.Int {
+func (ue *UeIke) GetSecret() *big.Int {
 	return ue.secret
 }
 
-func (ue *Ue) SetFactor(factor *big.Int) {
+func (ue *UeIke) SetFactor(factor *big.Int) {
 	ue.factor = factor
 }
 
-func (ue *Ue) GetFactor() *big.Int {
+func (ue *UeIke) GetFactor() *big.Int {
 	return ue.factor
 }
 
-func (ue *Ue) SetLocalNonce(localNonce []byte) {
+func (ue *UeIke) SetLocalNonce(localNonce []byte) {
 	ue.localNonce = localNonce
 }
 
-func (ue *Ue) GetLocalNonce() []byte {
+func (ue *UeIke) GetLocalNonce() []byte {
 	return ue.localNonce
 }

@@ -8,7 +8,7 @@ import (
 	"math/big"
 )
 
-func HandleIKESAINIT(ue *context.Ue, ikeMsg *message.IKEMessage) {
+func HandleIKESAINIT(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 
 	// handle IKE SA INIT Response
 	var securityAssociation *message.SecurityAssociation
@@ -192,9 +192,6 @@ func HandleIKESAINIT(ue *context.Ue, ikeMsg *message.IKEMessage) {
 		// TODO handle errors
 		return
 	}
-
-	// change the state for pre signaling to eap signaling
-	ue.N3IWFIKESecurityAssociation.State++
 }
 
 const (
@@ -203,7 +200,7 @@ const (
 	PostSignalling
 )
 
-func HandleIKEAUTH(ue *context.Ue, ikeMsg *message.IKEMessage) {
+func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 
 	var encryptedPayload *message.Encrypted
 
@@ -262,7 +259,6 @@ func HandleIKEAUTH(ue *context.Ue, ikeMsg *message.IKEMessage) {
 
 	switch ue.N3IWFIKESecurityAssociation.State {
 	case PreSignalling:
-	case EAPSignalling:
 		// IKE_AUTH - EAP exchange
 		responseIKEMessage := new(message.IKEMessage)
 
@@ -284,7 +280,8 @@ func HandleIKEAUTH(ue *context.Ue, ikeMsg *message.IKEMessage) {
 		eapVendorTypeData = append(eapVendorTypeData, anParametersLength...)
 		eapVendorTypeData = append(eapVendorTypeData, anParameters...)
 
-		// NAS packet
+		// Send Registration Accept
+		// create context for NAS signal
 
 		// EAP
 		var ikePayload message.IKEPayloadContainer
@@ -307,6 +304,9 @@ func HandleIKEAUTH(ue *context.Ue, ikeMsg *message.IKEMessage) {
 			// TODO handle errors
 			return
 		}
+
+	case EAPSignalling:
+		// receive EAP/NAS messages
 	case PostSignalling:
 		// TODO implement this information
 	default:
@@ -314,7 +314,7 @@ func HandleIKEAUTH(ue *context.Ue, ikeMsg *message.IKEMessage) {
 	}
 }
 
-func HandleCREATECHILDSA(ue *context.Ue, ikeMsg *message.IKEMessage) {
+func HandleCREATECHILDSA(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	fmt.Println(ue)
 	fmt.Println(ikeMsg)
 }

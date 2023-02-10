@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Dispatch(ue *context.Ue, msg []byte) {
+func Dispatch(ue *context.UeIke, msg []byte) {
 
 	// decode IKE message
 	ikeMessage := new(ike_message.IKEMessage)
