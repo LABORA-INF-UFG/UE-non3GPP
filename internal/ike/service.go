@@ -11,7 +11,7 @@ import (
 
 func Run(cfg config.Config) {
 
-	ue := context.NewUe()
+	ue := context.NewUeIke()
 
 	// n3wif UDP address
 	n3wifAddr := cfg.N3iwfInfo.IKEBindAddress + ":" + cfg.N3iwfInfo.IKEBindPort
@@ -45,7 +45,7 @@ func Run(cfg config.Config) {
 
 }
 
-func listenAndServe(ue *context.Ue) {
+func listenAndServe(ue *context.UeIke) {
 
 	listener := ue.GetUdpConn()
 	data := make([]byte, 65535)

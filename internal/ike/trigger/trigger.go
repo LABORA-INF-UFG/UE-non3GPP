@@ -7,7 +7,7 @@ import (
 	"math/big"
 )
 
-func InitRegistration(ue *context.Ue) {
+func InitRegistration(ue *context.UeIke) {
 
 	// IKE_SA_INIT
 	ikeInitiatorSPI := uint64(123123)
