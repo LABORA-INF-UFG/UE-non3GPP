@@ -16,6 +16,7 @@ type Ue struct {
 	secret                        *big.Int
 	factor                        *big.Int
 	localNonce                    []byte
+	N3IWFIKESecurityAssociation   *IKESecurityAssociation
 }
 
 type IkeSecurity struct {
@@ -68,6 +69,12 @@ func NewUe() *Ue {
 	ue.NewIntegrityAlgorithm(true)
 	ue.N3IWFChildSecurityAssociation = make(map[uint32]*ChildSecurityAssociation)
 	return ue
+}
+
+func (ue *Ue) CreateN3IWFIKESecurityAssociation(ikeSecurity *IKESecurityAssociation) {
+	ue.N3IWFIKESecurityAssociation = ikeSecurity
+	ue.N3IWFIKESecurityAssociation.State = 0 // pre-signaling
+
 }
 
 func (ue *Ue) NewEncryptionAlgoritm(encryptionAlgorithm1 bool) {

@@ -3,6 +3,7 @@ package handler
 import (
 	"UE-non3GPP/internal/ike/context"
 	"UE-non3GPP/internal/ike/message"
+	"encoding/binary"
 	"fmt"
 	"math/big"
 )
@@ -134,11 +135,17 @@ func HandleIKESAINIT(ue *context.Ue, ikeMsg *message.IKEMessage) {
 		return
 	}
 
+	// create ike security assocation
+	ue.CreateN3IWFIKESecurityAssociation(ikeSecurityAssociation)
+
 	// send IKE_AUTH
 	responseIKEMessage := new(message.IKEMessage)
+
+	ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
+
 	responseIKEMessage.BuildIKEHeader(
 		ikeSecurityAssociation.LocalSPI, ikeSecurityAssociation.RemoteSPI,
-		message.IKE_AUTH, message.InitiatorBitCheck, ikeSecurityAssociation.InitiatorMessageID+1)
+		message.IKE_AUTH, message.InitiatorBitCheck, ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
 
 	var ikePayload message.IKEPayloadContainer
 
@@ -168,9 +175,8 @@ func HandleIKESAINIT(ue *context.Ue, ikeMsg *message.IKEMessage) {
 	tsr := ikePayload.BuildTrafficSelectorResponder()
 	tsr.TrafficSelectors.BuildIndividualTrafficSelector(message.TS_IPV4_ADDR_RANGE, 0, 0, 65535, []byte{0, 0, 0, 0}, []byte{255, 255, 255, 255})
 
-	if err := context.EncryptProcedure(ikeSecurityAssociation, ikePayload, responseIKEMessage); err != nil {
+	if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation, ikePayload, responseIKEMessage); err != nil {
 		// TODO handle errors
-		fmt.Println(err)
 		return
 	}
 
@@ -187,11 +193,126 @@ func HandleIKESAINIT(ue *context.Ue, ikeMsg *message.IKEMessage) {
 		return
 	}
 
+	// change the state for pre signaling to eap signaling
+	ue.N3IWFIKESecurityAssociation.State++
+
 }
 
+const (
+	PreSignalling = iota
+	EAPSignalling
+	PostSignalling
+)
+
 func HandleIKEAUTH(ue *context.Ue, ikeMsg *message.IKEMessage) {
-	fmt.Println(ue)
-	fmt.Println(ikeMsg)
+
+	var encryptedPayload *message.Encrypted
+
+	if ikeMsg.Flags != message.ResponseBitCheck {
+		// TODO handle errors in IKE header
+		return
+	}
+
+	localSPI := ikeMsg.ResponderSPI
+	if localSPI != ue.N3IWFIKESecurityAssociation.RemoteSPI {
+		// TODO handle errors in IKE header
+		return
+	}
+
+	for _, ikePayload := range ikeMsg.Payloads {
+		switch ikePayload.Type() {
+		case message.TypeSK:
+			encryptedPayload = ikePayload.(*message.Encrypted)
+		default:
+			return
+		}
+	}
+
+	decryptedIKEPayload, err := context.DecryptProcedure(ue.N3IWFIKESecurityAssociation, ikeMsg, encryptedPayload)
+	if err != nil {
+		// TODO handle errors in IKE header
+		return
+	}
+
+	var eap *message.EAP
+
+	for _, ikePayload := range decryptedIKEPayload {
+		switch ikePayload.Type() {
+		case message.TypeIDi:
+			_ = ikePayload.(*message.IdentificationInitiator)
+		case message.TypeCERTreq:
+			_ = ikePayload.(*message.CertificateRequest)
+		case message.TypeCERT:
+			_ = ikePayload.(*message.Certificate)
+		case message.TypeSA:
+			_ = ikePayload.(*message.SecurityAssociation)
+		case message.TypeTSi:
+			_ = ikePayload.(*message.TrafficSelectorInitiator)
+		case message.TypeTSr:
+			_ = ikePayload.(*message.TrafficSelectorResponder)
+		case message.TypeEAP:
+			eap = ikePayload.(*message.EAP)
+		case message.TypeAUTH:
+			_ = ikePayload.(*message.Authentication)
+		case message.TypeCP:
+			_ = ikePayload.(*message.Configuration)
+		default:
+			// TODO handle errors in IKE header
+		}
+	}
+
+	switch ue.N3IWFIKESecurityAssociation.State {
+	case PreSignalling:
+	case EAPSignalling:
+		// IKE_AUTH - EAP exchange
+		responseIKEMessage := new(message.IKEMessage)
+
+		ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
+
+		responseIKEMessage.BuildIKEHeader(
+			ue.N3IWFIKESecurityAssociation.LocalSPI, ue.N3IWFIKESecurityAssociation.RemoteSPI,
+			message.IKE_AUTH, message.InitiatorBitCheck, ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
+
+		// EAP-5G vendor type data
+		eapVendorTypeData := make([]byte, 2)
+		eapVendorTypeData[0] = message.EAP5GType5GNAS
+
+		// AN Parameters
+		// TODO Hardcode snssai, mcc, mnc and guami information
+		anParameters := message.BuildEAP5GANParameters()
+		anParametersLength := make([]byte, 2)
+		binary.BigEndian.PutUint16(anParametersLength, uint16(len(anParameters)))
+		eapVendorTypeData = append(eapVendorTypeData, anParametersLength...)
+		eapVendorTypeData = append(eapVendorTypeData, anParameters...)
+
+		// NAS packet
+
+		// EAP
+		var ikePayload message.IKEPayloadContainer
+		eap := ikePayload.BuildEAP(message.EAPCodeResponse, eap.Identifier)
+		eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP, message.VendorTypeEAP5G, eapVendorTypeData)
+		if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation, ikePayload, responseIKEMessage); err != nil {
+			// TODO handle errors
+			return
+		}
+
+		// Send to N3IWF
+		ikeMessageData, err := responseIKEMessage.Encode()
+		if err != nil {
+			// TODO handle errors
+			return
+		}
+		udp := ue.GetUdpConn()
+		_, err = udp.Write(ikeMessageData)
+		if err != nil {
+			// TODO handle errors
+			return
+		}
+	case PostSignalling:
+		// TODO implement this information
+	default:
+		return
+	}
 }
 
 func HandleCREATECHILDSA(ue *context.Ue, ikeMsg *message.IKEMessage) {

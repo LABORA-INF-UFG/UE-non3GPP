@@ -227,6 +227,79 @@ func (container *IKEPayloadContainer) BuildEAP5GStart(identifier uint8) {
 	eap.EAPTypeData.BuildEAPExpanded(VendorID3GPP, VendorTypeEAP5G, []byte{EAP5GType5GStart, EAP5GSpareValue})
 }
 
+func BuildEAP5GANParameters() []byte {
+	var anParameters []byte
+
+	// [TS 24.502] 9.3.2.2.2.3
+	// AN-parameter value field in GUAMI, PLMN ID and NSSAI is coded as value part
+	// Therefore, IEI of AN-parameter is not needed to be included.
+
+	// anParameter = AN-parameter Type | AN-parameter Length | Value part of IE
+
+	// Build GUAMI
+	anParameter := make([]byte, 2)
+	guami := make([]byte, 6)
+	guami[0] = 0x02
+	guami[1] = 0xf8
+	guami[2] = 0x39
+	guami[3] = 0xca
+	guami[4] = 0xfe
+	guami[5] = 0x0
+	anParameter[0] = ANParametersTypeGUAMI
+	anParameter[1] = byte(len(guami))
+	anParameter = append(anParameter, guami...)
+
+	anParameters = append(anParameters, anParameter...)
+
+	// Build Establishment Cause
+	anParameter = make([]byte, 2)
+	establishmentCause := make([]byte, 1)
+	establishmentCause[0] = EstablishmentCauseMO_Signalling
+	anParameter[0] = ANParametersTypeEstablishmentCause
+	anParameter[1] = byte(len(establishmentCause))
+	anParameter = append(anParameter, establishmentCause...)
+
+	anParameters = append(anParameters, anParameter...)
+
+	// Build PLMN ID
+	anParameter = make([]byte, 2)
+	plmnID := make([]byte, 3)
+	plmnID[0] = 0x02
+	plmnID[1] = 0xf8
+	plmnID[2] = 0x39
+	anParameter[0] = ANParametersTypeSelectedPLMNID
+	anParameter[1] = byte(len(plmnID))
+	anParameter = append(anParameter, plmnID...)
+
+	anParameters = append(anParameters, anParameter...)
+
+	// Build NSSAI
+	anParameter = make([]byte, 2)
+	var nssai []byte
+	// s-nssai = s-nssai length(1 byte) | SST(1 byte) | SD(3 bytes)
+	snssai := make([]byte, 5)
+	snssai[0] = 4
+	snssai[1] = 1
+	snssai[2] = 0x01
+	snssai[3] = 0x02
+	snssai[4] = 0x03
+	nssai = append(nssai, snssai...)
+	snssai = make([]byte, 5)
+	snssai[0] = 4
+	snssai[1] = 1
+	snssai[2] = 0x11
+	snssai[3] = 0x22
+	snssai[4] = 0x33
+	nssai = append(nssai, snssai...)
+	anParameter[0] = ANParametersTypeRequestedNSSAI
+	anParameter[1] = byte(len(nssai))
+	anParameter = append(anParameter, nssai...)
+
+	anParameters = append(anParameters, anParameter...)
+
+	return anParameters
+}
+
 func (container *IKEPayloadContainer) BuildEAP5GNAS(identifier uint8, nasPDU []byte) {
 	if len(nasPDU) == 0 {
 		// log.Error("BuildEAP5GNAS(): NASPDU is nil")

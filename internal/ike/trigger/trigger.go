@@ -1,7 +1,6 @@
 package trigger
 
 import (
-	"UE-non3GPP/engine/exchange/pkg/ike/handler"
 	"UE-non3GPP/internal/ike/context"
 	"UE-non3GPP/internal/ike/message"
 	log "github.com/sirupsen/logrus"
@@ -32,13 +31,13 @@ func InitRegistration(ue *context.Ue) {
 	proposal.DiffieHellmanGroup.BuildTransform(message.TypeDiffieHellmanGroup, message.DH_2048_BIT_MODP, nil, nil, nil)
 
 	// Key exchange data
-	generator := new(big.Int).SetUint64(handler.Group14Generator)
-	factor, ok := new(big.Int).SetString(handler.Group14PrimeString, 16)
+	generator := new(big.Int).SetUint64(context.Group14Generator)
+	factor, ok := new(big.Int).SetString(context.Group14PrimeString, 16)
 	if !ok {
 		log.Info("Generate key exchange data failed")
 	}
 
-	secret := handler.GenerateRandomNumber()
+	secret := context.GenerateRandomNumber()
 
 	localPublicKeyExchangeValue := new(big.Int).Exp(generator, secret, factor).Bytes()
 	prependZero := make([]byte, len(factor.Bytes())-len(localPublicKeyExchangeValue))
@@ -50,7 +49,7 @@ func InitRegistration(ue *context.Ue) {
 	ue.SetSecret(secret)
 
 	// Nonce
-	localNonce := handler.GenerateRandomNumber().Bytes()
+	localNonce := context.GenerateRandomNumber().Bytes()
 	ue.SetLocalNonce(localNonce)
 	ikeMessage.Payloads.BuildNonce(localNonce)
 
@@ -62,5 +61,4 @@ func InitRegistration(ue *context.Ue) {
 	if _, err := ue.GetUdpConn().Write(ikeMessageData); err != nil {
 		log.Info("Write IKE maessage fail: %+v", err)
 	}
-
 }

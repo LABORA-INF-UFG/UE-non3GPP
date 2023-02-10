@@ -1,7 +1,6 @@
 package context
 
 import (
-	"UE-non3GPP/engine/exchange/pkg/ike/handler"
 	"UE-non3GPP/internal/ike/message"
 	"bytes"
 	"crypto/aes"
@@ -359,7 +358,7 @@ func GenerateKeyForIKESA(ikeSecurityAssociation *IKESecurityAssociation) error {
 	// Generate IKE SA key as defined in RFC7296 Section 1.3 and Section 1.4
 	var pseudorandomFunction hash.Hash
 
-	if pseudorandomFunction, ok = handler.NewPseudorandomFunction(ikeSecurityAssociation.ConcatenatedNonce, transformPseudorandomFunction.TransformID); !ok {
+	if pseudorandomFunction, ok = NewPseudorandomFunction(ikeSecurityAssociation.ConcatenatedNonce, transformPseudorandomFunction.TransformID); !ok {
 		return errors.New("New pseudorandom function failed")
 	}
 
@@ -374,7 +373,7 @@ func GenerateKeyForIKESA(ikeSecurityAssociation *IKESecurityAssociation) error {
 	var keyStream, generatedKeyBlock []byte
 	var index byte
 	for index = 1; len(keyStream) < totalKeyLength; index++ {
-		if pseudorandomFunction, ok = handler.NewPseudorandomFunction(SKEYSEED, transformPseudorandomFunction.TransformID); !ok {
+		if pseudorandomFunction, ok = NewPseudorandomFunction(SKEYSEED, transformPseudorandomFunction.TransformID); !ok {
 			return errors.New("New pseudorandom function failed")
 		}
 		if _, err := pseudorandomFunction.Write(append(append(generatedKeyBlock, seed...), index)); err != nil {
@@ -501,80 +500,38 @@ func GenerateKeyForChildSA(ikeSecurityAssociation *IKESecurityAssociation,
 }
 
 // Decrypt
-func DecryptProcedure(ikeSecurityAssociation *IKESecurityAssociation, ikeMessage *message.IKEMessage,
-	encryptedPayload *message.Encrypted) (message.IKEPayloadContainer, error) {
-	// Check parameters
-	if ikeSecurityAssociation == nil {
-		return nil, errors.New("IKE SA is nil")
-	}
-	if ikeMessage == nil {
-		return nil, errors.New("IKE message is nil")
-	}
-	if encryptedPayload == nil {
-		return nil, errors.New("IKE encrypted payload is nil")
-	}
-
-	// Check if the context contain needed data
-	if ikeSecurityAssociation.IntegrityAlgorithm == nil {
-		return nil, errors.New("No integrity algorithm specified")
-	}
-	if ikeSecurityAssociation.EncryptionAlgorithm == nil {
-		return nil, errors.New("No encryption algorithm specified")
-	}
-
-	if len(ikeSecurityAssociation.SK_ai) == 0 {
-		return nil, errors.New("No initiator's integrity key")
-	}
-	if len(ikeSecurityAssociation.SK_ei) == 0 {
-		return nil, errors.New("No initiator's encryption key")
-	}
-
+func DecryptProcedure(ikeSecurityAssociation *IKESecurityAssociation, ikeMessage *message.IKEMessage, encryptedPayload *message.Encrypted) (message.IKEPayloadContainer, error) {
 	// Load needed information
 	transformIntegrityAlgorithm := ikeSecurityAssociation.IntegrityAlgorithm
 	transformEncryptionAlgorithm := ikeSecurityAssociation.EncryptionAlgorithm
-	checksumLength, ok := getOutputLength(transformIntegrityAlgorithm.TransformType,
-		transformIntegrityAlgorithm.TransformID, transformIntegrityAlgorithm.AttributePresent,
-		transformIntegrityAlgorithm.AttributeValue)
-	if !ok {
-		log.Error("Get key length of an unsupported algorithm. This may imply an unsupported transform is chosen.")
-		return nil, errors.New("Get key length failed")
-	}
+	checksumLength := 12 // HMAC_SHA1_96
 
 	// Checksum
 	checksum := encryptedPayload.EncryptedData[len(encryptedPayload.EncryptedData)-checksumLength:]
 
 	ikeMessageData, err := ikeMessage.Encode()
 	if err != nil {
-		log.Errorln(err)
-		log.Error("Error occur when encoding for checksum")
 		return nil, errors.New("Encoding IKE message failed")
 	}
 
-	ok, err = VerifyIKEChecksum(ikeSecurityAssociation.SK_ai,
-		ikeMessageData[:len(ikeMessageData)-checksumLength], checksum,
-		transformIntegrityAlgorithm.TransformID)
+	ok, err := VerifyIKEChecksum(ikeSecurityAssociation.SK_ar, ikeMessageData[:len(ikeMessageData)-checksumLength], checksum, transformIntegrityAlgorithm.TransformID)
 	if err != nil {
-		log.Errorf("Error occur when verifying checksum: %+v", err)
 		return nil, errors.New("Error verify checksum")
 	}
 	if !ok {
-		log.Warn("Message checksum failed. Drop the message.")
 		return nil, errors.New("Checksum failed, drop.")
 	}
 
 	// Decrypt
 	encryptedData := encryptedPayload.EncryptedData[:len(encryptedPayload.EncryptedData)-checksumLength]
-	plainText, err := DecryptMessage(ikeSecurityAssociation.SK_ei, encryptedData,
-		transformEncryptionAlgorithm.TransformID)
+	plainText, err := DecryptMessage(ikeSecurityAssociation.SK_er, encryptedData, transformEncryptionAlgorithm.TransformID)
 	if err != nil {
-		log.Errorf("Error occur when decrypting message: %+v", err)
 		return nil, errors.New("Error decrypting message")
 	}
 
 	var decryptedIKEPayload message.IKEPayloadContainer
 	err = decryptedIKEPayload.Decode(encryptedPayload.NextPayload, plainText)
 	if err != nil {
-		log.Errorln(err)
 		return nil, errors.New("Decoding decrypted payload failed")
 	}
 
@@ -594,7 +551,7 @@ func EncryptProcedure(ikeSecurityAssociation *IKESecurityAssociation, ikePayload
 		return errors.New("Encoding IKE payload failed.")
 	}
 
-	encryptedData, err := handler.EncryptMessage(ikeSecurityAssociation.SK_ei, notificationPayloadData, transformEncryptionAlgorithm.TransformID)
+	encryptedData, err := EncryptMessage(ikeSecurityAssociation.SK_ei, notificationPayloadData, transformEncryptionAlgorithm.TransformID)
 	if err != nil {
 		return errors.New("Error encrypting message")
 	}
@@ -607,7 +564,7 @@ func EncryptProcedure(ikeSecurityAssociation *IKESecurityAssociation, ikePayload
 	if err != nil {
 		return errors.New("Encoding IKE message error")
 	}
-	checksumOfMessage, err := handler.CalculateChecksum(ikeSecurityAssociation.SK_ai, responseIKEMessageData[:len(responseIKEMessageData)-checksumLength], transformIntegrityAlgorithm.TransformID)
+	checksumOfMessage, err := CalculateChecksum(ikeSecurityAssociation.SK_ai, responseIKEMessageData[:len(responseIKEMessageData)-checksumLength], transformIntegrityAlgorithm.TransformID)
 	if err != nil {
 		return errors.New("Error calculating checksum")
 	}
