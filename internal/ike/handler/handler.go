@@ -144,7 +144,7 @@ func HandleIKESAINIT(ue *context.Ue, ikeMsg *message.IKEMessage) {
 	ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
 
 	responseIKEMessage.BuildIKEHeader(
-		ikeSecurityAssociation.LocalSPI, ikeSecurityAssociation.RemoteSPI,
+		ue.N3IWFIKESecurityAssociation.LocalSPI, ue.N3IWFIKESecurityAssociation.RemoteSPI,
 		message.IKE_AUTH, message.InitiatorBitCheck, ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
 
 	var ikePayload message.IKEPayloadContainer
@@ -195,7 +195,6 @@ func HandleIKESAINIT(ue *context.Ue, ikeMsg *message.IKEMessage) {
 
 	// change the state for pre signaling to eap signaling
 	ue.N3IWFIKESecurityAssociation.State++
-
 }
 
 const (
