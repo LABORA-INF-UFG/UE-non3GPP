@@ -2,6 +2,7 @@ package context
 
 import (
 	"UE-non3GPP/internal/ike/message"
+	"UE-non3GPP/internal/nas/context"
 	"encoding/binary"
 	"github.com/vishvananda/netlink"
 	"math/big"
@@ -17,7 +18,7 @@ type UeIke struct {
 	factor                        *big.Int
 	localNonce                    []byte
 	N3IWFIKESecurityAssociation   *IKESecurityAssociation
-	cacheNasMessages              []byte
+	NasContext                    *context.UeNas
 }
 
 type IkeSecurity struct {
@@ -62,13 +63,14 @@ type ChildSecurityAssociation struct {
 	PDUSessionIds []int64
 }
 
-func NewUe() *UeIke {
+func NewUeIke(ueNas *context.UeNas) *UeIke {
 	ue := &UeIke{}
 	ue.NewDiffieHellmanGroup(true)
 	ue.NewEncryptionAlgoritm(true)
 	ue.NewPseudorandomFunction(true)
 	ue.NewIntegrityAlgorithm(true)
 	ue.N3IWFChildSecurityAssociation = make(map[uint32]*ChildSecurityAssociation)
+	ue.NasContext = ueNas
 	return ue
 }
 

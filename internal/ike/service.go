@@ -9,9 +9,7 @@ import (
 	"net"
 )
 
-func Run(cfg config.Config) {
-
-	ue := context.NewUeIke()
+func Run(cfg config.Config, ue *context.UeIke) {
 
 	// n3wif UDP address
 	n3wifAddr := cfg.N3iwfInfo.IKEBindAddress + ":" + cfg.N3iwfInfo.IKEBindPort

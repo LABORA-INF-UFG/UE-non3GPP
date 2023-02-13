@@ -38,19 +38,30 @@ type NASecurity struct {
 	AnType             models.AccessType
 }
 
-func NewUeNas(supi string, ranUeNgapId int64,
-	k, opc, op, amf, sqn string,
-	sst int32, sd, dnn string) *UeNas {
+type ArgumentsNas struct {
+	Supi        string
+	RanUeNgapId int64
+	K           string
+	Opc         string
+	Op          string
+	Amf         string
+	Sqn         string
+	Sst         int32
+	Sd          string
+	Dnn         string
+}
+
+func NewUeNas(argsNas ArgumentsNas) *UeNas {
 
 	ue := &UeNas{}
 	ue.id = 1
 	ue.StateMM = 0
 	ue.StateSM = 0
-	ue.NasSecurity = newNasSecurity(supi, ranUeNgapId, security.AlgCiphering128NEA0,
-		security.AlgIntegrity128NIA2, models.AccessType_NON_3_GPP_ACCESS, k,
-		opc, op, amf, sqn)
-	ue.PduSession = newPDUSession(1, sst, sd, dnn)
-	ue.PduSession.Dnn = dnn
+	ue.NasSecurity = newNasSecurity(argsNas.Supi, argsNas.RanUeNgapId,
+		security.AlgCiphering128NEA0, security.AlgIntegrity128NIA2,
+		models.AccessType_NON_3_GPP_ACCESS, argsNas.K,
+		argsNas.Opc, argsNas.Op, argsNas.Amf, argsNas.Sqn)
+	ue.PduSession = newPDUSession(1, argsNas.Sst, argsNas.Sd, argsNas.Dnn)
 
 	return ue
 }

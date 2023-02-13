@@ -280,7 +280,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		eapVendorTypeData = append(eapVendorTypeData, anParametersLength...)
 		eapVendorTypeData = append(eapVendorTypeData, anParameters...)
 
-		// Send Registration Accept
+		// Send Registration Request
 		// create context for NAS signal
 
 		// EAP
