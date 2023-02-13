@@ -11,7 +11,6 @@ import (
 
 type UeIke struct {
 	udpConn                       *net.UDPConn
-	stateIke                      uint8
 	ikeSecurity                   IkeSecurity
 	N3IWFChildSecurityAssociation map[uint32]*ChildSecurityAssociation // inbound SPI as key
 	secret                        *big.Int

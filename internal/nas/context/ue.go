@@ -23,7 +23,9 @@ type PDUSession struct {
 type NASecurity struct {
 	RanUeNgapId        int64
 	AmfUeNgapId        int64
-	Supi               string
+	Msin               string
+	Mcc                string
+	Mnc                string
 	ULCount            security.Count
 	DLCount            security.Count
 	CipheringAlg       uint8
@@ -39,7 +41,9 @@ type NASecurity struct {
 }
 
 type ArgumentsNas struct {
-	Supi        string
+	Mcc         string
+	Mnc         string
+	Msin        string
 	RanUeNgapId int64
 	K           string
 	Opc         string
@@ -57,11 +61,14 @@ func NewUeNas(argsNas ArgumentsNas) *UeNas {
 	ue.id = 1
 	ue.StateMM = 0
 	ue.StateSM = 0
-	ue.NasSecurity = newNasSecurity(argsNas.Supi, argsNas.RanUeNgapId,
+	ue.NasSecurity = newNasSecurity(argsNas.Msin,
+		argsNas.Mcc, argsNas.Mnc, argsNas.RanUeNgapId,
 		security.AlgCiphering128NEA0, security.AlgIntegrity128NIA2,
 		models.AccessType_NON_3_GPP_ACCESS, argsNas.K,
 		argsNas.Opc, argsNas.Op, argsNas.Amf, argsNas.Sqn)
-	ue.PduSession = newPDUSession(1, argsNas.Sst, argsNas.Sd, argsNas.Dnn)
+	ue.PduSession = newPDUSession(1,
+		argsNas.Sst, argsNas.Sd,
+		argsNas.Dnn)
 
 	return ue
 }
@@ -77,11 +84,13 @@ func newPDUSession(id, sst int32, sd, dnn string) PDUSession {
 	return pdu
 }
 
-func newNasSecurity(supi string, ranUeNgapId int64, cipheringAlg, integrityAlg uint8,
+func newNasSecurity(msin, mcc, mnc string, ranUeNgapId int64, cipheringAlg, integrityAlg uint8,
 	anType models.AccessType, k, opc, op, amf, sqn string) NASecurity {
 
 	nas := NASecurity{}
-	nas.Supi = supi
+	nas.Msin = msin
+	nas.Mcc = mcc
+	nas.Mnc = mnc
 	nas.RanUeNgapId = ranUeNgapId
 	nas.CipheringAlg = cipheringAlg
 	nas.IntegrityAlg = integrityAlg

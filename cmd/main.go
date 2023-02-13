@@ -39,7 +39,7 @@ func main() {
 					cfg := config.Data
 					log.Info("---------------------------------------")
 					log.Info("[UE-non3GPP] Starting connect function: ", name)
-					log.Info("[UE-non3GPP][UE] Supi: ", cfg.Ue.Supi)
+					log.Info("[UE-non3GPP][UE] MSIN: ", cfg.Ue.Msin)
 
 					//controlPlane.Run(cfg)
 					template.UENon3GPPConnection()

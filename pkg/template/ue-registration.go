@@ -14,7 +14,9 @@ func UENon3GPPConnection() {
 
 	// create args for creation of instance Nas
 	argsNas := contextNas.ArgumentsNas{
-		Supi:        cfg.Ue.Supi,
+		Mcc:         cfg.Ue.Hplmn.Mcc,
+		Mnc:         cfg.Ue.Hplmn.Mnc,
+		Msin:        cfg.Ue.Msin,
 		RanUeNgapId: cfg.Ue.RanUeNgapId,
 		K:           cfg.Ue.AuthSubscription.PermanentKeyValue,
 		Opc:         cfg.Ue.AuthSubscription.OpcValue,

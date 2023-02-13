@@ -20,7 +20,11 @@ type Config struct {
 			OpValue           string `yaml: "opvalue"`
 			SequenceNumber    string `yaml: "sequencenumber"`
 		} `yaml: "authsubscription"`
-		Supi                          string `yaml: "supi"`
+		Msin  string `yaml: "msin"`
+		Hplmn struct {
+			Mcc string `yaml: "mcc"`
+			Mnc string `yaml: "mnc"`
+		} `yaml: "hplmn"`
 		RanUeNgapId                   int64  `yaml: "ranuengapid"`
 		AmfUeNgapId                   int64  `yaml: "amfuengapid"`
 		AuthenticationManagementField string `yaml: "authenticationmanagementfield"`

@@ -3,6 +3,7 @@ package handler
 import (
 	"UE-non3GPP/internal/ike/context"
 	"UE-non3GPP/internal/ike/message"
+	messageNas "UE-non3GPP/internal/nas/message"
 	"encoding/binary"
 	"fmt"
 	"math/big"
@@ -282,6 +283,11 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 
 		// Send Registration Request
 		// create context for NAS signal
+		registrationRequest := messageNas.BuildRegistrationRequest(ue.NasContext)
+		nasLength := make([]byte, 2)
+		binary.BigEndian.PutUint16(nasLength, uint16(len(registrationRequest)))
+		eapVendorTypeData = append(eapVendorTypeData, nasLength...)
+		eapVendorTypeData = append(eapVendorTypeData, registrationRequest...)
 
 		// EAP
 		var ikePayload message.IKEPayloadContainer
@@ -304,6 +310,9 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 			// TODO handle errors
 			return
 		}
+
+		// change the IKE state to EAP signalling
+		ue.N3IWFIKESecurityAssociation.State++
 
 	case EAPSignalling:
 		// receive EAP/NAS messages
