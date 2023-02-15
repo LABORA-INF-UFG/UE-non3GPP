@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 )
 
 type IKEMessage struct {
@@ -1201,7 +1200,7 @@ type IndividualConfigurationAttribute struct {
 func (configuration *Configuration) Type() IKEPayloadType { return TypeCP }
 
 func (configuration *Configuration) marshal() ([]byte, error) {
-	log.Info("[Configuration] marshal(): Start marshalling")
+	// log.Info("[Configuration] marshal(): Start marshalling")
 
 	configurationData := make([]byte, 4)
 
@@ -1222,11 +1221,11 @@ func (configuration *Configuration) marshal() ([]byte, error) {
 }
 
 func (configuration *Configuration) unmarshal(rawData []byte) error {
-	log.Info("[Configuration] unmarshal(): Start unmarshalling received bytes")
-	log.Tracef("[Configuration] unmarshal(): Payload length %d bytes", len(rawData))
+	//log.Info("[Configuration] unmarshal(): Start unmarshalling received bytes")
+	//log.Tracef("[Configuration] unmarshal(): Payload length %d bytes", len(rawData))
 
 	if len(rawData) > 0 {
-		log.Trace("[Configuration] unmarshal(): Unmarshal 1 configuration")
+		// log.Trace("[Configuration] unmarshal(): Unmarshal 1 configuration")
 		// bounds checking
 		if len(rawData) <= 4 {
 			return errors.New("Configuration: No sufficient bytes to decode next configuration")
@@ -1236,7 +1235,7 @@ func (configuration *Configuration) unmarshal(rawData []byte) error {
 		configurationAttributeData := rawData[4:]
 
 		for len(configurationAttributeData) > 0 {
-			log.Trace("[Configuration] unmarshal(): Unmarshal 1 configuration attribute")
+			// log.Trace("[Configuration] unmarshal(): Unmarshal 1 configuration attribute")
 			// bounds checking
 			if len(configurationAttributeData) < 4 {
 				return errors.New("ConfigurationAttribute: No sufficient bytes to decode next configuration attribute")
@@ -1274,7 +1273,7 @@ type EAP struct {
 func (eap *EAP) Type() IKEPayloadType { return TypeEAP }
 
 func (eap *EAP) marshal() ([]byte, error) {
-	log.Info("[EAP] marshal(): Start marshalling")
+	// log.Info("[EAP] marshal(): Start marshalling")
 
 	eapData := make([]byte, 4)
 
@@ -1296,11 +1295,11 @@ func (eap *EAP) marshal() ([]byte, error) {
 }
 
 func (eap *EAP) unmarshal(rawData []byte) error {
-	log.Info("[EAP] unmarshal(): Start unmarshalling received bytes")
-	log.Tracef("[EAP] unmarshal(): Payload length %d bytes", len(rawData))
+	// log.Info("[EAP] unmarshal(): Start unmarshalling received bytes")
+	// log.Tracef("[EAP] unmarshal(): Payload length %d bytes", len(rawData))
 
 	if len(rawData) > 0 {
-		log.Trace("[EAP] unmarshal(): Unmarshal 1 EAP")
+		// log.Trace("[EAP] unmarshal(): Unmarshal 1 EAP")
 		// bounds checking
 		if len(rawData) < 4 {
 			return errors.New("EAP: No sufficient bytes to decode next EAP payload")
@@ -1370,7 +1369,7 @@ type EAPIdentity struct {
 func (eapIdentity *EAPIdentity) Type() EAPType { return EAPTypeIdentity }
 
 func (eapIdentity *EAPIdentity) marshal() ([]byte, error) {
-	log.Info("[EAP][Identity] marshal(): Start marshalling")
+	// log.Info("[EAP][Identity] marshal(): Start marshalling")
 
 	if len(eapIdentity.IdentityData) == 0 {
 		return nil, errors.New("EAPIdentity: EAP identity is empty")
@@ -1383,8 +1382,8 @@ func (eapIdentity *EAPIdentity) marshal() ([]byte, error) {
 }
 
 func (eapIdentity *EAPIdentity) unmarshal(rawData []byte) error {
-	log.Info("[EAP][Identity] unmarshal(): Start unmarshalling received bytes")
-	log.Tracef("[EAP][Identity] unmarshal(): Payload length %d bytes", len(rawData))
+	// log.Info("[EAP][Identity] unmarshal(): Start unmarshalling received bytes")
+	// log.Tracef("[EAP][Identity] unmarshal(): Payload length %d bytes", len(rawData))
 
 	if len(rawData) > 1 {
 		eapIdentity.IdentityData = append(eapIdentity.IdentityData, rawData[1:]...)
@@ -1404,7 +1403,7 @@ type EAPNotification struct {
 func (eapNotification *EAPNotification) Type() EAPType { return EAPTypeNotification }
 
 func (eapNotification *EAPNotification) marshal() ([]byte, error) {
-	log.Info("[EAP][Notification] marshal(): Start marshalling")
+	// log.Info("[EAP][Notification] marshal(): Start marshalling")
 
 	if len(eapNotification.NotificationData) == 0 {
 		return nil, errors.New("EAPNotification: EAP notification is empty")
@@ -1417,8 +1416,8 @@ func (eapNotification *EAPNotification) marshal() ([]byte, error) {
 }
 
 func (eapNotification *EAPNotification) unmarshal(rawData []byte) error {
-	log.Info("[EAP][Notification] unmarshal(): Start unmarshalling received bytes")
-	log.Tracef("[EAP][Notification] unmarshal(): Payload length %d bytes", len(rawData))
+	// log.Info("[EAP][Notification] unmarshal(): Start unmarshalling received bytes")
+	// log.Tracef("[EAP][Notification] unmarshal(): Payload length %d bytes", len(rawData))
 
 	if len(rawData) > 1 {
 		eapNotification.NotificationData = append(eapNotification.NotificationData, rawData[1:]...)
@@ -1438,7 +1437,7 @@ type EAPNak struct {
 func (eapNak *EAPNak) Type() EAPType { return EAPTypeNak }
 
 func (eapNak *EAPNak) marshal() ([]byte, error) {
-	log.Info("[EAP][Nak] marshal(): Start marshalling")
+	// log.Info("[EAP][Nak] marshal(): Start marshalling")
 
 	if len(eapNak.NakData) == 0 {
 		return nil, errors.New("EAPNak: EAP nak is empty")
@@ -1451,8 +1450,8 @@ func (eapNak *EAPNak) marshal() ([]byte, error) {
 }
 
 func (eapNak *EAPNak) unmarshal(rawData []byte) error {
-	log.Info("[EAP][Nak] unmarshal(): Start unmarshalling received bytes")
-	log.Tracef("[EAP][Nak] unmarshal(): Payload length %d bytes", len(rawData))
+	// log.Info("[EAP][Nak] unmarshal(): Start unmarshalling received bytes")
+	// log.Tracef("[EAP][Nak] unmarshal(): Payload length %d bytes", len(rawData))
 
 	if len(rawData) > 1 {
 		eapNak.NakData = append(eapNak.NakData, rawData[1:]...)
@@ -1474,7 +1473,7 @@ type EAPExpanded struct {
 func (eapExpanded *EAPExpanded) Type() EAPType { return EAPTypeExpanded }
 
 func (eapExpanded *EAPExpanded) marshal() ([]byte, error) {
-	log.Info("[EAP][Expanded] marshal(): Start marshalling")
+	// log.Info("[EAP][Expanded] marshal(): Start marshalling")
 
 	eapExpandedData := make([]byte, 8)
 
@@ -1485,7 +1484,7 @@ func (eapExpanded *EAPExpanded) marshal() ([]byte, error) {
 	binary.BigEndian.PutUint32(eapExpandedData[4:8], eapExpanded.VendorType)
 
 	if len(eapExpanded.VendorData) == 0 {
-		log.Warn("[EAP][Expanded] marshal(): EAP vendor data field is empty")
+		// log.Warn("[EAP][Expanded] marshal(): EAP vendor data field is empty")
 		return eapExpandedData, nil
 	}
 
@@ -1495,8 +1494,8 @@ func (eapExpanded *EAPExpanded) marshal() ([]byte, error) {
 }
 
 func (eapExpanded *EAPExpanded) unmarshal(rawData []byte) error {
-	log.Info("[EAP][Expanded] unmarshal(): Start unmarshalling received bytes")
-	log.Tracef("[EAP][Expanded] unmarshal(): Payload length %d bytes", len(rawData))
+	// log.Info("[EAP][Expanded] unmarshal(): Start unmarshalling received bytes")
+	// log.Tracef("[EAP][Expanded] unmarshal(): Payload length %d bytes", len(rawData))
 
 	if len(rawData) > 0 {
 		if len(rawData) < 8 {

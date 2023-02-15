@@ -178,7 +178,8 @@ func IkeAuthEapExchange(ikeMessage *message.IKEMessage, ikePayload message.IKEPa
 	// NAS
 	ueSecurityCapability := ue.GetUESecurityCapability()
 
-	registrationRequest := nas_registration.GetRegistrationRequest(nasMessage.RegistrationType5GSInitialRegistration,
+	registrationRequest := nas_registration.GetRegistrationRequest(
+		nasMessage.RegistrationType5GSInitialRegistration,
 		util.CreateMobileIdentity(),
 		nil,
 		ueSecurityCapability,

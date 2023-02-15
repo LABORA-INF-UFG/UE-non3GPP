@@ -3,6 +3,7 @@ package handler
 import (
 	"UE-non3GPP/internal/ike/context"
 	"UE-non3GPP/internal/ike/message"
+	"UE-non3GPP/internal/nas/dispatch"
 	messageNas "UE-non3GPP/internal/nas/message"
 	"encoding/binary"
 	"fmt"
@@ -258,18 +259,24 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		}
 	}
 
+	var ikePayload message.IKEPayloadContainer
+	var responseIKEMessage *message.IKEMessage
+
+	responseIKEMessage = new(message.IKEMessage)
+
 	switch ue.N3IWFIKESecurityAssociation.State {
 	case PreSignalling:
 		// IKE_AUTH - EAP exchange
-		responseIKEMessage := new(message.IKEMessage)
-
 		ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
 
 		responseIKEMessage.BuildIKEHeader(
-			ue.N3IWFIKESecurityAssociation.LocalSPI, ue.N3IWFIKESecurityAssociation.RemoteSPI,
-			message.IKE_AUTH, message.InitiatorBitCheck, ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
+			ue.N3IWFIKESecurityAssociation.LocalSPI,
+			ue.N3IWFIKESecurityAssociation.RemoteSPI,
+			message.IKE_AUTH, message.InitiatorBitCheck,
+			ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
 
 		// EAP-5G vendor type data
+		//TODO duplicate code
 		eapVendorTypeData := make([]byte, 2)
 		eapVendorTypeData[0] = message.EAP5GType5GNAS
 
@@ -290,23 +297,9 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		eapVendorTypeData = append(eapVendorTypeData, registrationRequest...)
 
 		// EAP
-		var ikePayload message.IKEPayloadContainer
 		eap := ikePayload.BuildEAP(message.EAPCodeResponse, eap.Identifier)
 		eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP, message.VendorTypeEAP5G, eapVendorTypeData)
 		if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation, ikePayload, responseIKEMessage); err != nil {
-			// TODO handle errors
-			return
-		}
-
-		// Send to N3IWF
-		ikeMessageData, err := responseIKEMessage.Encode()
-		if err != nil {
-			// TODO handle errors
-			return
-		}
-		udp := ue.GetUdpConn()
-		_, err = udp.Write(ikeMessageData)
-		if err != nil {
 			// TODO handle errors
 			return
 		}
@@ -315,10 +308,67 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		ue.N3IWFIKESecurityAssociation.State++
 
 	case EAPSignalling:
+
 		// receive EAP/NAS messages
+
+		// get NAS data
+		eapExpanded, ok := eap.EAPTypeData[0].(*message.EAPExpanded)
+		if !ok {
+			// TODO handle errors in IKE header
+			return
+		}
+		nasData := eapExpanded.VendorData[4:]
+
+		// handle NAS message
+		responseNas, error := dispatch.DispatchNas(nasData, ue.NasContext)
+		if error != nil {
+			// TODO handle errors in IKE header
+			return
+		}
+
+		ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
+
+		responseIKEMessage.BuildIKEHeader(
+			ue.N3IWFIKESecurityAssociation.LocalSPI,
+			ue.N3IWFIKESecurityAssociation.RemoteSPI,
+			message.IKE_AUTH, message.InitiatorBitCheck,
+			ue.N3IWFIKESecurityAssociation.InitiatorMessageID,
+		)
+
+		// EAP-5G vendor type data
+		eapVendorTypeData := make([]byte, 4)
+		eapVendorTypeData[0] = message.EAP5GType5GNAS
+
+		// NAS - Authentication Response
+		nasLength := make([]byte, 2)
+		binary.BigEndian.PutUint16(nasLength, uint16(len(responseNas)))
+		eapVendorTypeData = append(eapVendorTypeData, nasLength...)
+		eapVendorTypeData = append(eapVendorTypeData, responseNas...)
+
+		// EAP
+		eap := ikePayload.BuildEAP(message.EAPCodeResponse, eap.Identifier)
+		eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP, message.VendorTypeEAP5G, eapVendorTypeData)
+		if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation, ikePayload, responseIKEMessage); err != nil {
+			// TODO handle errors
+			return
+		}
+
 	case PostSignalling:
 		// TODO implement this information
 	default:
+		return
+	}
+
+	// Send to N3IWF
+	ikeMessageData, err := responseIKEMessage.Encode()
+	if err != nil {
+		// TODO handle errors
+		return
+	}
+	udp := ue.GetUdpConn()
+	_, err = udp.Write(ikeMessageData)
+	if err != nil {
+		// TODO handle errors
 		return
 	}
 }

@@ -9,6 +9,14 @@ import (
 	"github.com/free5gc/nas/security"
 )
 
+func BuildAuthenticationFailure(cause, eapMsg string, paramAutn []byte) []byte {
+	return GetAuthenticationFailure(cause, eapMsg, paramAutn)
+}
+
+func BuildAuthenticationResponse(paramAutn []uint8, eapMsg string) []byte {
+	return GetAuthenticationResponse(eapMsg, paramAutn)
+}
+
 func BuildRegistrationRequest(ue *context.UeNas) []byte {
 
 	// get mcc and mcc
