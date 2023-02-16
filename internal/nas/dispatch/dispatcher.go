@@ -71,10 +71,9 @@ func DispatchNas(message []byte, ue *context.UeNas) ([]byte, error) {
 		ue.NasSecurity.DLCount.SetSQN(sequenceNumber)
 
 		mac32, err := security.NASMacCalculate(ue.NasSecurity.IntegrityAlg,
-			ue.NasSecurity.KnasInt,
-			ue.NasSecurity.DLCount.Get(),
-			security.Bearer3GPP,
-			security.DirectionDownlink, payload)
+			ue.NasSecurity.KnasInt, ue.NasSecurity.DLCount.Get(),
+			security.BearerNon3GPP, security.DirectionDownlink,
+			payload)
 		if err != nil {
 			return nil, fmt.Errorf("NAS MAC calculate error")
 		}
@@ -88,8 +87,10 @@ func DispatchNas(message []byte, ue *context.UeNas) ([]byte, error) {
 
 		// check ciphering.
 		if cph {
-			if err = security.NASEncrypt(ue.NasSecurity.CipheringAlg, ue.NasSecurity.KnasEnc, ue.NasSecurity.DLCount.Get(), security.Bearer3GPP,
-				security.DirectionDownlink, payload[1:]); err != nil {
+			if err = security.NASEncrypt(ue.NasSecurity.CipheringAlg,
+				ue.NasSecurity.KnasEnc, ue.NasSecurity.DLCount.Get(),
+				security.BearerNon3GPP, security.DirectionDownlink,
+				payload[1:]); err != nil {
 				return nil, fmt.Errorf("error in encrypt algorithm")
 			} else {
 				// log.Info("[UE][NAS] successful NAS CIPHERING")
@@ -136,7 +137,7 @@ func DispatchNas(message []byte, ue *context.UeNas) ([]byte, error) {
 	case nas.MsgTypeSecurityModeCommand:
 		// handler security mode command.
 		// log.Info("[UE][NAS] Receive Security Mode Command")
-		// handler.HandlerSecurityModeCommand(ue, m)
+		return handler.HandlerSecurityModeCommand(ue, m), nil
 
 	case nas.MsgTypeRegistrationAccept:
 		// handler registration accept.

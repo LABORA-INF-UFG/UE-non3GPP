@@ -4,10 +4,24 @@ import (
 	"UE-non3GPP/internal/nas/context"
 	"encoding/hex"
 	"fmt"
+	"github.com/free5gc/nas"
 	"github.com/free5gc/nas/nasMessage"
 	"github.com/free5gc/nas/nasType"
 	"github.com/free5gc/nas/security"
 )
+
+func BuildSecurityModeComplete(ue *context.UeNas) []byte {
+	var registrationRequest []byte
+
+	registrationRequest = BuildRegistrationRequest(ue)
+	securityModeComplete := GetSecurityModeComplete(registrationRequest)
+	securityModeCompleteWithSecurityHeader, _ := EncodeNasPduWithSecurity(ue,
+		securityModeComplete,
+		nas.SecurityHeaderTypeIntegrityProtectedAndCipheredWithNew5gNasSecurityContext,
+		true, true)
+
+	return securityModeCompleteWithSecurityHeader
+}
 
 func BuildAuthenticationFailure(cause, eapMsg string, paramAutn []byte) []byte {
 	return GetAuthenticationFailure(cause, eapMsg, paramAutn)
@@ -141,5 +155,82 @@ func getUESecurityCapability(cipheringAlg, integrityAlg uint8) (UESecurityCapabi
 		UESecurityCapability.SetIA3_128_5G(1)
 	}
 
+	return
+}
+
+func EncodeNasPduWithSecurity(ue *context.UeNas, pdu []byte,
+	securityHeaderType uint8, securityContextAvailable,
+	newSecurityContext bool) ([]byte, error) {
+
+	m := nas.NewMessage()
+	err := m.PlainNasDecode(&pdu)
+	if err != nil {
+		return nil, err
+	}
+	m.SecurityHeader = nas.SecurityHeader{
+		ProtocolDiscriminator: nasMessage.Epd5GSMobilityManagementMessage,
+		SecurityHeaderType:    securityHeaderType,
+	}
+
+	return NASEncode(ue, m, securityContextAvailable, newSecurityContext)
+}
+
+func NASEncode(ue *context.UeNas, msg *nas.Message, securityContextAvailable bool, newSecurityContext bool) (payload []byte, err error) {
+	var sequenceNumber uint8
+	if ue == nil {
+		err = fmt.Errorf("amfUe is nil")
+		return
+	}
+	if msg == nil {
+		err = fmt.Errorf("Nas message is empty")
+		return
+	}
+
+	if !securityContextAvailable {
+		return msg.PlainNasEncode()
+	} else {
+		if newSecurityContext {
+			ue.NasSecurity.ULCount.Set(0, 0)
+			ue.NasSecurity.DLCount.Set(0, 0)
+		}
+
+		sequenceNumber = ue.NasSecurity.ULCount.SQN()
+		payload, err = msg.PlainNasEncode()
+		if err != nil {
+			return
+		}
+
+		// TODO: Support for ue has nas connection in both accessType
+		// make ciphering of NAS message.
+		if err = security.NASEncrypt(ue.NasSecurity.CipheringAlg,
+			ue.NasSecurity.KnasEnc, ue.NasSecurity.ULCount.Get(),
+			security.BearerNon3GPP, security.DirectionUplink,
+			payload); err != nil {
+			return
+		}
+
+		// add sequence number
+		payload = append([]byte{sequenceNumber}, payload[:]...)
+		mac32 := make([]byte, 4)
+
+		mac32, err = security.NASMacCalculate(ue.NasSecurity.IntegrityAlg,
+			ue.NasSecurity.KnasInt, ue.NasSecurity.ULCount.Get(),
+			security.BearerNon3GPP, security.DirectionUplink,
+			payload)
+		if err != nil {
+			return
+		}
+
+		// Add mac value
+		payload = append(mac32, payload[:]...)
+		// Add EPD and Security Type
+		msgSecurityHeader := []byte{msg.SecurityHeader.ProtocolDiscriminator,
+			msg.SecurityHeader.SecurityHeaderType}
+		payload = append(msgSecurityHeader,
+			payload[:]...)
+
+		// Increase UL Count
+		ue.NasSecurity.ULCount.AddOne()
+	}
 	return
 }

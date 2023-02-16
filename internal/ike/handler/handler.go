@@ -39,8 +39,10 @@ func HandleIKESAINIT(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 				}
 			}
 			remotePublicKeyExchangeValue = remotePublicKeyExchangeValue[i:]
-			remotePublicKeyExchangeValueBig := new(big.Int).SetBytes(remotePublicKeyExchangeValue)
-			sharedKeyData = new(big.Int).Exp(remotePublicKeyExchangeValueBig, ue.GetSecret(), ue.GetFactor()).Bytes()
+			remotePublicKeyExchangeValueBig := new(big.Int).
+				SetBytes(remotePublicKeyExchangeValue)
+			sharedKeyData = new(big.Int).Exp(remotePublicKeyExchangeValueBig,
+				ue.GetSecret(), ue.GetFactor()).Bytes()
 		case message.TypeNiNr:
 			remoteNonce = ikePayload.(*message.Nonce).NonceData
 		case message.TypeN:
@@ -147,7 +149,8 @@ func HandleIKESAINIT(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 
 	responseIKEMessage.BuildIKEHeader(
 		ue.N3IWFIKESecurityAssociation.LocalSPI, ue.N3IWFIKESecurityAssociation.RemoteSPI,
-		message.IKE_AUTH, message.InitiatorBitCheck, ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
+		message.IKE_AUTH, message.InitiatorBitCheck,
+		ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
 
 	var ikePayload message.IKEPayloadContainer
 
@@ -163,21 +166,31 @@ func HandleIKESAINIT(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	// Proposal 1
 	inboundSPI := ue.GenerateSPI()
 
-	proposal := securityAssociation.Proposals.BuildProposal(1, message.TypeESP, inboundSPI)
+	proposal := securityAssociation.Proposals.BuildProposal(1,
+		message.TypeESP, inboundSPI)
 	// ENCR
-	proposal.EncryptionAlgorithm.BuildTransform(message.TypeEncryptionAlgorithm, ue.GetEncryptionAlgoritm(), &attributeType, &keyLength, nil)
+	proposal.EncryptionAlgorithm.BuildTransform(message.TypeEncryptionAlgorithm,
+		ue.GetEncryptionAlgoritm(), &attributeType, &keyLength, nil)
 	// INTEG
-	proposal.IntegrityAlgorithm.BuildTransform(message.TypeIntegrityAlgorithm, ue.GetIntegrityAlgorithm(), nil, nil, nil)
+	proposal.IntegrityAlgorithm.BuildTransform(message.TypeIntegrityAlgorithm,
+		ue.GetIntegrityAlgorithm(), nil, nil,
+		nil)
 	// ESN
-	proposal.ExtendedSequenceNumbers.BuildTransform(message.TypeExtendedSequenceNumbers, message.ESN_NO, nil, nil, nil)
+	proposal.ExtendedSequenceNumbers.BuildTransform(message.TypeExtendedSequenceNumbers,
+		message.ESN_NO, nil, nil, nil)
 
 	// Traffic Selector
 	tsi := ikePayload.BuildTrafficSelectorInitiator()
-	tsi.TrafficSelectors.BuildIndividualTrafficSelector(message.TS_IPV4_ADDR_RANGE, 0, 0, 65535, []byte{0, 0, 0, 0}, []byte{255, 255, 255, 255})
+	tsi.TrafficSelectors.BuildIndividualTrafficSelector(message.TS_IPV4_ADDR_RANGE,
+		0, 0, 65535,
+		[]byte{0, 0, 0, 0}, []byte{255, 255, 255, 255})
 	tsr := ikePayload.BuildTrafficSelectorResponder()
-	tsr.TrafficSelectors.BuildIndividualTrafficSelector(message.TS_IPV4_ADDR_RANGE, 0, 0, 65535, []byte{0, 0, 0, 0}, []byte{255, 255, 255, 255})
+	tsr.TrafficSelectors.BuildIndividualTrafficSelector(message.TS_IPV4_ADDR_RANGE,
+		0, 0, 65535, []byte{0, 0, 0, 0},
+		[]byte{255, 255, 255, 255})
 
-	if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation, ikePayload, responseIKEMessage); err != nil {
+	if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation, ikePayload,
+		responseIKEMessage); err != nil {
 		// TODO handle errors
 		return
 	}
@@ -226,7 +239,8 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		}
 	}
 
-	decryptedIKEPayload, err := context.DecryptProcedure(ue.N3IWFIKESecurityAssociation, ikeMsg, encryptedPayload)
+	decryptedIKEPayload, err := context.DecryptProcedure(ue.N3IWFIKESecurityAssociation,
+		ikeMsg, encryptedPayload)
 	if err != nil {
 		// TODO handle errors in IKE header
 		return
@@ -298,8 +312,10 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 
 		// EAP
 		eap := ikePayload.BuildEAP(message.EAPCodeResponse, eap.Identifier)
-		eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP, message.VendorTypeEAP5G, eapVendorTypeData)
-		if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation, ikePayload, responseIKEMessage); err != nil {
+		eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP, message.VendorTypeEAP5G,
+			eapVendorTypeData)
+		if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation, ikePayload,
+			responseIKEMessage); err != nil {
 			// TODO handle errors
 			return
 		}
@@ -310,7 +326,6 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	case EAPSignalling:
 
 		// receive EAP/NAS messages
-
 		// get NAS data
 		eapExpanded, ok := eap.EAPTypeData[0].(*message.EAPExpanded)
 		if !ok {
@@ -339,7 +354,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		eapVendorTypeData := make([]byte, 4)
 		eapVendorTypeData[0] = message.EAP5GType5GNAS
 
-		// NAS - Authentication Response
+		// NAS messages
 		nasLength := make([]byte, 2)
 		binary.BigEndian.PutUint16(nasLength, uint16(len(responseNas)))
 		eapVendorTypeData = append(eapVendorTypeData, nasLength...)
@@ -347,8 +362,10 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 
 		// EAP
 		eap := ikePayload.BuildEAP(message.EAPCodeResponse, eap.Identifier)
-		eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP, message.VendorTypeEAP5G, eapVendorTypeData)
-		if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation, ikePayload, responseIKEMessage); err != nil {
+		eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP, message.VendorTypeEAP5G,
+			eapVendorTypeData)
+		if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation,
+			ikePayload, responseIKEMessage); err != nil {
 			// TODO handle errors
 			return
 		}

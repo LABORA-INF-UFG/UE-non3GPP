@@ -6,75 +6,48 @@ import (
 	"github.com/free5gc/nas"
 )
 
-func HandlerAuthenticationReject(ue *context.UeNas, message *nas.Message) {
-
-	// log.Info("[UE][NAS] Authentication of UE ", ue.GetUeId(), " failed")
-}
-
 func HandlerAuthenticationRequest(ue *context.UeNas, message *nas.Message) []byte {
 	var authenticationResponse []byte
 
-	// getting RAND and AUTN from the message.
+	// check authentication message (RAND and AUTN).
 	rand := message.AuthenticationRequest.GetRANDValue()
 	autn := message.AuthenticationRequest.GetAUTN()
 
-	// getting resStar
-	paramAutn, check := ue.DeriveRESstarAndSetKey(ue.NasSecurity.AuthenticationSubs, rand[:], ue.NasSecurity.Snn, autn[:])
+	// getting RES*
+	paramAutn, check := ue.DeriveRESstarAndSetKey(ue.NasSecurity.AuthenticationSubs,
+		rand[:],
+		ue.NasSecurity.Snn,
+		autn[:])
 
 	switch check {
 
 	case "MAC failure":
-		authenticationResponse = nasMessage.BuildAuthenticationFailure("MAC failure", "", paramAutn)
-		// not change the state of UE.
+		authenticationResponse = nasMessage.BuildAuthenticationFailure("MAC failure",
+			"", paramAutn)
 	case "SQN failure":
-		authenticationResponse = nasMessage.GetAuthenticationFailure("SQN failure", "", paramAutn)
-		// not change the state of UE.
-
+		authenticationResponse = nasMessage.GetAuthenticationFailure("SQN failure",
+			"", paramAutn)
 	case "successful":
 		// getting NAS Authentication Response.
-		authenticationResponse = nasMessage.BuildAuthenticationResponse(paramAutn, "")
-		// change state of UE for registered-initiated
-		// ue.SetStateMM_REGISTERED_INITIATED()
+		authenticationResponse = nasMessage.BuildAuthenticationResponse(paramAutn,
+			"")
 	}
 
-	// sending to GNB
+	// sending to IKE stack
 	return authenticationResponse
 }
 
-/*
-func HandlerSecurityModeCommand(ue *context.UeNas, message *nas.Message) {
+func HandlerSecurityModeCommand(ue *context.UeNas, message *nas.Message) []byte {
 
-	switch message.SecurityModeCommand.SelectedNASSecurityAlgorithms.GetTypeOfCipheringAlgorithm() {
-	case 0:
-		log.Info("[UE][NAS] Type of ciphering algorithm is 5G-EA0")
-	case 1:
-		log.Info("[UE][NAS] Type of ciphering algorithm is 128-5G-EA1")
-	case 2:
-		log.Info("[UE][NAS] Type of ciphering algorithm is 128-5G-EA2")
-	}
+	// TODO check security Mode Command Message
+	// getting NAS Security Mode Complete
+	securityModeComplete := nasMessage.BuildSecurityModeComplete(ue)
 
-	switch message.SecurityModeCommand.SelectedNASSecurityAlgorithms.GetTypeOfIntegrityProtectionAlgorithm() {
-	case 0:
-		log.Info("[UE][NAS] Type of integrity protection algorithm is 5G-IA0")
-	case 1:
-		log.Info("[UE][NAS] Type of integrity protection algorithm is 128-5G-IA1")
-	case 2:
-		log.Info("[UE][NAS] Type of integrity protection algorithm is 128-5G-IA2")
-	}
-
-	// checking BIT RINMR that triggered registration request in security mode complete.
-	rinmr := message.SecurityModeCommand.Additional5GSecurityInformation.GetRINMR()
-
-	// getting NAS Security Mode Complete.
-	securityModeComplete, err := mm_5gs.SecurityModeComplete(ue, rinmr)
-	if err != nil {
-		log.Fatal("[UE][NAS] Error sending Security Mode Complete: ", err)
-	}
-
-	// sending to GNB
-	sender.SendToGnb(ue, securityModeComplete)
+	// sending to IKE stack
+	return securityModeComplete
 }
 
+/*
 func HandlerRegistrationAccept(ue *context.UeNas, message *nas.Message) {
 
 	// change the state of ue for registered
