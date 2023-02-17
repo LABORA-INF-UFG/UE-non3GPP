@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math/big"
+	"net"
 )
 
 func HandleIKESAINIT(ue *context.UeIke, ikeMsg *message.IKEMessage) {
@@ -213,6 +214,7 @@ const (
 	PreSignalling = iota
 	EAPSignalling
 	PostSignalling
+	TCPEstablishSignalling
 )
 
 func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
@@ -247,6 +249,11 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	}
 
 	var eap *message.EAP
+	var securityAssociation *message.SecurityAssociation
+	var trafficSelectorInitiator *message.TrafficSelectorInitiator
+	var trafficSelectorResponder *message.TrafficSelectorResponder
+	var configuration *message.Configuration
+	var notification *message.Notification
 
 	for _, ikePayload := range decryptedIKEPayload {
 		switch ikePayload.Type() {
@@ -257,20 +264,28 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		case message.TypeCERT:
 			_ = ikePayload.(*message.Certificate)
 		case message.TypeSA:
-			_ = ikePayload.(*message.SecurityAssociation)
+			securityAssociation = ikePayload.(*message.SecurityAssociation)
 		case message.TypeTSi:
-			_ = ikePayload.(*message.TrafficSelectorInitiator)
+			trafficSelectorInitiator = ikePayload.(*message.TrafficSelectorInitiator)
 		case message.TypeTSr:
-			_ = ikePayload.(*message.TrafficSelectorResponder)
+			trafficSelectorResponder = ikePayload.(*message.TrafficSelectorResponder)
 		case message.TypeEAP:
 			eap = ikePayload.(*message.EAP)
 		case message.TypeAUTH:
 			_ = ikePayload.(*message.Authentication)
 		case message.TypeCP:
-			_ = ikePayload.(*message.Configuration)
+			configuration = ikePayload.(*message.Configuration)
+		case message.TypeN:
+			notification = ikePayload.(*message.Notification)
 		default:
 			// TODO handle errors in IKE header
 		}
+	}
+
+	// completes the EAP-5G session
+	if eap.Code == message.EAPCodeSuccess {
+		// change the IKE state to EAP signalling
+		ue.N3IWFIKESecurityAssociation.State++
 	}
 
 	var ikePayload message.IKEPayloadContainer
@@ -279,6 +294,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	responseIKEMessage = new(message.IKEMessage)
 
 	switch ue.N3IWFIKESecurityAssociation.State {
+
 	case PreSignalling:
 		// IKE_AUTH - EAP exchange
 		ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
@@ -322,9 +338,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 
 		// change the IKE state to EAP signalling
 		ue.N3IWFIKESecurityAssociation.State++
-
 	case EAPSignalling:
-
 		// receive EAP/NAS messages
 		// get NAS data
 		eapExpanded, ok := eap.EAPTypeData[0].(*message.EAPExpanded)
@@ -369,9 +383,90 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 			// TODO handle errors
 			return
 		}
-
 	case PostSignalling:
-		// TODO implement this information
+		// handling establishment of the IPsec tunnel
+		// using common N3IWF key
+		ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
+
+		responseIKEMessage.BuildIKEHeader(ue.N3IWFIKESecurityAssociation.LocalSPI,
+			ue.N3IWFIKESecurityAssociation.RemoteSPI,
+			message.IKE_AUTH, message.InitiatorBitCheck,
+			ue.N3IWFIKESecurityAssociation.InitiatorMessageID)
+
+		// Authentication
+		ikePayload.BuildAuthentication(message.SharedKeyMesageIntegrityCode,
+			[]byte{1, 2, 3})
+
+		// Configuration Request
+		configurationRequest := ikePayload.BuildConfiguration(message.CFG_REQUEST)
+		configurationRequest.ConfigurationAttribute.BuildConfigurationAttribute(
+			message.INTERNAL_IP4_ADDRESS,
+			nil)
+
+		err = context.EncryptProcedure(ue.N3IWFIKESecurityAssociation,
+			ikePayload, responseIKEMessage)
+		if err != nil {
+			// TODO handle errors
+			return
+		}
+	case TCPEstablishSignalling:
+		// N3IWF TCP Ip/Port
+		n3iwfNASAddr := new(net.TCPAddr)
+		var ueInnerAddrIp []byte
+		var ueInnerAddrMask []byte
+
+		// security association
+		ue.N3IWFIKESecurityAssociation.IKEAuthResponseSA = securityAssociation
+
+		// notification
+		if notification.NotifyMessageType == message.Vendor3GPPNotifyTypeNAS_IP4_ADDRESS {
+			n3iwfNASAddr.IP = net.IPv4(
+				notification.NotificationData[0],
+				notification.NotificationData[1],
+				notification.NotificationData[2],
+				notification.NotificationData[3])
+		}
+
+		if notification.NotifyMessageType == message.Vendor3GPPNotifyTypeNAS_TCP_PORT {
+			n3iwfNASAddr.Port = int(binary.BigEndian.Uint16(notification.NotificationData))
+		}
+
+		if configuration.ConfigurationType == message.CFG_REPLY {
+			for _, configAttr := range configuration.ConfigurationAttribute {
+				if configAttr.Type == message.INTERNAL_IP4_ADDRESS {
+					ueInnerAddrIp = configAttr.Value
+				}
+				if configAttr.Type == message.INTERNAL_IP4_NETMASK {
+					ueInnerAddrMask = configAttr.Value
+				}
+			}
+		}
+
+		OutboundSPI := binary.BigEndian.Uint32(ue.N3IWFIKESecurityAssociation.
+			IKEAuthResponseSA.Proposals[0].SPI)
+
+		childSecurityAssociationContext, err := ue.CompleteChildSA(
+			0x01, OutboundSPI,
+			ue.N3IWFIKESecurityAssociation.IKEAuthResponseSA)
+		if err != nil {
+			return
+		}
+
+		err = context.ParseIPAddressInformationToChildSecurityAssociation(
+			childSecurityAssociationContext,
+			trafficSelectorInitiator.TrafficSelectors[0],
+			trafficSelectorResponder.TrafficSelectors[0],
+			ue)
+		if err != nil {
+			return
+		}
+
+		if err := context.GenerateKeyForChildSA(ue.N3IWFIKESecurityAssociation,
+			childSecurityAssociationContext); err != nil {
+			// TODO
+			return
+		}
+
 	default:
 		return
 	}

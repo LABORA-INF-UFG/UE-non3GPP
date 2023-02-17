@@ -4,20 +4,24 @@ import (
 	"UE-non3GPP/internal/ike/message"
 	"UE-non3GPP/internal/nas/context"
 	"encoding/binary"
+	"fmt"
 	"github.com/vishvananda/netlink"
 	"math/big"
 	"net"
 )
 
 type UeIke struct {
-	udpConn                       *net.UDPConn
-	ikeSecurity                   IkeSecurity
-	N3IWFChildSecurityAssociation map[uint32]*ChildSecurityAssociation // inbound SPI as key
-	secret                        *big.Int
-	factor                        *big.Int
-	localNonce                    []byte
-	N3IWFIKESecurityAssociation   *IKESecurityAssociation
-	NasContext                    *context.UeNas
+	n3iwfIp                              string
+	ueIp                                 string
+	udpConn                              *net.UDPConn
+	ikeSecurity                          IkeSecurity
+	N3IWFChildSecurityAssociation        map[uint32]*ChildSecurityAssociation // inbound SPI as key
+	secret                               *big.Int
+	factor                               *big.Int
+	localNonce                           []byte
+	N3IWFIKESecurityAssociation          *IKESecurityAssociation
+	NasContext                           *context.UeNas
+	TemporaryExchangeMsgIDChildSAMapping map[uint32]*ChildSecurityAssociation // Message ID as a key
 }
 
 type IkeSecurity struct {
@@ -69,6 +73,7 @@ func NewUeIke(ueNas *context.UeNas) *UeIke {
 	ue.NewPseudorandomFunction(true)
 	ue.NewIntegrityAlgorithm(true)
 	ue.N3IWFChildSecurityAssociation = make(map[uint32]*ChildSecurityAssociation)
+	ue.TemporaryExchangeMsgIDChildSAMapping = make(map[uint32]*ChildSecurityAssociation)
 	ue.NasContext = ueNas
 	return ue
 }
@@ -168,4 +173,63 @@ func (ue *UeIke) SetLocalNonce(localNonce []byte) {
 
 func (ue *UeIke) GetLocalNonce() []byte {
 	return ue.localNonce
+}
+
+func (ue *UeIke) SetN3IWFIp(ip string) {
+	ue.n3iwfIp = ip
+}
+
+func (ue *UeIke) GetN3IWFIp() string {
+	return ue.n3iwfIp
+}
+
+func (ue *UeIke) GetUEIp() string {
+	return ue.ueIp
+}
+
+func (ue *UeIke) SetUEIp(ip string) {
+	ue.ueIp = ip
+}
+
+func (ue *UeIke) CompleteChildSA(msgID uint32, outboundSPI uint32,
+	chosenSecurityAssociation *message.SecurityAssociation) (*ChildSecurityAssociation, error) {
+	childSA, ok := ue.TemporaryExchangeMsgIDChildSAMapping[msgID]
+
+	if !ok {
+		return nil, fmt.Errorf("There's not a half child SA created by the exchange with message ID %d.", msgID)
+	}
+
+	// Remove mapping of exchange msg ID and child SA
+	delete(ue.TemporaryExchangeMsgIDChildSAMapping, msgID)
+
+	if chosenSecurityAssociation == nil {
+		return nil, fmt.Errorf("chosenSecurityAssociation is nil")
+	}
+
+	if len(chosenSecurityAssociation.Proposals) == 0 {
+		return nil, fmt.Errorf("No proposal")
+	}
+
+	childSA.OutboundSPI = outboundSPI
+
+	if len(chosenSecurityAssociation.Proposals[0].EncryptionAlgorithm) != 0 {
+		childSA.EncryptionAlgorithm = chosenSecurityAssociation.Proposals[0].EncryptionAlgorithm[0].TransformID
+	}
+	if len(chosenSecurityAssociation.Proposals[0].IntegrityAlgorithm) != 0 {
+		childSA.IntegrityAlgorithm = chosenSecurityAssociation.Proposals[0].IntegrityAlgorithm[0].TransformID
+	}
+	if len(chosenSecurityAssociation.Proposals[0].ExtendedSequenceNumbers) != 0 {
+		if chosenSecurityAssociation.Proposals[0].ExtendedSequenceNumbers[0].TransformID == 0 {
+			childSA.ESN = false
+		} else {
+			childSA.ESN = true
+		}
+	}
+
+	// Record to UE context with inbound SPI as key
+	ue.N3IWFChildSecurityAssociation[childSA.InboundSPI] = childSA
+	// Record to N3IWF context with inbound SPI as key
+	// n3iwfContext.ChildSA.Store(childSA.InboundSPI, childSA)
+
+	return childSA, nil
 }

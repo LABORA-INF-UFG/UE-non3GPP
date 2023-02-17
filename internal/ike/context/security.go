@@ -1,6 +1,7 @@
 package context
 
 import (
+	"UE-non3GPP/engine/exchange/pkg/ike/handler"
 	"UE-non3GPP/internal/ike/message"
 	"bytes"
 	"crypto/aes"
@@ -12,10 +13,13 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/sys/unix"
 	"hash"
 	"io"
 	"math/big"
+	"net"
 	"strings"
 )
 
@@ -405,61 +409,20 @@ func GenerateKeyForIKESA(ikeSecurityAssociation *IKESecurityAssociation) error {
 // Key Gen for child SA
 func GenerateKeyForChildSA(ikeSecurityAssociation *IKESecurityAssociation,
 	childSecurityAssociation *ChildSecurityAssociation) error {
-	// Check parameters
-	if ikeSecurityAssociation == nil {
-		return errors.New("IKE SA is nil")
-	}
-	if childSecurityAssociation == nil {
-		return errors.New("Child SA is nil")
-	}
-
-	// Check if the context contain needed data
-	if ikeSecurityAssociation.PseudorandomFunction == nil {
-		return errors.New("No pseudorandom function specified")
-	}
-	if ikeSecurityAssociation.IKEAuthResponseSA == nil {
-		return errors.New("No IKE_AUTH response SA specified")
-	}
-	if len(ikeSecurityAssociation.IKEAuthResponseSA.Proposals) == 0 {
-		return errors.New("No proposal in IKE_AUTH response SA")
-	}
-	if len(ikeSecurityAssociation.IKEAuthResponseSA.Proposals[0].EncryptionAlgorithm) == 0 {
-		return errors.New("No encryption algorithm specified")
-	}
-
-	if len(ikeSecurityAssociation.SK_d) == 0 {
-		return errors.New("No key deriving key")
-	}
-
 	// Transforms
 	transformPseudorandomFunction := ikeSecurityAssociation.PseudorandomFunction
-	transformEncryptionAlgorithmForIPSec :=
-		ikeSecurityAssociation.IKEAuthResponseSA.Proposals[0].EncryptionAlgorithm[0]
 	var transformIntegrityAlgorithmForIPSec *message.Transform
 	if len(ikeSecurityAssociation.IKEAuthResponseSA.Proposals[0].IntegrityAlgorithm) != 0 {
-		transformIntegrityAlgorithmForIPSec =
-			ikeSecurityAssociation.IKEAuthResponseSA.Proposals[0].IntegrityAlgorithm[0]
+		transformIntegrityAlgorithmForIPSec = ikeSecurityAssociation.IKEAuthResponseSA.Proposals[0].IntegrityAlgorithm[0]
 	}
 
 	// Get key length for encryption and integrity key for IPSec
 	var lengthEncryptionKeyIPSec, lengthIntegrityKeyIPSec, totalKeyLength int
 	var ok bool
 
-	if lengthEncryptionKeyIPSec, ok = getKeyLength(transformEncryptionAlgorithmForIPSec.TransformType,
-		transformEncryptionAlgorithmForIPSec.TransformID,
-		transformEncryptionAlgorithmForIPSec.AttributePresent,
-		transformEncryptionAlgorithmForIPSec.AttributeValue); !ok {
-		log.Error("Get key length of an unsupported algorithm. This may imply an unsupported transform is chosen.")
-		return errors.New("Get key length failed")
-	}
+	lengthEncryptionKeyIPSec = 32
 	if transformIntegrityAlgorithmForIPSec != nil {
-		if lengthIntegrityKeyIPSec, ok = getKeyLength(transformIntegrityAlgorithmForIPSec.TransformType,
-			transformIntegrityAlgorithmForIPSec.TransformID,
-			transformIntegrityAlgorithmForIPSec.AttributePresent,
-			transformIntegrityAlgorithmForIPSec.AttributeValue); !ok {
-			log.Error("Get key length of an unsupported algorithm. This may imply an unsupported transform is chosen.")
-			return errors.New("Get key length failed")
-		}
+		lengthIntegrityKeyIPSec = 20
 	}
 	totalKeyLength = lengthEncryptionKeyIPSec + lengthIntegrityKeyIPSec
 	totalKeyLength = totalKeyLength * 2
@@ -471,32 +434,26 @@ func GenerateKeyForChildSA(ikeSecurityAssociation *IKESecurityAssociation,
 	var keyStream, generatedKeyBlock []byte
 	var index byte
 	for index = 1; len(keyStream) < totalKeyLength; index++ {
-		if pseudorandomFunction, ok = NewPseudorandomFunction(ikeSecurityAssociation.SK_d,
-			transformPseudorandomFunction.TransformID); !ok {
-			log.Error("Get an unsupported pseudorandom funcion. This may imply an unsupported transform is chosen.")
+		if pseudorandomFunction, ok = handler.NewPseudorandomFunction(ikeSecurityAssociation.SK_d, transformPseudorandomFunction.TransformID); !ok {
 			return errors.New("New pseudorandom function failed")
 		}
 		if _, err := pseudorandomFunction.Write(append(append(generatedKeyBlock, seed...), index)); err != nil {
-			log.Errorf("Pseudorandom function write error: %+v", err)
 			return errors.New("Pseudorandom function write failed")
 		}
 		generatedKeyBlock = pseudorandomFunction.Sum(nil)
 		keyStream = append(keyStream, generatedKeyBlock...)
 	}
 
-	childSecurityAssociation.InitiatorToResponderEncryptionKey =
-		append(childSecurityAssociation.InitiatorToResponderEncryptionKey, keyStream[:lengthEncryptionKeyIPSec]...)
+	childSecurityAssociation.InitiatorToResponderEncryptionKey = append(childSecurityAssociation.InitiatorToResponderEncryptionKey, keyStream[:lengthEncryptionKeyIPSec]...)
 	keyStream = keyStream[lengthEncryptionKeyIPSec:]
-	childSecurityAssociation.InitiatorToResponderIntegrityKey =
-		append(childSecurityAssociation.InitiatorToResponderIntegrityKey, keyStream[:lengthIntegrityKeyIPSec]...)
+	childSecurityAssociation.InitiatorToResponderIntegrityKey = append(childSecurityAssociation.InitiatorToResponderIntegrityKey, keyStream[:lengthIntegrityKeyIPSec]...)
 	keyStream = keyStream[lengthIntegrityKeyIPSec:]
-	childSecurityAssociation.ResponderToInitiatorEncryptionKey =
-		append(childSecurityAssociation.ResponderToInitiatorEncryptionKey, keyStream[:lengthEncryptionKeyIPSec]...)
+	childSecurityAssociation.ResponderToInitiatorEncryptionKey = append(childSecurityAssociation.ResponderToInitiatorEncryptionKey, keyStream[:lengthEncryptionKeyIPSec]...)
 	keyStream = keyStream[lengthEncryptionKeyIPSec:]
-	childSecurityAssociation.ResponderToInitiatorIntegrityKey =
-		append(childSecurityAssociation.ResponderToInitiatorIntegrityKey, keyStream[:lengthIntegrityKeyIPSec]...)
+	childSecurityAssociation.ResponderToInitiatorIntegrityKey = append(childSecurityAssociation.ResponderToInitiatorIntegrityKey, keyStream[:lengthIntegrityKeyIPSec]...)
 
 	return nil
+
 }
 
 // Decrypt
@@ -755,4 +712,33 @@ func concatenateNonceAndSPI(nonce []byte, SPI_initiator uint64, SPI_responder ui
 	newSlice = append(newSlice, spi...)
 
 	return newSlice
+}
+
+func ParseIPAddressInformationToChildSecurityAssociation(
+	childSecurityAssociation *ChildSecurityAssociation,
+	trafficSelectorLocal *message.IndividualTrafficSelector,
+	trafficSelectorRemote *message.IndividualTrafficSelector,
+	ue *UeIke) error {
+
+	if childSecurityAssociation == nil {
+		return fmt.Errorf("childSecurityAssociation is nil")
+	}
+
+	childSecurityAssociation.PeerPublicIPAddr = net.ParseIP(ue.GetN3IWFIp())
+	childSecurityAssociation.LocalPublicIPAddr = net.ParseIP(ue.GetUEIp())
+
+	childSecurityAssociation.TrafficSelectorLocal = net.IPNet{
+		IP:   trafficSelectorLocal.StartAddress,
+		Mask: []byte{255, 255, 255, 255},
+	}
+
+	childSecurityAssociation.TrafficSelectorRemote = net.IPNet{
+		IP:   trafficSelectorRemote.StartAddress,
+		Mask: []byte{255, 255, 255, 255},
+	}
+
+	// Select TCP traffic
+	childSecurityAssociation.SelectedIPProtocol = unix.IPPROTO_TCP
+
+	return nil
 }

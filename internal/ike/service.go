@@ -33,6 +33,8 @@ func Run(cfg config.Config, ue *context.UeIke) {
 	}
 
 	// udp connection of UE
+	ue.SetN3IWFIp(cfg.N3iwfInfo.IKEBindAddress)
+	ue.SetUEIp(cfg.Ue.LocalPublicIPAddr)
 	ue.SetUdpConn(connUdp)
 
 	// handle messages in udp socket
