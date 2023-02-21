@@ -23,6 +23,18 @@ func BuildSecurityModeComplete(ue *context.UeNas) []byte {
 	return securityModeCompleteWithSecurityHeader
 }
 
+func BuildRegistrationComplete(ue *context.UeNas) []byte {
+	var registrationComplete []byte
+
+	registrationComplete = GetRegistrationComplete(nil)
+	registrationCompleteWithSecurityHeader, _ := EncodeNasPduWithSecurity(ue,
+		registrationComplete,
+		nas.SecurityHeaderTypeIntegrityProtectedAndCipheredWithNew5gNasSecurityContext,
+		true, true)
+
+	return registrationCompleteWithSecurityHeader
+}
+
 func BuildAuthenticationFailure(cause, eapMsg string, paramAutn []byte) []byte {
 	return GetAuthenticationFailure(cause, eapMsg, paramAutn)
 }

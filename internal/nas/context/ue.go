@@ -13,6 +13,17 @@ import (
 	"regexp"
 )
 
+const (
+	registeredInitiated = iota
+	registered
+)
+
+const (
+	pduSessionInactive = iota
+	pduSessionPending
+	pduSessionActive
+)
+
 type UeNas struct {
 	id          uint8
 	StateMM     int
@@ -67,8 +78,8 @@ func NewUeNas(argsNas ArgumentsNas) *UeNas {
 
 	ue := &UeNas{}
 	ue.id = 1
-	ue.StateMM = 0
-	ue.StateSM = 0
+	ue.StateMM = registeredInitiated
+	ue.StateSM = pduSessionInactive
 	ue.NasSecurity = newNasSecurity(argsNas.Msin,
 		argsNas.Mcc, argsNas.Mnc, argsNas.RanUeNgapId,
 		security.AlgCiphering128NEA0, security.AlgIntegrity128NIA2,
@@ -108,6 +119,10 @@ func newNasSecurity(msin, mcc, mnc string, ranUeNgapId int64, cipheringAlg, inte
 	nas.Supi = fmt.Sprintf("imsi-%s%s%s", mcc, mnc, msin)
 
 	return nas
+}
+
+func (ue *UeNas) SetRegistered() {
+	ue.StateMM = registered
 }
 
 func (ue *UeNas) DeriveRESstarAndSetKey(authSubs models.AuthenticationSubscription,

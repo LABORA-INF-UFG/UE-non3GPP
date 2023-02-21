@@ -142,7 +142,7 @@ func DispatchNas(message []byte, ue *context.UeNas) ([]byte, error) {
 	case nas.MsgTypeRegistrationAccept:
 		// handler registration accept.
 		// log.Info("[UE][NAS] Receive Registration Accept")
-		// handler.HandlerRegistrationAccept(ue, m)
+		return handler.HandlerRegistrationAccept(ue, m), nil
 
 	case nas.MsgTypeConfigurationUpdateCommand:
 		// log.Info("[UE][NAS] Receive Configuration Update Command")

@@ -37,7 +37,7 @@ type Config struct {
 		} `yaml: "linkgre"`
 
 		IPSecInterfaceName string `yaml: "ipsecinterfacename"`
-		IPSecInterfaceMark string `yaml: "ipsecinterfacemark"`
+		IPSecInterfaceMark uint32 `yaml: "ipsecinterfacemark"`
 		Snssai             struct {
 			Sst int32  `yaml: "sst"`
 			Sd  string `yaml: "sd"`

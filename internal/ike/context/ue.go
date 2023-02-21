@@ -191,6 +191,14 @@ func (ue *UeIke) SetUEIp(ip string) {
 	ue.ueIp = ip
 }
 
+func (ue *UeIke) CreateHalfChildSA(msgID, inboundSPI uint32, pduSessionID int64) {
+	childSA := new(ChildSecurityAssociation)
+	childSA.InboundSPI = inboundSPI
+	childSA.PDUSessionIds = append(childSA.PDUSessionIds, pduSessionID)
+	// Map Exchange Message ID and Child SA data until get paired response
+	ue.TemporaryExchangeMsgIDChildSAMapping[msgID] = childSA
+}
+
 func (ue *UeIke) CompleteChildSA(msgID uint32, outboundSPI uint32,
 	chosenSecurityAssociation *message.SecurityAssociation) (*ChildSecurityAssociation, error) {
 	childSA, ok := ue.TemporaryExchangeMsgIDChildSAMapping[msgID]

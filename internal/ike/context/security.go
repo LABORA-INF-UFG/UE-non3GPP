@@ -1,7 +1,6 @@
 package context
 
 import (
-	"UE-non3GPP/engine/exchange/pkg/ike/handler"
 	"UE-non3GPP/internal/ike/message"
 	"bytes"
 	"crypto/aes"
@@ -434,7 +433,7 @@ func GenerateKeyForChildSA(ikeSecurityAssociation *IKESecurityAssociation,
 	var keyStream, generatedKeyBlock []byte
 	var index byte
 	for index = 1; len(keyStream) < totalKeyLength; index++ {
-		if pseudorandomFunction, ok = handler.NewPseudorandomFunction(ikeSecurityAssociation.SK_d, transformPseudorandomFunction.TransformID); !ok {
+		if pseudorandomFunction, ok = NewPseudorandomFunction(ikeSecurityAssociation.SK_d, transformPseudorandomFunction.TransformID); !ok {
 			return errors.New("New pseudorandom function failed")
 		}
 		if _, err := pseudorandomFunction.Write(append(append(generatedKeyBlock, seed...), index)); err != nil {

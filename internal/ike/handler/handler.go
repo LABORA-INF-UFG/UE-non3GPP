@@ -3,6 +3,7 @@ package handler
 import (
 	"UE-non3GPP/internal/ike/context"
 	"UE-non3GPP/internal/ike/message"
+	"UE-non3GPP/internal/ipsec"
 	"UE-non3GPP/internal/nas/dispatch"
 	messageNas "UE-non3GPP/internal/nas/message"
 	"encoding/binary"
@@ -208,6 +209,12 @@ func HandleIKESAINIT(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		// TODO handle errors
 		return
 	}
+
+	ue.CreateHalfChildSA(
+		ue.N3IWFIKESecurityAssociation.InitiatorMessageID,
+		binary.BigEndian.Uint32(inboundSPI),
+		-1)
+
 }
 
 const (
@@ -253,7 +260,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	var trafficSelectorInitiator *message.TrafficSelectorInitiator
 	var trafficSelectorResponder *message.TrafficSelectorResponder
 	var configuration *message.Configuration
-	var notification *message.Notification
+	var notifications []*message.Notification
 
 	for _, ikePayload := range decryptedIKEPayload {
 		switch ikePayload.Type() {
@@ -276,14 +283,14 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		case message.TypeCP:
 			configuration = ikePayload.(*message.Configuration)
 		case message.TypeN:
-			notification = ikePayload.(*message.Notification)
+			notifications = append(notifications, ikePayload.(*message.Notification))
 		default:
 			// TODO handle errors in IKE header
 		}
 	}
 
 	// completes the EAP-5G session
-	if eap.Code == message.EAPCodeSuccess {
+	if eap != nil && eap.Code == message.EAPCodeSuccess {
 		// change the IKE state to EAP signalling
 		ue.N3IWFIKESecurityAssociation.State++
 	}
@@ -296,6 +303,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	switch ue.N3IWFIKESecurityAssociation.State {
 
 	case PreSignalling:
+
 		// IKE_AUTH - EAP exchange
 		ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
 
@@ -338,7 +346,22 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 
 		// change the IKE state to EAP signalling
 		ue.N3IWFIKESecurityAssociation.State++
+
+		// Send to N3IWF
+		ikeMessageData, err := responseIKEMessage.Encode()
+		if err != nil {
+			// TODO handle errors
+			return
+		}
+		udp := ue.GetUdpConn()
+		_, err = udp.Write(ikeMessageData)
+		if err != nil {
+			// TODO handle errors
+			return
+		}
+
 	case EAPSignalling:
+
 		// receive EAP/NAS messages
 		// get NAS data
 		eapExpanded, ok := eap.EAPTypeData[0].(*message.EAPExpanded)
@@ -383,7 +406,22 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 			// TODO handle errors
 			return
 		}
+
+		// Send to N3IWF
+		ikeMessageData, err := responseIKEMessage.Encode()
+		if err != nil {
+			// TODO handle errors
+			return
+		}
+		udp := ue.GetUdpConn()
+		_, err = udp.Write(ikeMessageData)
+		if err != nil {
+			// TODO handle errors
+			return
+		}
+
 	case PostSignalling:
+
 		// handling establishment of the IPsec tunnel
 		// using common N3IWF key
 		ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
@@ -409,7 +447,25 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 			// TODO handle errors
 			return
 		}
+
+		// Send to N3IWF
+		ikeMessageData, err := responseIKEMessage.Encode()
+		if err != nil {
+			// TODO handle errors
+			return
+		}
+		udp := ue.GetUdpConn()
+		_, err = udp.Write(ikeMessageData)
+		if err != nil {
+			// TODO handle errors
+			return
+		}
+
+		// change the IKE state to TCPEstablishSignalling
+		ue.N3IWFIKESecurityAssociation.State++
+
 	case TCPEstablishSignalling:
+
 		// N3IWF TCP Ip/Port
 		n3iwfNASAddr := new(net.TCPAddr)
 		var ueInnerAddrIp []byte
@@ -419,16 +475,18 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		ue.N3IWFIKESecurityAssociation.IKEAuthResponseSA = securityAssociation
 
 		// notification
-		if notification.NotifyMessageType == message.Vendor3GPPNotifyTypeNAS_IP4_ADDRESS {
-			n3iwfNASAddr.IP = net.IPv4(
-				notification.NotificationData[0],
-				notification.NotificationData[1],
-				notification.NotificationData[2],
-				notification.NotificationData[3])
-		}
+		for j := 0; j < len(notifications); j++ {
+			if notifications[j].NotifyMessageType == message.Vendor3GPPNotifyTypeNAS_IP4_ADDRESS {
+				n3iwfNASAddr.IP = net.IPv4(
+					notifications[j].NotificationData[0],
+					notifications[j].NotificationData[1],
+					notifications[j].NotificationData[2],
+					notifications[j].NotificationData[3])
+			}
 
-		if notification.NotifyMessageType == message.Vendor3GPPNotifyTypeNAS_TCP_PORT {
-			n3iwfNASAddr.Port = int(binary.BigEndian.Uint16(notification.NotificationData))
+			if notifications[j].NotifyMessageType == message.Vendor3GPPNotifyTypeNAS_TCP_PORT {
+				n3iwfNASAddr.Port = int(binary.BigEndian.Uint16(notifications[j].NotificationData))
+			}
 		}
 
 		if configuration.ConfigurationType == message.CFG_REPLY {
@@ -461,26 +519,19 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 			return
 		}
 
-		if err := context.GenerateKeyForChildSA(ue.N3IWFIKESecurityAssociation,
+		if err := context.GenerateKeyForChildSA(
+			ue.N3IWFIKESecurityAssociation,
 			childSecurityAssociationContext); err != nil {
-			// TODO
 			return
 		}
 
-	default:
-		return
-	}
+		// thread with Tcp/XFRM connection
+		go ipsec.Run(ueInnerAddrIp, ueInnerAddrMask,
+			childSecurityAssociationContext,
+			n3iwfNASAddr,
+			ue.NasContext)
 
-	// Send to N3IWF
-	ikeMessageData, err := responseIKEMessage.Encode()
-	if err != nil {
-		// TODO handle errors
-		return
-	}
-	udp := ue.GetUdpConn()
-	_, err = udp.Write(ikeMessageData)
-	if err != nil {
-		// TODO handle errors
+	default:
 		return
 	}
 }
