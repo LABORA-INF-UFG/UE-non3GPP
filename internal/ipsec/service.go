@@ -33,8 +33,9 @@ func Run(ueIpAdr []byte,
 	// setup IPsec Xfrmi
 	newXfrmiName := fmt.Sprintf("%s-default", cfg.Ue.IPSecInterfaceName)
 	// TODO interface IP is hardcoded
-	if linkIPSec, err = xfrm.SetupIPsecXfrmi(newXfrmiName,
-		"br-free5gc",
+	if linkIPSec, err = xfrm.SetupIPsecXfrmi(
+		newXfrmiName,
+		"eth0",
 		cfg.Ue.IPSecInterfaceMark,
 		&ueInnerAddr); err != nil {
 		fmt.Println(err)
@@ -50,7 +51,8 @@ func Run(ueIpAdr []byte,
 	}()
 
 	// Apply XFRM rules
-	if err := xfrm.ApplyXFRMRule(true,
+	if err := xfrm.ApplyXFRMRule(
+		true,
 		cfg.Ue.IPSecInterfaceMark,
 		childSecurityAssociation); err != nil {
 		fmt.Println(err)
@@ -70,7 +72,8 @@ func Run(ueIpAdr []byte,
 	fmt.Println(localTCPAddr)
 	fmt.Println(N3IWFNasAddr)
 
-	tcpConnWithN3IWF, err := net.DialTCP("tcp",
+	tcpConnWithN3IWF, err := net.DialTCP(
+		"tcp",
 		localTCPAddr,
 		N3IWFNasAddr)
 	if err != nil {
