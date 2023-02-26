@@ -2,6 +2,7 @@ package context
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
 	"github.com/free5gc/nas/nasType"
@@ -286,4 +287,24 @@ func deriveSNN(mcc, mnc string) string {
 	}
 
 	return resu
+}
+func (ue *UeNas) DeriveKn3iwf() []byte {
+	P0 := make([]byte, 4)
+	binary.BigEndian.PutUint32(P0, ue.NasSecurity.ULCount.Get()-1)
+	L0 := ueauth.KDFLen(P0)
+	P1 := []byte{security.AccessTypeNon3GPP}
+	L1 := ueauth.KDFLen(P1)
+
+	Kn3iwf, err := ueauth.GetKDFValue(
+		ue.NasSecurity.Kamf,
+		ueauth.FC_FOR_KGNB_KN3IWF_DERIVATION,
+		P0,
+		L0,
+		P1,
+		L1)
+	if err != nil {
+		// TODO handler error
+		return nil
+	}
+	return Kn3iwf
 }

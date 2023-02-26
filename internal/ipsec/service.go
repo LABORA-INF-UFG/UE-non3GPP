@@ -9,7 +9,6 @@ import (
 	contextNas "UE-non3GPP/internal/nas/context"
 	"fmt"
 	log "github.com/sirupsen/logrus"
-	"github.com/vishvananda/netlink"
 	"net"
 )
 
@@ -19,7 +18,7 @@ func Run(ueIpAdr []byte,
 	N3IWFNasAddr *net.TCPAddr,
 	nas *contextNas.UeNas) {
 
-	var linkIPSec netlink.Link
+	// var linkIPSec netlink.Link
 	var err error
 
 	cfg := config.GetConfig()
@@ -33,44 +32,26 @@ func Run(ueIpAdr []byte,
 	// setup IPsec Xfrmi
 	newXfrmiName := fmt.Sprintf("%s-default", cfg.Ue.IPSecInterfaceName)
 	// TODO interface IP is hardcoded
-	if linkIPSec, err = xfrm.SetupIPsecXfrmi(
+	if _, err = xfrm.SetupIPsecXfrmi(
 		newXfrmiName,
-		"eth0",
+		"virbr0",
 		cfg.Ue.IPSecInterfaceMark,
 		&ueInnerAddr); err != nil {
-		fmt.Println(err)
 		return
 	}
-
-	defer func() {
-		if err := netlink.LinkDel(linkIPSec); err != nil {
-			return
-		} else {
-			return
-		}
-	}()
 
 	// Apply XFRM rules
 	if err := xfrm.ApplyXFRMRule(
 		true,
 		cfg.Ue.IPSecInterfaceMark,
 		childSecurityAssociation); err != nil {
-		fmt.Println(err)
 		return
 	}
-
-	defer func() {
-		_ = netlink.XfrmPolicyFlush()
-		_ = netlink.XfrmStateFlush(netlink.XFRM_PROTO_IPSEC_ANY)
-	}()
 
 	// UE TCP address
 	localTCPAddr := &net.TCPAddr{
 		IP: ueInnerAddr.IP,
 	}
-
-	fmt.Println(localTCPAddr)
-	fmt.Println(N3IWFNasAddr)
 
 	tcpConnWithN3IWF, err := net.DialTCP(
 		"tcp",
@@ -80,8 +61,6 @@ func Run(ueIpAdr []byte,
 		fmt.Println(err)
 		return
 	}
-
-	fmt.Println(tcpConnWithN3IWF)
 
 	// create context of UE for ipsec
 	ueIpSec := contextIpsec.NewUeIpSec(nas,

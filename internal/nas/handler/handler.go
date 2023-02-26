@@ -43,6 +43,8 @@ func HandlerSecurityModeCommand(ue *context.UeNas, message *nas.Message) []byte 
 	// getting NAS Security Mode Complete
 	securityModeComplete := nasMessage.BuildSecurityModeComplete(ue)
 
+	// ipsec is operational send the message in envelope
+
 	// sending to IKE stack
 	return securityModeComplete
 }

@@ -18,10 +18,17 @@ const (
 )
 
 func Dispatch(ue *context.UeIpSec, msg []byte) {
-	fmt.Println("Here 2")
+
+	// get NAS msg to envelope
+	nasMsg, _, err := ue.DecapNasPduFromEnvelope(msg)
+	if err != nil {
+		fmt.Println("Here2")
+		return
+	}
+
 	switch ue.NasContext.StateMM {
 	case registeredInitiated:
-		handler.HandlerRegisteredInitiated(ue, msg)
+		handler.HandlerRegisteredInitiated(ue, nasMsg)
 	case registered:
 		switch ue.NasContext.StateSM {
 		case pduSessionInactive:

@@ -35,5 +35,5 @@ func UENon3GPPConnection() {
 	// init ue control plane
 	controlPlane.Run(cfg, ueIke)
 
-	time.Sleep(600 * time.Second)
+	time.Sleep(6000 * time.Second)
 }

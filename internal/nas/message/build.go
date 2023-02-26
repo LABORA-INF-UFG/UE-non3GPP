@@ -187,7 +187,8 @@ func EncodeNasPduWithSecurity(ue *context.UeNas, pdu []byte,
 	return NASEncode(ue, m, securityContextAvailable, newSecurityContext)
 }
 
-func NASEncode(ue *context.UeNas, msg *nas.Message, securityContextAvailable bool, newSecurityContext bool) (payload []byte, err error) {
+func NASEncode(ue *context.UeNas, msg *nas.Message,
+	securityContextAvailable bool, newSecurityContext bool) (payload []byte, err error) {
 	var sequenceNumber uint8
 	if ue == nil {
 		err = fmt.Errorf("amfUe is nil")

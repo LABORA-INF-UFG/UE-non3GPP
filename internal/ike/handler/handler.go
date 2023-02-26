@@ -423,7 +423,6 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	case PostSignalling:
 
 		// handling establishment of the IPsec tunnel
-		// using common N3IWF key
 		ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
 
 		responseIKEMessage.BuildIKEHeader(ue.N3IWFIKESecurityAssociation.LocalSPI,
@@ -485,7 +484,8 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 			}
 
 			if notifications[j].NotifyMessageType == message.Vendor3GPPNotifyTypeNAS_TCP_PORT {
-				n3iwfNASAddr.Port = int(binary.BigEndian.Uint16(notifications[j].NotificationData))
+				n3iwfNASAddr.Port = int(
+					binary.BigEndian.Uint16(notifications[j].NotificationData))
 			}
 		}
 
@@ -526,7 +526,8 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		}
 
 		// thread with Tcp/XFRM connection
-		go ipsec.Run(ueInnerAddrIp, ueInnerAddrMask,
+		go ipsec.Run(ueInnerAddrIp,
+			ueInnerAddrMask,
 			childSecurityAssociationContext,
 			n3iwfNASAddr,
 			ue.NasContext)
