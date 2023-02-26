@@ -34,7 +34,7 @@ type UeNas struct {
 }
 
 type PDUSession struct {
-	Id     int32
+	Id     uint8
 	Snssai models.Snssai
 	Dnn    string
 }
@@ -93,7 +93,7 @@ func NewUeNas(argsNas ArgumentsNas) *UeNas {
 	return ue
 }
 
-func newPDUSession(id, sst int32, sd, dnn string) PDUSession {
+func newPDUSession(id uint8, sst int32, sd, dnn string) PDUSession {
 
 	pdu := PDUSession{}
 	pdu.Id = id
