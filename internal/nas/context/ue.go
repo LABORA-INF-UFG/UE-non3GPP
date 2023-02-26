@@ -126,6 +126,10 @@ func (ue *UeNas) SetRegistered() {
 	ue.StateMM = registered
 }
 
+func (ue *UeNas) SetPduSessionPending() {
+	ue.StateSM = pduSessionPending
+}
+
 func (ue *UeNas) DeriveRESstarAndSetKey(authSubs models.AuthenticationSubscription,
 	RAND []byte,
 	snNmae string,

@@ -83,6 +83,22 @@ func BuildRegistrationRequest(ue *context.UeNas) []byte {
 	)
 }
 
+func BuildPduEstablishmentRequest(ue *context.UeNas) []byte {
+	var ulNasPduRequestMessage []byte
+
+	ulNasPduRequestMessage = GetUlNasTransport(ue.PduSession.Id,
+		nasMessage.ULNASTransportRequestTypeInitialRequest,
+		ue.PduSession.Dnn,
+		&ue.PduSession.Snssai)
+	ulNasPduRequestMessageWithSecurityHeader, _ := EncodeNasPduWithSecurity(ue,
+		ulNasPduRequestMessage,
+		nas.SecurityHeaderTypeIntegrityProtectedAndCipheredWithNew5gNasSecurityContext,
+		true, true)
+
+	return ulNasPduRequestMessageWithSecurityHeader
+
+}
+
 func getMccAndMncInOctets(mcc, mnc string) []byte {
 
 	// reverse mcc and mnc
