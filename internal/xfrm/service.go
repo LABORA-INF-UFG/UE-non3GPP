@@ -100,7 +100,8 @@ func ApplyXFRMRule(n3iwf_is_initiator bool, xfrmiId uint32,
 	// Commit xfrm state to netlink
 	var err error
 	if err = netlink.XfrmStateAdd(xfrmState); err != nil {
-		return fmt.Errorf("Set XFRM state rule failed")
+		fmt.Println(err)
+		return fmt.Errorf("Set XFRM state rule failed 1")
 	}
 
 	// Policy
@@ -125,7 +126,8 @@ func ApplyXFRMRule(n3iwf_is_initiator bool, xfrmiId uint32,
 
 	// Commit xfrm policy to netlink
 	if err = netlink.XfrmPolicyAdd(xfrmPolicy); err != nil {
-		return fmt.Errorf("Set XFRM policy rule failed")
+		fmt.Println(err)
+		return fmt.Errorf("Set XFRM policy rule failed 2")
 	}
 
 	// Direction: this_server -> {private_network}
@@ -150,7 +152,8 @@ func ApplyXFRMRule(n3iwf_is_initiator bool, xfrmiId uint32,
 
 	// Commit xfrm state to netlink
 	if err = netlink.XfrmStateAdd(xfrmState); err != nil {
-		return fmt.Errorf("Set XFRM state rule failed")
+		fmt.Println(err)
+		return fmt.Errorf("Set XFRM state rule failed 3")
 	}
 
 	// Policy
@@ -165,11 +168,13 @@ func ApplyXFRMRule(n3iwf_is_initiator bool, xfrmiId uint32,
 
 	// Commit xfrm policy to netlink
 	if err = netlink.XfrmPolicyAdd(xfrmPolicy); err != nil {
-		return fmt.Errorf("Set XFRM policy rule failed")
+		fmt.Println(err)
+		return fmt.Errorf("Set XFRM policy rule failed 4")
 	}
 
 	return nil
 }
+
 func SetupIPsecXfrmi(xfrmIfaceName, parentIfaceName string,
 	xfrmIfaceId uint32, xfrmIfaceAddr *net.IPNet) (netlink.Link, error) {
 	var (
