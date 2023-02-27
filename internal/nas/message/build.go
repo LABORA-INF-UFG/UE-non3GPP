@@ -92,8 +92,8 @@ func BuildPduEstablishmentRequest(ue *context.UeNas) []byte {
 		&ue.PduSession.Snssai)
 	ulNasPduRequestMessageWithSecurityHeader, _ := EncodeNasPduWithSecurity(ue,
 		ulNasPduRequestMessage,
-		nas.SecurityHeaderTypeIntegrityProtectedAndCipheredWithNew5gNasSecurityContext,
-		true, true)
+		nas.SecurityHeaderTypeIntegrityProtectedAndCiphered,
+		true, false)
 
 	return ulNasPduRequestMessageWithSecurityHeader
 
