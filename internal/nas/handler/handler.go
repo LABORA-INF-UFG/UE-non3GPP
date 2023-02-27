@@ -60,22 +60,10 @@ func HandlerRegistrationAccept(ue *context.UeNas, message *nas.Message) []byte {
 	return registrationComplete
 }
 
-/*
-func HandlerDlNasTransportPduaccept(ue *context.UeNas, message *nas.Message) {
+func HandlerDlNasTransportPduaccept(ue *context.UeNas, message *nas.Message) []byte {
 
-	//getting PDU Session establishment accept.
-	payloadContainer := nas_control.GetNasPduFromPduAccept(message)
-	if payloadContainer.GsmHeader.GetMessageType() == nas.MsgTypePDUSessionEstablishmentAccept {
-		log.Info("[UE][NAS] Receiving PDU Session Establishment Accept")
-
-		// update PDU Session information.
-
-		// change the state of ue(SM)(PDU Session Active).
-		ue.SetStateSM_PDU_SESSION_ACTIVE()
-
-		// get UE ip
-		UeIp := payloadContainer.PDUSessionEstablishmentAccept.GetPDUAddressInformation()
-		ue.SetIp(UeIp)
-	}
+	// set the IP of PDU Session to UE
+	ue.PduSession.PDUAdress = nasMessage.GetPduAddresFromPduEstablishmentAccept(message)
+	ue.SetPduSessionActive()
+	return nil
 }
-*/

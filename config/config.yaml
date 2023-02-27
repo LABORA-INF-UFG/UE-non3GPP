@@ -11,10 +11,10 @@ ue:
   ranuengapid: 1
   amfuengapid: 1
   authenticationmanagementfield : "8000"
-  localpublicipaddr : "10.100.201.1"
+  localpublicipaddr : "192.168.122.1"
   localpublicportudpconnection : "500"
   linkgre:
-    name : "gretun0"
+    name : "gretun"
     ipaddress: [60,60,0,1]
     mask: [255,255,255,0]
   ipsecinterfacename : "ipsec0" # IP address of IPSec virtual interface (IPsec tunnel enpoint to N3IWF)
@@ -26,7 +26,7 @@ ue:
   dnnstring: "internet"
 
 n3iwfinfo:
-  ikebindaddress: "10.100.201.12" # IP address of Nwu interface (IKE) on N3IWF
+  ikebindaddress: "192.168.122.116" # IP address of Nwu interface (IKE) on N3IWF
   ikebindport: "500"
   ipsecifaceprotocol: "udp"
 

@@ -22,6 +22,11 @@ type UeIke struct {
 	N3IWFIKESecurityAssociation          *IKESecurityAssociation
 	NasContext                           *context.UeNas
 	TemporaryExchangeMsgIDChildSAMapping map[uint32]*ChildSecurityAssociation // Message ID as a key
+	QosInfo                              *PDUQoSInfo
+	N3iwfNasAddr                         net.TCPAddr
+	N3iwfUpAddr                          net.IP
+	ONAddrIp                             []byte
+	ONMask                               []byte
 }
 
 type IkeSecurity struct {
@@ -64,6 +69,14 @@ type ChildSecurityAssociation struct {
 
 	// PDU Session IDs associated with this child SA
 	PDUSessionIds []int64
+}
+
+type PDUQoSInfo struct {
+	pduSessionID    uint8
+	QfiList         []uint8
+	isDefault       bool
+	isDSCPSpecified bool
+	DSCP            uint8
 }
 
 func NewUeIke(ueNas *context.UeNas) *UeIke {

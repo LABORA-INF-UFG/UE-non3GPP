@@ -151,7 +151,7 @@ func DispatchNas(message []byte, ue *context.UeNas) ([]byte, error) {
 	case nas.MsgTypeDLNASTransport:
 		// handler DL NAS Transport.
 		// log.Info("[UE][NAS] Receive DL NAS Transport")
-		// handler.HandlerDlNasTransportPduaccept(ue, m)
+		return handler.HandlerDlNasTransportPduaccept(ue, m), nil
 
 	case nas.MsgTypeRegistrationReject:
 		// handler registration reject

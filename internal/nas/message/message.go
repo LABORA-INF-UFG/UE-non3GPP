@@ -305,3 +305,14 @@ func GetUlNasTransport(pduSessionId uint8, requestType uint8, dnnString string,
 
 	return data.Bytes()
 }
+
+func getNasPduAcceptFromDlNasTransport(dlNas *nas.Message) (m *nas.Message) {
+	// get payload container from DL NAS.
+	payload := dlNas.DLNASTransport.GetPayloadContainerContents()
+	m = new(nas.Message)
+	err := m.PlainNasDecode(&payload)
+	if err != nil {
+		return nil
+	}
+	return
+}

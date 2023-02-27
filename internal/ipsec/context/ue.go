@@ -8,15 +8,20 @@ import (
 )
 
 type UeIpSec struct {
-	tcpConn    *net.TCPConn
-	NasContext *context.UeNas
+	InterfaceName string
+	tcpConn       *net.TCPConn
+	NasContext    *context.UeNas
 }
 
 func NewUeIpSec(ueNas *context.UeNas,
-	conn *net.TCPConn) *UeIpSec {
+	conn *net.TCPConn,
+	intName string) *UeIpSec {
+
 	ue := &UeIpSec{}
 	ue.tcpConn = conn
 	ue.NasContext = ueNas
+	ue.InterfaceName = intName
+
 	return ue
 }
 

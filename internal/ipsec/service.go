@@ -5,8 +5,8 @@ import (
 	"UE-non3GPP/internal/ike/context"
 	contextIpsec "UE-non3GPP/internal/ipsec/context"
 	"UE-non3GPP/internal/ipsec/dispatch"
-	"UE-non3GPP/internal/ipsec/xfrm"
 	contextNas "UE-non3GPP/internal/nas/context"
+	"UE-non3GPP/internal/xfrm"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"net"
@@ -63,8 +63,10 @@ func Run(ueIpAdr []byte,
 	}
 
 	// create context of UE for ipsec
-	ueIpSec := contextIpsec.NewUeIpSec(nas,
-		tcpConnWithN3IWF)
+	ueIpSec := contextIpsec.NewUeIpSec(
+		nas,
+		tcpConnWithN3IWF,
+		newXfrmiName)
 
 	// handle server tcp/NAS
 	go listenAndServe(ueIpSec)

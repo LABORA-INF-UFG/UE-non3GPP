@@ -10,6 +10,7 @@ import (
 	"github.com/free5gc/openapi/models"
 	"github.com/free5gc/util/milenage"
 	"github.com/free5gc/util/ueauth"
+	"net"
 	"reflect"
 	"regexp"
 )
@@ -34,9 +35,10 @@ type UeNas struct {
 }
 
 type PDUSession struct {
-	Id     uint8
-	Snssai models.Snssai
-	Dnn    string
+	Id        uint8
+	Snssai    models.Snssai
+	Dnn       string
+	PDUAdress net.IP
 }
 
 type NASecurity struct {
@@ -128,6 +130,10 @@ func (ue *UeNas) SetRegistered() {
 
 func (ue *UeNas) SetPduSessionPending() {
 	ue.StateSM = pduSessionPending
+}
+
+func (ue *UeNas) SetPduSessionActive() {
+	ue.StateSM = pduSessionActive
 }
 
 func (ue *UeNas) DeriveRESstarAndSetKey(authSubs models.AuthenticationSubscription,

@@ -8,8 +8,20 @@ import (
 	"github.com/free5gc/nas/nasMessage"
 	"github.com/free5gc/nas/nasType"
 	"github.com/free5gc/nas/security"
+	"net"
 )
 
+func GetPduAddresFromPduEstablishmentAccept(message *nas.Message) net.IP {
+
+	container := getNasPduAcceptFromDlNasTransport(message)
+	if container.GsmHeader.GetMessageType() == nas.MsgTypePDUSessionEstablishmentAccept {
+		// get UE ip
+		UeIp := container.PDUSessionEstablishmentAccept.GetPDUAddressInformation()
+		return net.IPv4(UeIp[0], UeIp[1], UeIp[2], UeIp[3])
+	}
+
+	return nil
+}
 func BuildSecurityModeComplete(ue *context.UeNas) []byte {
 	var registrationRequest []byte
 

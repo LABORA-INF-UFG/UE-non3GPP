@@ -1,13 +1,13 @@
 package handler
 
 import (
+	"UE-non3GPP/internal/gre"
 	"UE-non3GPP/internal/ike/context"
 	"UE-non3GPP/internal/ike/message"
 	"UE-non3GPP/internal/ipsec"
 	"UE-non3GPP/internal/nas/dispatch"
 	messageNas "UE-non3GPP/internal/nas/message"
 	"encoding/binary"
-	"fmt"
 	"math/big"
 	"net"
 )
@@ -465,18 +465,13 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 
 	case TCPEstablishSignalling:
 
-		// N3IWF TCP Ip/Port
-		n3iwfNASAddr := new(net.TCPAddr)
-		var ueInnerAddrIp []byte
-		var ueInnerAddrMask []byte
-
 		// security association
 		ue.N3IWFIKESecurityAssociation.IKEAuthResponseSA = securityAssociation
 
 		// notification
 		for j := 0; j < len(notifications); j++ {
 			if notifications[j].NotifyMessageType == message.Vendor3GPPNotifyTypeNAS_IP4_ADDRESS {
-				n3iwfNASAddr.IP = net.IPv4(
+				ue.N3iwfNasAddr.IP = net.IPv4(
 					notifications[j].NotificationData[0],
 					notifications[j].NotificationData[1],
 					notifications[j].NotificationData[2],
@@ -484,7 +479,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 			}
 
 			if notifications[j].NotifyMessageType == message.Vendor3GPPNotifyTypeNAS_TCP_PORT {
-				n3iwfNASAddr.Port = int(
+				ue.N3iwfNasAddr.Port = int(
 					binary.BigEndian.Uint16(notifications[j].NotificationData))
 			}
 		}
@@ -492,10 +487,10 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		if configuration.ConfigurationType == message.CFG_REPLY {
 			for _, configAttr := range configuration.ConfigurationAttribute {
 				if configAttr.Type == message.INTERNAL_IP4_ADDRESS {
-					ueInnerAddrIp = configAttr.Value
+					ue.ONAddrIp = configAttr.Value
 				}
 				if configAttr.Type == message.INTERNAL_IP4_NETMASK {
-					ueInnerAddrMask = configAttr.Value
+					ue.ONMask = configAttr.Value
 				}
 			}
 		}
@@ -514,7 +509,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 			childSecurityAssociationContext,
 			trafficSelectorInitiator.TrafficSelectors[0],
 			trafficSelectorResponder.TrafficSelectors[0],
-			ue)
+			ue, "tcp")
 		if err != nil {
 			return
 		}
@@ -526,10 +521,10 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		}
 
 		// thread with Tcp/XFRM connection
-		go ipsec.Run(ueInnerAddrIp,
-			ueInnerAddrMask,
+		go ipsec.Run(ue.ONAddrIp,
+			ue.ONMask,
 			childSecurityAssociationContext,
-			n3iwfNASAddr,
+			&ue.N3iwfNasAddr,
 			ue.NasContext)
 
 	default:
@@ -538,6 +533,147 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 }
 
 func HandleCREATECHILDSA(ue *context.UeIke, ikeMsg *message.IKEMessage) {
-	fmt.Println(ue)
-	fmt.Println(ikeMsg)
+
+	var encryptedPayload *message.Encrypted
+
+	localSPI := ikeMsg.ResponderSPI
+	if localSPI != ue.N3IWFIKESecurityAssociation.RemoteSPI {
+		// TODO handle errors in IKE header
+		return
+	}
+
+	for _, ikePayload := range ikeMsg.Payloads {
+		switch ikePayload.Type() {
+		case message.TypeSK:
+			encryptedPayload = ikePayload.(*message.Encrypted)
+		default:
+			return
+		}
+	}
+
+	decryptedIKEPayload, err := context.DecryptProcedure(ue.N3IWFIKESecurityAssociation,
+		ikeMsg, encryptedPayload)
+	if err != nil {
+		// TODO handle errors in IKE header
+		return
+	}
+
+	// Parse payloads
+	var securityAssociation *message.SecurityAssociation
+	var trafficSelectorInitiator *message.TrafficSelectorInitiator
+	var trafficSelectorResponder *message.TrafficSelectorResponder
+	var outboundSPI uint32
+
+	for _, ikePayload := range decryptedIKEPayload {
+		switch ikePayload.Type() {
+		case message.TypeSA:
+			securityAssociation = ikePayload.(*message.SecurityAssociation)
+			outboundSPI = binary.BigEndian.Uint32(securityAssociation.Proposals[0].SPI)
+		case message.TypeNiNr:
+			_ = ikePayload.(*message.Nonce)
+		case message.TypeTSi:
+			trafficSelectorInitiator = ikePayload.(*message.TrafficSelectorInitiator)
+		case message.TypeTSr:
+			trafficSelectorResponder = ikePayload.(*message.TrafficSelectorResponder)
+		case message.TypeN:
+			notification := ikePayload.(*message.Notification)
+			if notification.NotifyMessageType == message.Vendor3GPPNotifyType5G_QOS_INFO {
+				// QoS Flow Settings
+				if info, err := context.Parse5GQoSInfoNotify(notification); err == nil {
+					ue.QosInfo = info
+				}
+			}
+			if notification.NotifyMessageType == message.Vendor3GPPNotifyTypeUP_IP4_ADDRESS {
+				ue.N3iwfUpAddr = notification.NotificationData[:4]
+			}
+		default:
+		}
+	}
+
+	var responseIKEMessage *message.IKEMessage
+	var ikePayload message.IKEPayloadContainer
+
+	responseIKEMessage = new(message.IKEMessage)
+
+	// handling establishment of the IPsec Child SA
+	ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
+	ue.N3IWFIKESecurityAssociation.ResponderMessageID = ikeMsg.MessageID
+
+	responseIKEMessage.BuildIKEHeader(
+		ue.N3IWFIKESecurityAssociation.LocalSPI,
+		ue.N3IWFIKESecurityAssociation.RemoteSPI,
+		message.CREATE_CHILD_SA,
+		message.ResponseBitCheck|message.InitiatorBitCheck,
+		ue.N3IWFIKESecurityAssociation.ResponderMessageID)
+
+	// SA
+	inboundSPI := ue.GenerateSPI()
+	securityAssociation.Proposals[0].SPI = inboundSPI
+	ikePayload = append(ikePayload, securityAssociation)
+
+	// TSi
+	ikePayload = append(ikePayload, trafficSelectorInitiator)
+
+	// TSr
+	ikePayload = append(ikePayload, trafficSelectorResponder)
+
+	// Nonce
+	localNonce := context.GenerateRandomNumber().Bytes()
+	ue.N3IWFIKESecurityAssociation.ConcatenatedNonce = append(ue.N3IWFIKESecurityAssociation.ConcatenatedNonce, localNonce...)
+	ikePayload.BuildNonce(localNonce)
+
+	if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation, ikePayload,
+		responseIKEMessage); err != nil {
+		// TODO handle errors
+		return
+	}
+
+	// Send to N3IWF
+	ikeMessageData, err := responseIKEMessage.Encode()
+	if err != nil {
+		// TODO handle errors
+		return
+	}
+
+	udp := ue.GetUdpConn()
+	_, err = udp.Write(ikeMessageData)
+	if err != nil {
+		// TODO handle errors
+		return
+	}
+
+	ue.CreateHalfChildSA(ue.N3IWFIKESecurityAssociation.ResponderMessageID,
+		binary.BigEndian.Uint32(inboundSPI), -1)
+
+	childSecurityAssociationContextUserPlane, err := ue.CompleteChildSA(
+		ue.N3IWFIKESecurityAssociation.ResponderMessageID,
+		outboundSPI,
+		securityAssociation)
+	if err != nil {
+		return
+	}
+
+	err = context.ParseIPAddressInformationToChildSecurityAssociation(
+		childSecurityAssociationContextUserPlane,
+		trafficSelectorResponder.TrafficSelectors[0],
+		trafficSelectorInitiator.TrafficSelectors[0],
+		ue,
+		"gre")
+	if err != nil {
+		return
+	}
+
+	if err := context.GenerateKeyForChildSA(
+		ue.N3IWFIKESecurityAssociation,
+		childSecurityAssociationContextUserPlane); err != nil {
+		return
+	}
+
+	// create GRE tunnel
+	go gre.Run(
+		ue.ONAddrIp,
+		ue.N3iwfUpAddr,
+		childSecurityAssociationContextUserPlane,
+		ue.NasContext,
+		ue.QosInfo)
 }

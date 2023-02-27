@@ -50,12 +50,11 @@ func HandlerRegisteredInitiated(ue *context.UeIpSec, msg []byte) {
 
 func HandlerPDUSession(ue *context.UeIpSec, msg []byte) {
 
-	// get UE IP PDU Session
+	// get UE PDU Address Session
 	_, error := dispatch.DispatchNas(msg, ue.NasContext)
 	if error != nil {
 		fmt.Println(error)
 		return
 	}
 
-	// establish GRE Tunnel
 }
