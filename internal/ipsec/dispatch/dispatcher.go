@@ -3,7 +3,6 @@ package dispatch
 import (
 	"UE-non3GPP/internal/ipsec/context"
 	"UE-non3GPP/internal/ipsec/handler"
-	"fmt"
 )
 
 const (
@@ -22,7 +21,6 @@ func Dispatch(ue *context.UeIpSec, msg []byte) {
 	// get NAS msg to envelope
 	nasMsg, _, err := ue.DecapNasPduFromEnvelope(msg)
 	if err != nil {
-		fmt.Println("Here2")
 		return
 	}
 
@@ -33,6 +31,7 @@ func Dispatch(ue *context.UeIpSec, msg []byte) {
 		switch ue.NasContext.StateSM {
 		case pduSessionInactive:
 		case pduSessionPending:
+			handler.HandlerPDUSession(ue, nasMsg)
 		case pduSessionActive:
 
 		}
