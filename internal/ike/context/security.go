@@ -405,7 +405,6 @@ func GenerateKeyForIKESA(ikeSecurityAssociation *IKESecurityAssociation) error {
 	return nil
 }
 
-// Key Gen for child SA
 func GenerateKeyForChildSA(ikeSecurityAssociation *IKESecurityAssociation,
 	childSecurityAssociation *ChildSecurityAssociation) error {
 	// Transforms

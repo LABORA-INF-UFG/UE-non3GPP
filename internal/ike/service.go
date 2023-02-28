@@ -42,7 +42,6 @@ func Run(cfg config.Config, ue *context.UeIke) {
 
 	// init the registration of UE
 	trigger.InitRegistration(ue)
-
 }
 
 func listenAndServe(ue *context.UeIke) {

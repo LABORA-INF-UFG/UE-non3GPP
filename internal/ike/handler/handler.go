@@ -570,7 +570,8 @@ func HandleCREATECHILDSA(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 			securityAssociation = ikePayload.(*message.SecurityAssociation)
 			outboundSPI = binary.BigEndian.Uint32(securityAssociation.Proposals[0].SPI)
 		case message.TypeNiNr:
-			_ = ikePayload.(*message.Nonce)
+			nonce := ikePayload.(*message.Nonce)
+			ue.N3IWFIKESecurityAssociation.ConcatenatedNonce = nonce.NonceData
 		case message.TypeTSi:
 			trafficSelectorInitiator = ikePayload.(*message.TrafficSelectorInitiator)
 		case message.TypeTSr:
@@ -596,7 +597,6 @@ func HandleCREATECHILDSA(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	responseIKEMessage = new(message.IKEMessage)
 
 	// handling establishment of the IPsec Child SA
-	ue.N3IWFIKESecurityAssociation.InitiatorMessageID++
 	ue.N3IWFIKESecurityAssociation.ResponderMessageID = ikeMsg.MessageID
 
 	responseIKEMessage.BuildIKEHeader(
@@ -619,7 +619,9 @@ func HandleCREATECHILDSA(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 
 	// Nonce
 	localNonce := context.GenerateRandomNumber().Bytes()
-	ue.N3IWFIKESecurityAssociation.ConcatenatedNonce = append(ue.N3IWFIKESecurityAssociation.ConcatenatedNonce, localNonce...)
+	ue.N3IWFIKESecurityAssociation.ConcatenatedNonce = append(
+		ue.N3IWFIKESecurityAssociation.ConcatenatedNonce,
+		localNonce...)
 	ikePayload.BuildNonce(localNonce)
 
 	if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation, ikePayload,
