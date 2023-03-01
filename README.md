@@ -53,29 +53,31 @@ Open the ```conf/config.yaml``` file in your preferred text editor and change th
 | `ranuengapid`  | TODO  |
 | `amfuengapid`  | TODO  |
 | `authenticationmanagementfield`  | TODO  |
-| `localpublicipaddr`  | TODO  |
-| `localpublicportudpconnection`  | TODO  |
-| `linkgre.name`  | TODO  |
-| `ipsecinterfacename`  | TODO  |
-| `ipsecinterfacemark`  | TODO  |
-| `snssai.sst`  | TODO  |
-| `snssai.sd`  | TODO  |
-| `snssai.sd`  | TODO  |
+| `localpublicipaddr`  | This parameter represents the IP address of the machine where UE-non3GPP is running. It will be used by N3IWF to maintain active communication  |
+| `localpublicportudpconnection`  | This parameter represents the port that N3IWF will use to forward messages to UE-non3GPP  |
+| `linkgre.name`  | This parameter will be used to create the network interface through which it will be possible to establish communication with the data network through the 5GC  |
+| `ipsecinterfacename`  | This parameter will be used to create the network interface through which all control communication between N3IWF and UE-non3GPP will take place.  |
+| `ipsecinterfacemark`  | This parameter represents an IPSec virtual interface tag (any value except 0, default value is 7 if not defined). It must be the same value assigned to the configuration file of the N3IWF to which UE-non3GPP will connect  |
+| `snssai.sst`  | Single Network Slice Selection Assistance Information - Slice/Service Type (1 byte hex string, range: 0~F)  |
+| `snssai.sd`  | Single Network Slice Selection Assistance Information - Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)  |
 | `pdusessionid`  | TODO  |
 | `dnnstring`  | TODO  |
-| `n3iwfinfo.ikebindaddress`  | TODO  |
-| `n3iwfinfo.ikebindport`  | TODO  |
-| `n3iwfinfo.ipsecifaceprotocol`  | TODO  |
+| `n3iwfinfo.ikebindaddress`  | This parameter must be configured with the IP address of the N3IWF  |
+| `n3iwfinfo.ikebindport`  | This parameter must be configured with the N3IWF IKE interface access port. Must contain the same value assigned to the N3IWF configuration file  |
+| `n3iwfinfo.ipsecifaceprotocol`  | Protocol used in the communication process. UDP default value  |
 
 
-### Start Free5GC and N3IWF
-TODO
+### Run UE-non3GPP
+After adjusting all the configuration parameters, registering the UE in free5GC with the same parameters used in the configuration file and making sure that 5GC and N3IWF are running, execute the following command:
 
-### Register UE-non3GPP into Free5GC
-TODO
+```
+go run cmd/main.go ue
+```
+After execution, open another terminal on the same machine and check if a new network interface (eg gretun1) has been created.
 
-### Config UE-non3GPP
-TODO
-
-### Start UE-non3GPP
-TODO
+### Testing how UE-non3GPP works
+To test the operation of UE-non3GPP run the command below:
+```
+ping -I gretun1 8.8.8.8
+```
+The above command triggers a connection (ping) to google. If everything is in perfect working order, the terminator must present a positive response to the request. This means that you can direct network traffic to the `gretun1` interface and data network access via 5GC will perform satisfactorily.
