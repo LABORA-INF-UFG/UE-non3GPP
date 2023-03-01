@@ -1,5 +1,5 @@
 # UE-non3GPP
-User Equipment for non-3GPP access via N3IWF
+User Equipment for non-3GPP access via free5gc N3IWF V3.1.1
 
 ### Recommended Environment
 UE-non3GPP has been tested against the following environment:
@@ -34,11 +34,17 @@ source ~/.bashrc
 You can get more detailed information about installing ```golang``` from the [official website of golang](https://go.dev/doc/install)
 
 
-### UE-non3GPP install
+### Config UE-non3GPP
 Clone the project with the following command:
 ```
 git clone -b develop https://github.com/LABORA-INF-UFG/UE-non3GPP.git 
 ```
+
+Open the ```conf/config.yaml``` file in your preferred editor and change the configuration parameters as described in the following table:
+| Param Name  | Param Description |
+| ------------- | ------------- |
+| `permanentkeyvalue`  | Content Cell  |
+| `opcvalue`  | Content Cell  |
 
 
 ### Start Free5GC and N3IWF
