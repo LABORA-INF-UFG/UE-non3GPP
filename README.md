@@ -41,9 +41,18 @@ git clone -b develop https://github.com/LABORA-INF-UFG/UE-non3GPP.git
 ```
 
 Open the ```conf/config.yaml``` file in your preferred text editor and change the configuration parameters as described in the following table:
-| Param Name  | Param Description |
+| Field Name  |  Description |
 | ------------- | ------------- |
-| `permanentkeyvalue`  | This parameter must be set to the same value as the `permanentKeyValue` field of the `subscriptionData.authenticationData.authenticationSubscription` collection existing in the Free5GC MongoDB, which records the registration data of the UEs.  |
+| `permanentkeyvalue`  | This parameter must be set to the same value as the `permanentKeyValue` field of the `subscriptionData.authenticationData.authenticationSubscription` collection existing in the Free5GC MongoDB, which records the registration data of the UEs. In free5gc GUI (new subscriber) the attribute is represented by the `K*` field of the registration form.  |
+| `opcvalue`  | This parameter must be set to the same value as the `opcValue` field of the `subscriptionData.authenticationData.authenticationSubscription` collection existing in the Free5GC MongoDB, which records the registration data of the UEs.  |
+| `opvalue`  | This parameter must be set to the same value as the `opValue` field of the `subscriptionData.authenticationData.authenticationSubscription` collection existing in the Free5GC MongoDB, which records the registration data of the UEs. In free5gc GUI (new subscriber) the attribute is represented by the `Operator Code Value*` field of the registration form.  |
+| `sequencenumber`  | This parameter must be set to the same value as the `sequencenumber` field of the `subscriptionData.authenticationData.authenticationSubscription` collection existing in the Free5GC MongoDB, which records the registration data of the UEs. In free5gc GUI (new subscriber) the attribute is represented by the `SQN*` field of the registration form. This field contains a hexadecimal value that is incremented in MongoDB by the N3IWF each time the same UE registers in the 5GC, therefore, for the correct functioning of UE-non3GPP, the hexadecimal value of the configuration parameter must be modified in order to be equivalent to the existing one in the mongoDB base. |
+| `msin`  | This parameter must be configured with the last N values of the `ueId` field of the `subscriptionData.authenticationData.authenticationSubscription` collection existing in Free5GC MongoDB, which records the registration data of the UEs. In the free5gc (new subscriber) GUI, the attribute is represented by the `SUPI (IMSI)*` field of the registration form. The value of the `SUPI (IMSI)*` field is made up of the `mcc` code (eg: 208), followed by the `mnc` code (eg: 93), followed by a numerical sequence that represents the value to be assigned to the `msin` parameter. For example, assuming that in the free5gc GUI (new subscriber) the `SUPI (IMSI)*` field has the value `208930000000001`, then the value to assign to the parameter msin in UE-non3GPP config file is `0000000001`  |
+| `opcvalue`  | Content Cell  |
+| `opcvalue`  | Content Cell  |
+| `opcvalue`  | Content Cell  |
+| `opcvalue`  | Content Cell  |
+| `opcvalue`  | Content Cell  |
 | `opcvalue`  | Content Cell  |
 
 
