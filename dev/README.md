@@ -1,25 +1,14 @@
 # UE-non3GPP
-User Equipment for non-3GPP access via N3IWF
+User Equipment for non-3GPP access via N3IWF | Working in-progress
 
-### Recommended Environment
-UE-non3GPP has been tested against the following environment:
+### Environment
+The content described in this repository was tested in [Digital Occean](https://www.digitalocean.com/) cloud environment. 1º VM where free5GC will run (except N3IWF) and 2º VM where the N3IWF, each of them with the following configurations:
 * SO: Ubuntu 20.04 (LTS) x64
 * Uname -r: 5.4.0-122-generic
-* Memory: 1 GB
-* Disk: 25 GB
+* Memory: 4 GB
+* Disk: 80 GB
 
-#### Prerequisites
-UE-non3GPP was built and tested with Go 1.14.4. You can check the Go version on your system with the following command:
-```
-go version
-```
-If another version of Go is installed, remove the existing version and install Go 1.14.4 with the following sequence of commands (assuming your current version of Go is in the default location):
-```
-sudo rm -rf /usr/local/go
-wget https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
-sudo tar -C /usr/local -zxvf go1.14.4.linux-amd64.tar.gz
-```
-
+#### Before starting
 The development environment setup is exec by Ansible. Before starting it is necessary to access via SSH each one of the VM's and execute the following command to install some basic dependencies.
 ```
 sudo apt update && apt -y install python && sudo apt -y install git && sudo apt -y install ansible && sudo apt -y install net-tools
