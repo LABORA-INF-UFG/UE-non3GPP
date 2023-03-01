@@ -3,6 +3,7 @@ package context
 import (
 	"UE-non3GPP/internal/ike/message"
 	"UE-non3GPP/internal/nas/context"
+	"UE-non3GPP/pkg/utils"
 	"encoding/binary"
 	"fmt"
 	"github.com/vishvananda/netlink"
@@ -27,6 +28,7 @@ type UeIke struct {
 	N3iwfUpAddr                          net.IP
 	ONAddrIp                             []byte
 	ONMask                               []byte
+	Utils                                *utils.Utils
 }
 
 type IkeSecurity struct {
@@ -79,7 +81,7 @@ type PDUQoSInfo struct {
 	DSCP            uint8
 }
 
-func NewUeIke(ueNas *context.UeNas) *UeIke {
+func NewUeIke(ueNas *context.UeNas, utils *utils.Utils) *UeIke {
 	ue := &UeIke{}
 	ue.NewDiffieHellmanGroup(true)
 	ue.NewEncryptionAlgoritm(true)
@@ -88,6 +90,7 @@ func NewUeIke(ueNas *context.UeNas) *UeIke {
 	ue.N3IWFChildSecurityAssociation = make(map[uint32]*ChildSecurityAssociation)
 	ue.TemporaryExchangeMsgIDChildSAMapping = make(map[uint32]*ChildSecurityAssociation)
 	ue.NasContext = ueNas
+	ue.Utils = utils
 	return ue
 }
 

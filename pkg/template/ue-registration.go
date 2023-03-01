@@ -5,6 +5,7 @@ import (
 	controlPlane "UE-non3GPP/internal/ike"
 	"UE-non3GPP/internal/ike/context"
 	contextNas "UE-non3GPP/internal/nas/context"
+	"UE-non3GPP/pkg/utils"
 	"os"
 	"os/signal"
 )
@@ -30,8 +31,8 @@ func UENon3GPPConnection() {
 	}
 
 	ueNas := contextNas.NewUeNas(argsNas)
-
-	ueIke := context.NewUeIke(ueNas)
+	utils := utils.NewUtils()
+	ueIke := context.NewUeIke(ueNas, utils)
 
 	// init ue control plane
 	controlPlane.Run(cfg, ueIke)

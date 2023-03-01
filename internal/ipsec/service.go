@@ -5,7 +5,6 @@ import (
 	"UE-non3GPP/internal/ike/context"
 	contextIpsec "UE-non3GPP/internal/ipsec/context"
 	"UE-non3GPP/internal/ipsec/dispatch"
-	contextNas "UE-non3GPP/internal/nas/context"
 	"UE-non3GPP/internal/xfrm"
 	"fmt"
 	log "github.com/sirupsen/logrus"
@@ -17,7 +16,7 @@ func Run(ueIpAdr []byte,
 	ueIpMask []byte,
 	childSecurityAssociation *context.ChildSecurityAssociation,
 	N3IWFNasAddr *net.TCPAddr,
-	nas *contextNas.UeNas) {
+	ueIke *context.UeIke) {
 
 	var linkIPSec netlink.Link
 	var err error
@@ -30,18 +29,24 @@ func Run(ueIpAdr []byte,
 		Mask: ueIpMask,
 	}
 
+	// get interface by name
+	interfaceName, err := ueIke.Utils.GetInterfaceName(cfg.Ue.LocalPublicIPAddr)
+	if err != nil {
+		return
+	}
+
 	// setup IPsec Xfrmi
 	newXfrmiName := fmt.Sprintf("%s-default", cfg.Ue.IPSecInterfaceName)
 	// TODO interface IP is hardcoded
 	if linkIPSec, err = xfrm.SetupIPsecXfrmi(
 		newXfrmiName,
-		"virbr0",
+		interfaceName,
 		cfg.Ue.IPSecInterfaceMark,
 		&ueInnerAddr); err != nil {
 		return
 	}
 
-	nas.SetXfrmInterface(linkIPSec)
+	ueIke.NasContext.SetXfrmInterface(linkIPSec)
 
 	// Apply XFRM rules
 	if err := xfrm.ApplyXFRMRule(
@@ -67,11 +72,11 @@ func Run(ueIpAdr []byte,
 
 	// create context of UE for ipsec
 	ueIpSec := contextIpsec.NewUeIpSec(
-		nas,
+		ueIke.NasContext,
 		tcpConnWithN3IWF,
 		newXfrmiName)
 
-	nas.SetIpsecTcp(tcpConnWithN3IWF)
+	ueIke.NasContext.SetIpsecTcp(tcpConnWithN3IWF)
 
 	// handle server tcp/NAS
 	go listenAndServe(ueIpSec)

@@ -31,9 +31,7 @@ type Config struct {
 		LocalPublicIPAddr             string `yaml: "localpublicipaddr"`
 		LocalPublicPortUDPConnection  string `yaml: "localpublicportudpconnection"`
 		LinkGRE                       struct {
-			Name      string `yaml: "name"`
-			IPAddress []byte `yaml: "ipaddress,flow"`
-			Mask      []byte `yaml: "mask,flow"`
+			Name string `yaml: "name"`
 		} `yaml: "linkgre"`
 
 		IPSecInterfaceName string `yaml: "ipsecinterfacename"`

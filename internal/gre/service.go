@@ -3,7 +3,6 @@ package gre
 import (
 	"UE-non3GPP/config"
 	"UE-non3GPP/internal/ike/context"
-	contextNas "UE-non3GPP/internal/nas/context"
 	"UE-non3GPP/internal/xfrm"
 	"fmt"
 	"github.com/vishvananda/netlink"
@@ -15,7 +14,7 @@ func Run(
 	ueIpAdr []byte,
 	n3iwfIpUp net.IP,
 	childSecurityAssociation *context.ChildSecurityAssociation,
-	nas *contextNas.UeNas,
+	ueIke *context.UeIke,
 	QosInfo *context.PDUQoSInfo) {
 
 	var linkGRE netlink.Link
@@ -32,6 +31,7 @@ func Run(
 		false,
 		cfg.Ue.IPSecInterfaceMark,
 		childSecurityAssociation); err != nil {
+		// TODO implements LOG
 		return
 	}
 
@@ -39,7 +39,7 @@ func Run(
 	for {
 
 		// PDU addres received
-		if nas.StateSM == 2 {
+		if ueIke.NasContext.StateSM == 2 {
 			break
 		}
 
@@ -47,18 +47,20 @@ func Run(
 	}
 
 	newGREName := fmt.Sprintf("%s%d", cfg.Ue.LinkGRE.Name, cfg.Ue.PDUSessionId)
+	parentIfaceName := fmt.Sprintf("%s-%s", cfg.Ue.IPSecInterfaceName, "default")
+
 	if linkGRE, err = setupGreTunnel(
 		newGREName,
-		"ipsec0-default",
+		parentIfaceName,
 		ueInnerAddr.IP,
 		n3iwfIpUp,
-		nas.PduSession.PDUAdress,
+		ueIke.NasContext.PduSession.PDUAdress,
 		QosInfo); err != nil {
-		fmt.Println(err)
+		// TODO implements LOG
 		return
 	}
 
-	nas.SetGREInterface(linkGRE)
+	ueIke.NasContext.SetGREInterface(linkGRE)
 
 	// Add route
 	upRoute := &netlink.Route{
@@ -69,14 +71,15 @@ func Run(
 		},
 	}
 
-	nas.SetGRERoute(upRoute)
+	ueIke.NasContext.SetGRERoute(upRoute)
 
 	if err := netlink.RouteAdd(upRoute); err != nil {
-		fmt.Println(err)
+		// TODO implements LOG
 		return
 	}
 }
 
+// Copyright free5GC
 func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	n3iwfTunnelAddr, pduAddr net.IP, qoSInfo *context.PDUQoSInfo) (netlink.Link, error) {
 	var (
@@ -90,6 +93,7 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	}
 
 	if parent, err = netlink.LinkByName(parentIfaceName); err != nil {
+		// TODO implements LOG
 		return nil, err
 	}
 
@@ -107,12 +111,14 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	}
 
 	if err := netlink.LinkAdd(newGRETunnel); err != nil {
+		// TODO implements LOG
 		return nil, err
 	}
 
 	// Get link info
 	linkGRE, err := netlink.LinkByName(greIfaceName)
 	if err != nil {
+		// TODO implements LOG
 		return nil, fmt.Errorf("No link named %s", greIfaceName)
 	}
 
@@ -124,11 +130,13 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	}
 
 	if err := netlink.AddrAdd(linkGRE, linkGREAddr); err != nil {
+		// TODO implements LOG
 		return nil, err
 	}
 
 	// Set GRE interface up
 	if err := netlink.LinkSetUp(linkGRE); err != nil {
+		// TODO implements LOG
 		return nil, err
 	}
 
