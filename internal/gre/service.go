@@ -58,6 +58,8 @@ func Run(
 		return
 	}
 
+	nas.SetGREInterface(linkGRE)
+
 	// Add route
 	upRoute := &netlink.Route{
 		LinkIndex: linkGRE.Attrs().Index,
@@ -66,6 +68,8 @@ func Run(
 			Mask: net.IPv4Mask(0, 0, 0, 0),
 		},
 	}
+
+	nas.SetGRERoute(upRoute)
 
 	if err := netlink.RouteAdd(upRoute); err != nil {
 		fmt.Println(err)

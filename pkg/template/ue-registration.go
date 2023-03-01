@@ -5,7 +5,8 @@ import (
 	controlPlane "UE-non3GPP/internal/ike"
 	"UE-non3GPP/internal/ike/context"
 	contextNas "UE-non3GPP/internal/nas/context"
-	"time"
+	"os"
+	"os/signal"
 )
 
 func UENon3GPPConnection() {
@@ -35,5 +36,21 @@ func UENon3GPPConnection() {
 	// init ue control plane
 	controlPlane.Run(cfg, ueIke)
 
-	time.Sleep(6000 * time.Second)
+	// control the signals
+	sigUE := make(chan os.Signal, 1)
+	signal.Notify(sigUE, os.Interrupt)
+
+	// Block until a signal is received.
+	<-sigUE
+	err := ueIke.Terminate()
+	if !err {
+		// TODO implement logs
+		return
+	}
+
+	err = ueNas.Terminate()
+	if !err {
+		// TODO implement logs
+		return
+	}
 }

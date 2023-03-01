@@ -9,6 +9,7 @@ import (
 	"UE-non3GPP/internal/xfrm"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"github.com/vishvananda/netlink"
 	"net"
 )
 
@@ -18,7 +19,7 @@ func Run(ueIpAdr []byte,
 	N3IWFNasAddr *net.TCPAddr,
 	nas *contextNas.UeNas) {
 
-	// var linkIPSec netlink.Link
+	var linkIPSec netlink.Link
 	var err error
 
 	cfg := config.GetConfig()
@@ -32,13 +33,15 @@ func Run(ueIpAdr []byte,
 	// setup IPsec Xfrmi
 	newXfrmiName := fmt.Sprintf("%s-default", cfg.Ue.IPSecInterfaceName)
 	// TODO interface IP is hardcoded
-	if _, err = xfrm.SetupIPsecXfrmi(
+	if linkIPSec, err = xfrm.SetupIPsecXfrmi(
 		newXfrmiName,
 		"virbr0",
 		cfg.Ue.IPSecInterfaceMark,
 		&ueInnerAddr); err != nil {
 		return
 	}
+
+	nas.SetXfrmInterface(linkIPSec)
 
 	// Apply XFRM rules
 	if err := xfrm.ApplyXFRMRule(
@@ -67,6 +70,8 @@ func Run(ueIpAdr []byte,
 		nas,
 		tcpConnWithN3IWF,
 		newXfrmiName)
+
+	nas.SetIpsecTcp(tcpConnWithN3IWF)
 
 	// handle server tcp/NAS
 	go listenAndServe(ueIpSec)

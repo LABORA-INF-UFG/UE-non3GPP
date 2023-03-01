@@ -10,6 +10,7 @@ import (
 	"github.com/free5gc/openapi/models"
 	"github.com/free5gc/util/milenage"
 	"github.com/free5gc/util/ueauth"
+	"github.com/vishvananda/netlink"
 	"net"
 	"reflect"
 	"regexp"
@@ -27,18 +28,22 @@ const (
 )
 
 type UeNas struct {
-	id          uint8
-	StateMM     int
-	StateSM     int
-	PduSession  PDUSession
-	NasSecurity NASecurity
+	id            uint8
+	StateMM       int
+	StateSM       int
+	PduSession    PDUSession
+	NasSecurity   NASecurity
+	XfrmInterface netlink.Link
+	tcpIpsec      *net.TCPConn
 }
 
 type PDUSession struct {
-	Id        uint8
-	Snssai    models.Snssai
-	Dnn       string
-	PDUAdress net.IP
+	Id           uint8
+	Snssai       models.Snssai
+	Dnn          string
+	PDUAdress    net.IP
+	GreInterface netlink.Link
+	route        *netlink.Route
 }
 
 type NASecurity struct {
@@ -124,8 +129,54 @@ func newNasSecurity(msin, mcc, mnc string, ranUeNgapId int64, cipheringAlg, inte
 	return nas
 }
 
+func (ue *UeNas) Terminate() bool {
+
+	err := netlink.LinkDel(ue.XfrmInterface)
+	if err != nil {
+		return false
+	}
+
+	ue.tcpIpsec.Close()
+
+	err = netlink.LinkDel(ue.PduSession.GreInterface)
+	if err != nil {
+		return false
+	}
+
+	err = netlink.RouteDel(ue.PduSession.route)
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
 func (ue *UeNas) SetRegistered() {
 	ue.StateMM = registered
+}
+
+func (ue *UeNas) SetGRERoute(route *netlink.Route) {
+	ue.PduSession.route = route
+}
+
+func (ue *UeNas) SetGREInterface(greInterface netlink.Link) {
+	ue.PduSession.GreInterface = greInterface
+}
+
+func (ue *UeNas) SetXfrmInterface(xfrmInterface netlink.Link) {
+	ue.XfrmInterface = xfrmInterface
+}
+
+func (ue *UeNas) GetXfrmInterface() netlink.Link {
+	return ue.XfrmInterface
+}
+
+func (ue *UeNas) SetIpsecTcp(tcpsocket *net.TCPConn) {
+	ue.tcpIpsec = tcpsocket
+}
+
+func (ue *UeNas) GetIpsecTcp() *net.TCPConn {
+	return ue.tcpIpsec
 }
 
 func (ue *UeNas) SetPduSessionPending() {

@@ -91,6 +91,26 @@ func NewUeIke(ueNas *context.UeNas) *UeIke {
 	return ue
 }
 
+func (ue *UeIke) Terminate() bool {
+
+	// close IKE socket udp
+	udpConn := ue.GetUdpConn()
+	udpConn.Close()
+
+	// clean xfrm policy and states
+	err := netlink.XfrmPolicyFlush()
+	if err != nil {
+		return false
+	}
+
+	err = netlink.XfrmStateFlush(netlink.XFRM_PROTO_IPSEC_ANY)
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
 func (ue *UeIke) CreateN3IWFIKESecurityAssociation(ikeSecurity *IKESecurityAssociation) {
 	ue.N3IWFIKESecurityAssociation = ikeSecurity
 	ue.N3IWFIKESecurityAssociation.State = 0 // pre-signaling
