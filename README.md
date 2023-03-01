@@ -19,6 +19,19 @@ sudo rm -rf /usr/local/go
 wget https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
 sudo tar -C /usr/local -zxvf go1.14.4.linux-amd64.tar.gz
 ```
+However, if Go is not installed on your system you should run the following commands:
+```
+wget https://dl.google.com/go/go1.14.4.linux-amd64.tar.gz
+sudo tar -C /usr/local -zxvf go1.14.4.linux-amd64.tar.gz
+mkdir -p ~/go/{bin,pkg,src}
+# The following commands assume that your shell is bash
+echo 'export GOPATH=$HOME/go' >> ~/.bashrc
+echo 'export GOROOT=/usr/local/go' >> ~/.bashrc
+echo 'export PATH=$PATH:$GOPATH/bin:$GOROOT/bin' >> ~/.bashrc
+echo 'export GO111MODULE=auto' >> ~/.bashrc
+source ~/.bashrc
+```
+You can get more detailed information about installing ```golang``` from the [official website of golang](https://go.dev/doc/install)
 
 The development environment setup is exec by Ansible. Before starting it is necessary to access via SSH each one of the VM's and execute the following command to install some basic dependencies.
 ```
