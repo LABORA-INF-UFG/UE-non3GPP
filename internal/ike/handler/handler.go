@@ -520,12 +520,14 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 			return
 		}
 
+		// get interface name
+
 		// thread with Tcp/XFRM connection
 		go ipsec.Run(ue.ONAddrIp,
 			ue.ONMask,
 			childSecurityAssociationContext,
 			&ue.N3iwfNasAddr,
-			ue.NasContext)
+			ue)
 
 	default:
 		return
@@ -676,6 +678,6 @@ func HandleCREATECHILDSA(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		ue.ONAddrIp,
 		ue.N3iwfUpAddr,
 		childSecurityAssociationContextUserPlane,
-		ue.NasContext,
+		ue,
 		ue.QosInfo)
 }

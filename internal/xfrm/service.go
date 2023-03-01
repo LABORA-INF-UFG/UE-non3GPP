@@ -8,6 +8,7 @@ import (
 	"net"
 )
 
+// copyrigth free5GC
 type XFRMEncryptionAlgorithmType uint16
 
 func (xfrmEncryptionAlgorithmType XFRMEncryptionAlgorithmType) String() string {
