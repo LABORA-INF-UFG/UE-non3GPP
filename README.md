@@ -40,10 +40,10 @@ Clone the project with the following command:
 git clone -b develop https://github.com/LABORA-INF-UFG/UE-non3GPP.git 
 ```
 
-Open the ```conf/config.yaml``` file in your preferred editor and change the configuration parameters as described in the following table:
+Open the ```conf/config.yaml``` file in your preferred text editor and change the configuration parameters as described in the following table:
 | Param Name  | Param Description |
 | ------------- | ------------- |
-| `permanentkeyvalue`  | Content Cell  |
+| `permanentkeyvalue`  | This parameter must be set to the same value as the `permanentKeyValue` field of the `subscriptionData.authenticationData.authenticationSubscription` collection existing in the Free5GC MongoDB, which records the registration data of the UEs.  |
 | `opcvalue`  | Content Cell  |
 
 
