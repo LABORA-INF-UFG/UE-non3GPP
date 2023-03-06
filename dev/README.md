@@ -26,7 +26,7 @@ Let's assume that the operator's machine has full access to the _fee5gc-core_ an
 Let's start with the settings of the host responsible for running _fee5gc-core_.
 * Replace the 1º marker ```<IP-address>```, illustrated in the following figure in red color, with the IP address of the VM where _fee5gc-core_ will be configured.
 <p align="center">
-    <img src="images/ip_free5gc_hosts.png"/> 
+    <img src="../images/ip_free5gc_hosts.png"/> 
 </p>
 
 * Access the VM _fee5gc-core_, run ```ifconfig``` and get the name of **internet network interface**, like as illustrated in the figure below:
