@@ -4,14 +4,16 @@
         remote_user: root
         vars:
             UE_NON3GPP_DIR_INSTALL: "/root/go/src/UE-non3GPP"
-            UE_NON3GPPCONFIG_DIR: "/root/go/src/UE-non3GPP/config"
+            UE_NON3GPP_CONFIG_DIR: "/root/go/src/UE-non3GPP/config"
+            UE_NON3GPP_DEV_DIR: "/root/go/src/UE-non3GPP/dev"
             HOME_DIR: "/root"
-            PERMANENT_KEY_VALUE: "5122250214c33e723a5dd523fc145fc0"
-            OPC_VALUE: "981d464c7c52eb6e5036234984ad0bcf"
-            OP_VALUE: "c9e8763286b5b9ffbdf56e1297d0887b"
-            SEQ_NUMBER: "16f3b3f70fcf"
-            SUPI: "imsi-2089300007487"
+            PERMANENT_KEY_VALUE: "250214c33e723a5dd523fc145fc0"
+            OPC_VALUE: "464c7c52eb6e5036234984ad0bcf"
+            OP_VALUE: "763286b5b9ffbdf56e1297d0887b"
+            SEQ_NUMBER: "b3f70fc0"
             AUTH_MN_FIELD: "8000"
+            MCC: "208"
+            MNC: "93"
             IPSEC_INTERFACE: "ipsec0"
             GRE_TUN_INTERFACE: "gretun0"
             UE_NON3GPP_IP_ADDR: "127.0.0.1"
@@ -32,54 +34,79 @@
               args:
                 chdir: "{{ GO_SRC_DIR }}"
 
+            - name: Remove include_ue_non3GPP.sh config file
+              shell: rm include_ue_non3GPP.sh
+              args:
+                chdir: "{{ UE_NON3GPP_DEV_DIR }}"
+
+            - name: Build include_ue_non3GPP.sh
+              copy:
+                dest: "{{ UE_NON3GPP_DEV_DIR }}/include_ue_non3GPP.sh"
+                content: |
+                  #!/bin/bash
+  
+                  HOST={{ free5gc_ip_address }}
+                  PORT=5000
+                  
+                  BASE_URL="http://$HOST:$PORT/api/subscriber"
+                  K={{ msin }}{{ PERMANENT_KEY_VALUE }}
+                  OPC={{ msin }}{{ OPC_VALUE }}
+                  OP={{ msin }}{{ OP_VALUE }}
+                  SQN={{ msin }}{{ SEQ_NUMBER }}
+                  
+                  imsi={{ MCC }}{{ MNC }}0000{{ msin }}
+                  plmnid={{ MCC }}{{ MNC }}
+                  
+                  
+                  curl "$BASE_URL/imsi-$imsi/$plmnid" \
+                    -H 'Accept: application/json' \
+                    -H 'Accept-Language: en-US,en;q=0.9,pt;q=0.8' \
+                    -H 'Content-Type: application/json;charset=UTF-8' \
+                    -H 'Token: admin' \
+                    -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36' \
+                    -H 'X-Requested-With: XMLHttpRequest' \
+                  --data-raw '{"plmnID":"'$plmnid'","ueId":"imsi-'$imsi'","AuthenticationSubscription":{"authenticationManagementField":"8000","authenticationMethod":"5G_AKA","milenage":{"op":{"encryptionAlgorithm":0,"encryptionKey":0,"opValue":"'$OP'"}},"opc":{"encryptionAlgorithm":0,"encryptionKey":0,"opcValue":"'$OPC'"},"permanentKey":{"encryptionAlgorithm":0,"encryptionKey":0,"permanentKeyValue":"'$K'"},"sequenceNumber":"'$SQN'"},"AccessAndMobilitySubscriptionData":{"gpsis":["msisdn-0900000000"],"nssai":{"defaultSingleNssais":[{"sst":1,"sd":"010203","isDefault":true},{"sst":1,"sd":"112233","isDefault":true}],"singleNssais":[]},"subscribedUeAmbr":{"downlink":"2 Gbps","uplink":"1 Gbps"}},"SessionManagementSubscriptionData":[{"singleNssai":{"sst":1,"sd":"010203"},"dnnConfigurations":{"internet":{"sscModes":{"defaultSscMode":"SSC_MODE_1","allowedSscModes":["SSC_MODE_2","SSC_MODE_3"]},"pduSessionTypes":{"defaultSessionType":"IPV4","allowedSessionTypes":["IPV4"]},"sessionAmbr":{"uplink":"200 Mbps","downlink":"100 Mbps"},"5gQosProfile":{"5qi":9,"arp":{"priorityLevel":8},"priorityLevel":8}},"internet2":{"sscModes":{"defaultSscMode":"SSC_MODE_1","allowedSscModes":["SSC_MODE_2","SSC_MODE_3"]},"pduSessionTypes":{"defaultSessionType":"IPV4","allowedSessionTypes":["IPV4"]},"sessionAmbr":{"uplink":"200 Mbps","downlink":"100 Mbps"},"5gQosProfile":{"5qi":9,"arp":{"priorityLevel":8},"priorityLevel":8}}}},{"singleNssai":{"sst":1,"sd":"112233"},"dnnConfigurations":{"internet":{"sscModes":{"defaultSscMode":"SSC_MODE_1","allowedSscModes":["SSC_MODE_2","SSC_MODE_3"]},"pduSessionTypes":{"defaultSessionType":"IPV4","allowedSessionTypes":["IPV4"]},"sessionAmbr":{"uplink":"200 Mbps","downlink":"100 Mbps"},"5gQosProfile":{"5qi":9,"arp":{"priorityLevel":8},"priorityLevel":8}},"internet2":{"sscModes":{"defaultSscMode":"SSC_MODE_1","allowedSscModes":["SSC_MODE_2","SSC_MODE_3"]},"pduSessionTypes":{"defaultSessionType":"IPV4","allowedSessionTypes":["IPV4"]},"sessionAmbr":{"uplink":"200 Mbps","downlink":"100 Mbps"},"5gQosProfile":{"5qi":9,"arp":{"priorityLevel":8},"priorityLevel":8}}}}],"SmfSelectionSubscriptionData":{"subscribedSnssaiInfos":{"01010203":{"dnnInfos":[{"dnn":"internet"},{"dnn":"internet2"}]},"01112233":{"dnnInfos":[{"dnn":"internet"},{"dnn":"internet2"}]}}},"AmPolicyData":{"subscCats":["free5gc"]},"SmPolicyData":{"smPolicySnssaiData":{"01010203":{"snssai":{"sst":1,"sd":"010203"},"smPolicyDnnData":{"internet":{"dnn":"internet"},"internet2":{"dnn":"internet2"}}},"01112233":{"snssai":{"sst":1,"sd":"112233"},"smPolicyDnnData":{"internet":{"dnn":"internet"},"internet2":{"dnn":"internet2"}}}}},"FlowRules":[]}' \
+                  --compressed \
+                  --insecure
+
             - name: Remove UE-non3GPP config file
               shell: rm config.yaml
               args:
-                chdir: "{{ UE_NON3GPPCONFIG_DIR }}"
-              
+                chdir: "{{ UE_NON3GPP_CONFIG_DIR }}"
 
             - name: Build UE-non3GPP config.yaml
               copy:
-                dest: "{{ UE_NON3GPPCONFIG_DIR }}/config.yaml"
+                dest: "{{ UE_NON3GPP_CONFIG_DIR }}/config.yaml"
                 content: |
                   ue:
                     authsubscription:
-                      permanentkeyvalue: "{{ PERMANENT_KEY_VALUE }}"
-                      opcvalue: "{{ OPC_VALUE }}"
-                      opvalue: "{{ OP_VALUE }}"
-                      sequencenumber: "{{ SEQ_NUMBER }}"
-                    supi: "{{ SUPI }}"
+                      permanentkeyvalue: "{{ msin }}{{ PERMANENT_KEY_VALUE }}"
+                      opcvalue: "{{ msin }}{{ OPC_VALUE }}"
+                      opvalue: "{{ msin }}{{ OP_VALUE }}"
+                      sequencenumber: "{{ msin }}{{ SEQ_NUMBER }}"
+                    msin: "0000{{ msin }}"
+                    hplmn:
+                      mcc: "{{ MCC }}"
+                      mnc: "{{ MNC }}"
                     ranuengapid: 1
                     amfuengapid: 1
                     authenticationmanagementfield : "{{ AUTH_MN_FIELD }}"
                     localpublicipaddr : "{{ UE_NON3GPP_IP_ADDR }}"
                     localpublicportudpconnection : "{{ UE_NON3GPP_PORT_UDP_CONNECTION }}"
                     linkgre:
-                      name : "gretun0"
-                      ipaddress: [60,60,0,1]
-                      mask: [255,255,255,0]
+                      name : "gretun"
                     ipsecinterfacename : "{{ IPSEC_INTERFACE }}" # IP address of IPSec virtual interface (IPsec tunnel enpoint to N3IWF)
-                    ipsecinterfacemark: "5" # IPSec virtual interface mark (Any value except to 0, default value is 7 if not defined)
+                    ipsecinterfacemark: 5 # IPSec virtual interface mark (Any value except to 0, default value is 7 if not defined)
                     snssai: # Single Network Slice Selection Assistance Information
                       sst: 1 # Slice/Service Type (1 byte hex string, range: 0~F)
                       sd: "010203" # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
-                    pdusessionid: 10
+                    pdusessionid: 1
                     dnnstring: "internet"
-                  
+
                   n3iwfinfo:
                     ikebindaddress: "{{ n3iwf_ike_ip_address }}" # IP address of Nwu interface (IKE) on N3IWF
                     ikebindport: "500"
                     ipsecifaceprotocol: "udp"
-                  
+
                   logs:
                     level: 4
-
-            - name  : Remove UE-non3GPP ipsec0 confg (if exists)
-              shell : |
-                sudo ip link del {{ IPSEC_INTERFACE }}
-              ignore_errors: true
-
-            - name  : Config UE-non3GPP ipsec0
-              shell : |
-                sudo ip link add {{ IPSEC_INTERFACE }} type vti local {{ UE_NON3GPP_IP_ADDR }} remote {{ n3iwf_ike_ip_address }} key 5
-                sudo ip link set {{ IPSEC_INTERFACE }} up
