@@ -530,8 +530,9 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 
 		// get interface name
 
-		// thread with Tcp/XFRM connection
-		go ipsec.Run(ue.ONAddrIp,
+		// thread with TCP/XFRM connection
+		go ipsec.Run(
+			ue.ONAddrIp,
 			ue.ONMask,
 			childSecurityAssociationContext,
 			&ue.N3iwfNasAddr,

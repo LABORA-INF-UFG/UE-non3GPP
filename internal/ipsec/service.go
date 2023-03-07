@@ -32,6 +32,7 @@ func Run(ueIpAdr []byte,
 	// get interface by name
 	interfaceName, err := ueIke.Utils.GetInterfaceName(cfg.Ue.LocalPublicIPAddr)
 	if err != nil {
+		log.Error("[UE][IPSEC] Error in get UE interface name")
 		return
 	}
 
@@ -43,6 +44,7 @@ func Run(ueIpAdr []byte,
 		interfaceName,
 		cfg.Ue.IPSecInterfaceMark,
 		&ueInnerAddr); err != nil {
+		log.Error("[UE][IPSEC] Error in setup IPSEC interface")
 		return
 	}
 
@@ -53,6 +55,7 @@ func Run(ueIpAdr []byte,
 		true,
 		cfg.Ue.IPSecInterfaceMark,
 		childSecurityAssociation); err != nil {
+		log.Error("[UE][IPSEC] Error in setup XFRM rules")
 		return
 	}
 
@@ -66,7 +69,7 @@ func Run(ueIpAdr []byte,
 		localTCPAddr,
 		N3IWFNasAddr)
 	if err != nil {
-		fmt.Println(err)
+		log.Error("[UE][IPSEC][CP] Error in setup dial TCP")
 		return
 	}
 
@@ -91,7 +94,7 @@ func listenAndServe(ue *contextIpsec.UeIpSec) {
 
 		n, err := listener.Read(data)
 		if err != nil {
-			log.Error("Read From TCP failed: %+v", err)
+			log.Error("[UE][IPSEC][CP] Read From TCP failed: %+v", err)
 			continue
 		}
 
