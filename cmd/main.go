@@ -11,16 +11,25 @@ import (
 
 const version = "1.0.0"
 
+const (
+	Panic = iota
+	Fatal
+	Error
+	Warn
+	Info
+	Debug
+)
+
 func init() {
 	cfg := config.GetConfig()
 
 	// Output to stdout instead of the default stderr
 	log.SetOutput(os.Stdout)
 
-	if cfg.Logs.Level == 0 {
+	if level, err := log.ParseLevel(cfg.Logs.Level); err != nil {
 		log.SetLevel(log.InfoLevel)
 	} else {
-		log.SetLevel(log.Level(cfg.Logs.Level))
+		log.SetLevel(level)
 	}
 	spew.Config.Indent = "\t"
 	log.Info("UE-non3GPP version " + version)

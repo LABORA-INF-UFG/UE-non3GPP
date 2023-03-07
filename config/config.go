@@ -51,7 +51,7 @@ type Config struct {
 	} `yaml:"n3iwfinfo"`
 
 	Logs struct {
-		Level int `yaml: "level"`
+		Level string `yaml: "level"`
 	} `yaml:"logs"`
 }
 

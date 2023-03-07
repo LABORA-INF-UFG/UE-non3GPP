@@ -28,5 +28,6 @@ n3iwfinfo:
   ikebindport: "500"
   ipsecifaceprotocol: "udp"
 
+# how detailed to output, value: trace, debug, info, warn, error, fatal, panic
 logs:
-  level: 4
+  level: warn
