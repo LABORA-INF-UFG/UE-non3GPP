@@ -64,6 +64,8 @@ func HandlerDlNasTransportPduaccept(ue *context.UeNas, message *nas.Message) []b
 
 	// set the IP of PDU Session to UE
 	ue.PduSession.PDUAdress = nasMessage.GetPduAddresFromPduEstablishmentAccept(message)
+
 	ue.SetPduSessionActive()
+
 	return nil
 }

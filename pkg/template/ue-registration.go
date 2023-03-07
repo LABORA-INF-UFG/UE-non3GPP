@@ -32,12 +32,12 @@ func UENon3GPPConnection() {
 	}
 
 	ueNas := contextNas.NewUeNas(argsNas)
-	log.Info("[UE][NAS] NAS CONTEXT CREATED")
+	log.Info("[UE][NAS] NAS Context Created")
 
 	utils := utils.NewUtils()
 
 	ueIke := context.NewUeIke(ueNas, utils)
-	log.Info("[UE][IKE] IKE CONTEXT CREATED")
+	log.Info("[UE][IKE] IKE Context Created")
 
 	// init ue control plane
 	controlPlane.Run(cfg, ueIke)
