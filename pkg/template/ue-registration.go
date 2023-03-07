@@ -6,6 +6,7 @@ import (
 	"UE-non3GPP/internal/ike/context"
 	contextNas "UE-non3GPP/internal/nas/context"
 	"UE-non3GPP/pkg/utils"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"os/signal"
 )
@@ -31,8 +32,12 @@ func UENon3GPPConnection() {
 	}
 
 	ueNas := contextNas.NewUeNas(argsNas)
+	log.Info("[UE][NAS] NAS CONTEXT CREATED")
+
 	utils := utils.NewUtils()
+
 	ueIke := context.NewUeIke(ueNas, utils)
+	log.Info("[UE][IKE] IKE CONTEXT CREATED")
 
 	// init ue control plane
 	controlPlane.Run(cfg, ueIke)
@@ -46,12 +51,14 @@ func UENon3GPPConnection() {
 	err := ueIke.Terminate()
 	if !err {
 		// TODO implement logs
+		log.Fatal("[UE][IKE] IKE Context Termination failed")
 		return
 	}
 
 	err = ueNas.Terminate()
 	if !err {
 		// TODO implement logs
+		log.Fatal("[UE][NAS] NAS Context Termination failed")
 		return
 	}
 }

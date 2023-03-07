@@ -15,21 +15,20 @@ func Run(cfg config.Config, ue *context.UeIke) {
 	n3wifAddr := cfg.N3iwfInfo.IKEBindAddress + ":" + cfg.N3iwfInfo.IKEBindPort
 	n3iwfUdp, err := net.ResolveUDPAddr("udp", n3wifAddr)
 	if err != nil {
-		log.Fatal("Resolve N3WIF UDP address failed")
+		log.Fatal("[UE][IKE] Resolve N3WIF UDP address failed")
 	}
 
 	// UE UDP address
 	ueAddr := cfg.Ue.LocalPublicIPAddr + ":" + cfg.Ue.LocalPublicPortUDPConnection
 	ueUdp, err := net.ResolveUDPAddr("udp", ueAddr)
 	if err != nil {
-		log.Fatal("Resolve UE UDP address failed")
+		log.Fatal("[UE][IKE] Resolve UE UDP address failed")
 	}
 
 	// connect to n3wif/UE udp
 	connUdp, err := net.DialUDP("udp", ueUdp, n3iwfUdp)
 	if err != nil {
-		log.Fatal("UDP Connection N3IWF failed!")
-		panic(err)
+		log.Fatal("[UE][IKE] UDP Connection N3IWF failed!")
 	}
 
 	// udp connection of UE
@@ -53,7 +52,7 @@ func listenAndServe(ue *context.UeIke) {
 
 		n, _, err := listener.ReadFromUDP(data)
 		if err != nil {
-			log.Error("ReadFromUDP failed: %+v", err)
+			log.Error("[UE][IKE] Read From UDP failed: %+v", err)
 			continue
 		}
 

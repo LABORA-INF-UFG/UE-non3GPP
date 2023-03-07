@@ -30,4 +30,4 @@ n3iwfinfo:
 
 # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
 logs:
-  level: warn
+  level: info

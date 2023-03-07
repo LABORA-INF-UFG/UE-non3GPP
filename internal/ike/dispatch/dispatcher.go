@@ -25,7 +25,7 @@ func Dispatch(ue *context.UeIke, msg []byte) {
 	case ike_message.CREATE_CHILD_SA:
 		handler.HandleCREATECHILDSA(ue, ikeMessage)
 	default:
-		log.Error("Unimplemented IKE message type, exchange type: %d", ikeMessage.ExchangeType)
+		log.Error("[UE][IKE] Unimplemented IKE message type, exchange type: %d", ikeMessage.ExchangeType)
 	}
 
 }

@@ -8,6 +8,7 @@ import (
 	"UE-non3GPP/internal/nas/dispatch"
 	messageNas "UE-non3GPP/internal/nas/message"
 	"encoding/binary"
+	log "github.com/sirupsen/logrus"
 	"math/big"
 	"net"
 )
@@ -23,7 +24,7 @@ func HandleIKESAINIT(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	var integrityAlgorithmTransform, diffieHellmanGroupTransform *message.Transform
 
 	if ikeMsg.Flags != message.ResponseBitCheck {
-		// TODO handle errors in ike header
+		log.Error("[UE][IKE] IKE Message Header is not the expected")
 		return
 	}
 
@@ -50,7 +51,7 @@ func HandleIKESAINIT(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		case message.TypeN:
 			notifications = append(notifications, ikePayload.(*message.Notification))
 		default:
-			// TODO handle in ike payloads
+			log.Error("[UE][IKE] Unimplemented IKE Payload type")
 		}
 	}
 
@@ -137,11 +138,11 @@ func HandleIKESAINIT(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	}
 
 	if err := context.GenerateKeyForIKESA(ikeSecurityAssociation); err != nil {
-		// TODO handle errors
+		log.Error("[UE][IKE] Error in IKE Key for SA")
 		return
 	}
 
-	// create ike security assocation
+	// create ike security association
 	ue.CreateN3IWFIKESecurityAssociation(ikeSecurityAssociation)
 
 	// send IKE_AUTH
@@ -193,20 +194,21 @@ func HandleIKESAINIT(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 
 	if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation, ikePayload,
 		responseIKEMessage); err != nil {
-		// TODO handle errors
+		log.Error("[UE][IKE] Error in Encrypt IKE Key Procedure")
 		return
 	}
 
 	// Send to N3IWF
 	ikeMessageData, err := responseIKEMessage.Encode()
 	if err != nil {
-		// TODO handle errors
+		log.Error("[UE][IKE] Error IKE Payload type")
 		return
 	}
+
 	udp := ue.GetUdpConn()
 	_, err = udp.Write(ikeMessageData)
 	if err != nil {
-		// TODO handle errors
+		log.Error("[UE][IKE] Error in Read From UDP failed: %+v", err)
 		return
 	}
 
@@ -229,13 +231,13 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	var encryptedPayload *message.Encrypted
 
 	if ikeMsg.Flags != message.ResponseBitCheck {
-		// TODO handle errors in IKE header
+		log.Error("[UE][IKE] IKE Message Header is not the expected")
 		return
 	}
 
 	localSPI := ikeMsg.ResponderSPI
 	if localSPI != ue.N3IWFIKESecurityAssociation.RemoteSPI {
-		// TODO handle errors in IKE header
+		log.Error("[UE][IKE] Difference in SPI")
 		return
 	}
 
@@ -244,6 +246,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		case message.TypeSK:
 			encryptedPayload = ikePayload.(*message.Encrypted)
 		default:
+			log.Error("[UE][IKE] Unimplemented IKE Encrypted Payload message")
 			return
 		}
 	}
@@ -251,7 +254,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	decryptedIKEPayload, err := context.DecryptProcedure(ue.N3IWFIKESecurityAssociation,
 		ikeMsg, encryptedPayload)
 	if err != nil {
-		// TODO handle errors in IKE header
+		log.Error("[UE][IKE] Decrypted IKE message failed")
 		return
 	}
 
@@ -285,7 +288,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		case message.TypeN:
 			notifications = append(notifications, ikePayload.(*message.Notification))
 		default:
-			// TODO handle errors in IKE header
+			log.Error("[UE][IKE] Unimplemented IKE Payload message")
 		}
 	}
 
@@ -340,7 +343,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 			eapVendorTypeData)
 		if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation, ikePayload,
 			responseIKEMessage); err != nil {
-			// TODO handle errors
+			log.Error("[UE][IKE] Error in Encrypt IKE Procedure")
 			return
 		}
 
@@ -350,13 +353,14 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		// Send to N3IWF
 		ikeMessageData, err := responseIKEMessage.Encode()
 		if err != nil {
-			// TODO handle errors
+			log.Error("[UE][IKE] Error in Encode IKE Procedure")
 			return
 		}
+
 		udp := ue.GetUdpConn()
 		_, err = udp.Write(ikeMessageData)
 		if err != nil {
-			// TODO handle errors
+			log.Error("[UE][IKE] Error in Write From UDP")
 			return
 		}
 
@@ -366,7 +370,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		// get NAS data
 		eapExpanded, ok := eap.EAPTypeData[0].(*message.EAPExpanded)
 		if !ok {
-			// TODO handle errors in IKE header
+			log.Error("[UE][IKE] Error in EAP")
 			return
 		}
 		nasData := eapExpanded.VendorData[4:]
@@ -374,7 +378,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		// handle NAS message
 		responseNas, error := dispatch.DispatchNas(nasData, ue.NasContext)
 		if error != nil {
-			// TODO handle errors in IKE header
+			log.Error("[UE][IKE] Error in Handle NAS message")
 			return
 		}
 
@@ -403,20 +407,21 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 			eapVendorTypeData)
 		if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation,
 			ikePayload, responseIKEMessage); err != nil {
-			// TODO handle errors
+			log.Error("[UE][IKE] Error in Encrypt IKE Procedure")
 			return
 		}
 
 		// Send to N3IWF
 		ikeMessageData, err := responseIKEMessage.Encode()
 		if err != nil {
-			// TODO handle errors
+			log.Error("[UE][IKE] Error in Encode IKE Procedure")
 			return
 		}
+
 		udp := ue.GetUdpConn()
 		_, err = udp.Write(ikeMessageData)
 		if err != nil {
-			// TODO handle errors
+			log.Error("[UE][IKE] Error in Write From UDP")
 			return
 		}
 
@@ -443,20 +448,20 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		err = context.EncryptProcedure(ue.N3IWFIKESecurityAssociation,
 			ikePayload, responseIKEMessage)
 		if err != nil {
-			// TODO handle errors
+			log.Error("[UE][IKE] Error in Encrypt IKE Procedure")
 			return
 		}
 
 		// Send to N3IWF
 		ikeMessageData, err := responseIKEMessage.Encode()
 		if err != nil {
-			// TODO handle errors
+			log.Error("[UE][IKE] Error in Encode IKE Procedure")
 			return
 		}
 		udp := ue.GetUdpConn()
 		_, err = udp.Write(ikeMessageData)
 		if err != nil {
-			// TODO handle errors
+			log.Error("[UE][IKE] Error in Write From UDP")
 			return
 		}
 
@@ -502,6 +507,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 			0x01, OutboundSPI,
 			ue.N3IWFIKESecurityAssociation.IKEAuthResponseSA)
 		if err != nil {
+			log.Error("[UE][IKE] Error in establish CHILD SA")
 			return
 		}
 
@@ -511,12 +517,14 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 			trafficSelectorResponder.TrafficSelectors[0],
 			ue, "tcp")
 		if err != nil {
+			log.Error("[UE][IKE] Error in establish CHILD SA")
 			return
 		}
 
 		if err := context.GenerateKeyForChildSA(
 			ue.N3IWFIKESecurityAssociation,
 			childSecurityAssociationContext); err != nil {
+			log.Error("[UE][IKE] Error in generate key for CHILD SA")
 			return
 		}
 
@@ -530,6 +538,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 			ue)
 
 	default:
+		log.Error("[UE][IKE] IKE State is not implemented")
 		return
 	}
 }
@@ -540,7 +549,7 @@ func HandleCREATECHILDSA(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 
 	localSPI := ikeMsg.ResponderSPI
 	if localSPI != ue.N3IWFIKESecurityAssociation.RemoteSPI {
-		// TODO handle errors in IKE header
+		log.Error("[UE][IKE] Difference in SPI")
 		return
 	}
 
@@ -549,6 +558,7 @@ func HandleCREATECHILDSA(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		case message.TypeSK:
 			encryptedPayload = ikePayload.(*message.Encrypted)
 		default:
+			log.Error("[UE][IKE] Unimplemented IKE Encrypted Payload message")
 			return
 		}
 	}
@@ -556,7 +566,7 @@ func HandleCREATECHILDSA(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	decryptedIKEPayload, err := context.DecryptProcedure(ue.N3IWFIKESecurityAssociation,
 		ikeMsg, encryptedPayload)
 	if err != nil {
-		// TODO handle errors in IKE header
+		log.Error("[UE][IKE] Decrypted IKE message failed")
 		return
 	}
 
@@ -590,6 +600,7 @@ func HandleCREATECHILDSA(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 				ue.N3iwfUpAddr = notification.NotificationData[:4]
 			}
 		default:
+			log.Error("[UE][IKE] Unimplemented IKE Payload message")
 		}
 	}
 
@@ -628,21 +639,21 @@ func HandleCREATECHILDSA(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 
 	if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation, ikePayload,
 		responseIKEMessage); err != nil {
-		// TODO handle errors
+		log.Error("[UE][IKE] Error in Encrypt IKE Procedure")
 		return
 	}
 
 	// Send to N3IWF
 	ikeMessageData, err := responseIKEMessage.Encode()
 	if err != nil {
-		// TODO handle errors
+		log.Error("[UE][IKE] Error in Encode IKE Procedure")
 		return
 	}
 
 	udp := ue.GetUdpConn()
 	_, err = udp.Write(ikeMessageData)
 	if err != nil {
-		// TODO handle errors
+		log.Error("[UE][IKE] Error in Write From UDP")
 		return
 	}
 
@@ -654,6 +665,7 @@ func HandleCREATECHILDSA(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		outboundSPI,
 		securityAssociation)
 	if err != nil {
+		log.Error("[UE][IKE] Error in establish CHILD SA for User Plane")
 		return
 	}
 
@@ -664,12 +676,14 @@ func HandleCREATECHILDSA(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		ue,
 		"gre")
 	if err != nil {
+		log.Error("[UE][IKE] Error in establish CHILD SA for User Plane")
 		return
 	}
 
 	if err := context.GenerateKeyForChildSA(
 		ue.N3IWFIKESecurityAssociation,
 		childSecurityAssociationContextUserPlane); err != nil {
+		log.Error("[UE][IKE] Error in generate key for CHILD SA for User Plane")
 		return
 	}
 
