@@ -26,23 +26,23 @@ Let's assume that the operator's machine has full access to the _fee5gc-core_ an
 Let's start with the settings of the host responsible for running _fee5gc-core_.
 * Replace the 1º marker ```<IP-address>```, illustrated in the following figure in red color, with the IP address of the VM where _fee5gc-core_ will be configured.
 <p align="center">
-    <img src="images/ip_free5gc_hosts.png"/> 
+    <img src="../images/ip_free5gc_hosts.png"/> 
 </p>
 
 * Access the VM _fee5gc-core_, run ```ifconfig``` and get the name of **internet network interface**, like as illustrated in the figure below:
 <p align="center">
-    <img src="images/if_config.png"/> 
+    <img src="../images/if_config.png"/> 
 </p>
 replace the 2º marker ```<internet-network-interface>```, illustrated in the following figure in red color, with the name of the network interface that provides internet access.
 <p align="center">
-    <img src="images/ip_free5gc_hosts.png"/> 
+    <img src="../images/ip_free5gc_hosts.png"/> 
 </p>
 Obs: Keep n3iwf_install parameter with value FALSE for host _fee5gc-core_
 
 * Replace the 3º marker ```<IP-address>```, illustrated in the following figure in yellow color, with the IP address of the VM where _fee5gc-n3iwf_ will be configured.
 * Replace the 4º marker ```<free5gc-core-IP-address>```, illustrated in the following figure in yellow color, with the IP address of the VM where _fee5gc-core_ will be configured (the same IP address informed in the 1st marker).
 <p align="center">
-    <img src="images/ip_free5gc_hosts.png"/> 
+    <img src="../images/ip_free5gc_hosts.png"/> 
 </p>
 
 #### SSH Key exchange
