@@ -127,7 +127,6 @@ func ApplyXFRMRule(n3iwf_is_initiator bool, xfrmiId uint32,
 
 	// Commit xfrm policy to netlink
 	if err = netlink.XfrmPolicyAdd(xfrmPolicy); err != nil {
-		fmt.Println(err)
 		return fmt.Errorf("Set XFRM policy rule failed 2")
 	}
 
@@ -153,7 +152,6 @@ func ApplyXFRMRule(n3iwf_is_initiator bool, xfrmiId uint32,
 
 	// Commit xfrm state to netlink
 	if err = netlink.XfrmStateAdd(xfrmState); err != nil {
-		fmt.Println(err)
 		return fmt.Errorf("Set XFRM state rule failed 3")
 	}
 
@@ -169,7 +167,6 @@ func ApplyXFRMRule(n3iwf_is_initiator bool, xfrmiId uint32,
 
 	// Commit xfrm policy to netlink
 	if err = netlink.XfrmPolicyAdd(xfrmPolicy); err != nil {
-		fmt.Println(err)
 		return fmt.Errorf("Set XFRM policy rule failed 4")
 	}
 
