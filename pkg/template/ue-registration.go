@@ -39,9 +39,6 @@ func UENon3GPPConnection() {
 
 	routerUe := GetRouter()
 
-	_ = ueController.NewUEHandler(routerUe)
-	log.Info("[UE][HTTP] Metrics Context Created")
-
 	ueNas := contextNas.NewUeNas(argsNas)
 	log.Info("[UE][NAS] NAS Context Created")
 
@@ -49,6 +46,9 @@ func UENon3GPPConnection() {
 
 	ueIke := context.NewUeIke(ueNas, utils)
 	log.Info("[UE][IKE] IKE Context Created")
+
+	_ = ueController.NewUEHandler(routerUe, ueNas, ueIke)
+	log.Info("[UE][HTTP] Metrics Context Created")
 
 	// init ue control plane
 	controlPlane.Run(cfg, ueIke)
