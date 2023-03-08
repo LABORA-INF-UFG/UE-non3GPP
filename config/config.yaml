@@ -28,6 +28,10 @@ n3iwfinfo:
   ikebindport: "500"
   ipsecifaceprotocol: "udp"
 
+metricinfo:
+  httpaddress: "127.0.0.1"
+  httport: "5001"
+
 # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
 logs:
   level: info
