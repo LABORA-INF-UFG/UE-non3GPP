@@ -81,6 +81,8 @@ func Run(ueIpAdr []byte,
 
 	ueIke.NasContext.SetIpsecTcp(tcpConnWithN3IWF)
 
+	log.Info("[UE][IPSEC] IPSEC Tunnel established")
+
 	// handle server tcp/NAS
 	go listenAndServe(ueIpSec)
 }

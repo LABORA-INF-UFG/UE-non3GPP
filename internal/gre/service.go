@@ -78,6 +78,8 @@ func Run(
 		log.Error("[UE][GRE] Error in setup routes")
 		return
 	}
+
+	log.Info("[UE][GRE] GRE Tunnel established")
 }
 
 // Copyright free5GC
