@@ -4,6 +4,7 @@ import (
 	"UE-non3GPP/internal/nas/context"
 	nasMessage "UE-non3GPP/internal/nas/message"
 	"github.com/free5gc/nas"
+	"time"
 )
 
 func HandlerAuthenticationRequest(ue *context.UeNas, message *nas.Message) []byte {
@@ -57,6 +58,8 @@ func HandlerRegistrationAccept(ue *context.UeNas, message *nas.Message) []byte {
 	// getting NAS Registration Complete
 	registrationComplete := nasMessage.BuildRegistrationComplete(ue)
 
+	ue.RegisterTime = time.Since(ue.BeginRegister)
+
 	return registrationComplete
 }
 
@@ -66,6 +69,8 @@ func HandlerDlNasTransportPduaccept(ue *context.UeNas, message *nas.Message) []b
 	ue.PduSession.PDUAdress = nasMessage.GetPduAddresFromPduEstablishmentAccept(message)
 
 	ue.SetPduSessionActive()
+
+	ue.PduTime = time.Since(ue.BeginPdu)
 
 	return nil
 }

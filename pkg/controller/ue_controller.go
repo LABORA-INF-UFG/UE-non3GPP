@@ -43,5 +43,9 @@ func (ue *UeHandler) getInfoUE(ctx *gin.Context) {
 		ueDto.UeIsRegister = "No"
 	}
 
+	// time of Registration and PDU Session
+	ueDto.RegisterTime = ue.nasInfo.RegisterTime.Milliseconds()
+	ueDto.PduTime = ue.nasInfo.PduTime.Milliseconds()
+
 	ctx.JSON(http.StatusOK, ueDto)
 }

@@ -14,6 +14,7 @@ import (
 	"net"
 	"reflect"
 	"regexp"
+	"time"
 )
 
 const (
@@ -35,6 +36,10 @@ type UeNas struct {
 	NasSecurity   NASecurity
 	XfrmInterface netlink.Link
 	tcpIpsec      *net.TCPConn
+	BeginRegister time.Time
+	BeginPdu      time.Time
+	RegisterTime  time.Duration
+	PduTime       time.Duration
 }
 
 type PDUSession struct {
@@ -96,6 +101,8 @@ func NewUeNas(argsNas ArgumentsNas) *UeNas {
 	ue.PduSession = newPDUSession(1,
 		argsNas.Sst, argsNas.Sd,
 		argsNas.Dnn)
+
+	ue.BeginRegister = time.Now()
 
 	return ue
 }
