@@ -11,15 +11,6 @@ import (
 
 const version = "1.0.0"
 
-const (
-	Panic = iota
-	Fatal
-	Error
-	Warn
-	Info
-	Debug
-)
-
 func init() {
 	cfg := config.GetConfig()
 

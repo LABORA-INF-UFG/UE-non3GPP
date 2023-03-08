@@ -61,4 +61,6 @@ func UENon3GPPConnection() {
 		log.Error("[UE][NAS] ", err)
 		return
 	}
+
+	log.Info("[UE] UE terminated")
 }
