@@ -49,14 +49,16 @@ func UENon3GPPConnection() {
 	// Block until a signal is received.
 	<-sigUE
 	err := ueIke.Terminate()
-	if !err {
-		log.Fatal("[UE][IKE] IKE Context Termination failed")
+	if err != nil {
+		log.Error("[UE][IKE] IKE Context Termination failed")
+		log.Error("[UE][IKE] ", err)
 		return
 	}
 
 	err = ueNas.Terminate()
-	if !err {
-		log.Fatal("[UE][NAS] NAS Context Termination failed")
+	if err != nil {
+		log.Error("[UE][NAS] NAS Context Termination failed")
+		log.Error("[UE][NAS] ", err)
 		return
 	}
 }

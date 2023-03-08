@@ -129,26 +129,26 @@ func newNasSecurity(msin, mcc, mnc string, ranUeNgapId int64, cipheringAlg, inte
 	return nas
 }
 
-func (ue *UeNas) Terminate() bool {
+func (ue *UeNas) Terminate() error {
 
 	err := netlink.LinkDel(ue.XfrmInterface)
 	if err != nil {
-		return false
+		return fmt.Errorf("Error in delete XFRM Inteface")
 	}
 
-	ue.tcpIpsec.Close()
-
-	err = netlink.LinkDel(ue.PduSession.GreInterface)
-	if err != nil {
-		return false
-	}
+	// ue.tcpIpsec.Close()
 
 	err = netlink.RouteDel(ue.PduSession.route)
 	if err != nil {
-		return false
+		return fmt.Errorf("Error in delete PDU session Route")
 	}
 
-	return true
+	err = netlink.LinkDel(ue.PduSession.GreInterface)
+	if err != nil {
+		return fmt.Errorf("Error in delete GRE Inteface")
+	}
+
+	return nil
 }
 
 func (ue *UeNas) SetRegistered() {

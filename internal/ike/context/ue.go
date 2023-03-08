@@ -94,24 +94,24 @@ func NewUeIke(ueNas *context.UeNas, utils *utils.Utils) *UeIke {
 	return ue
 }
 
-func (ue *UeIke) Terminate() bool {
+func (ue *UeIke) Terminate() error {
 
 	// close IKE socket udp
-	udpConn := ue.GetUdpConn()
-	udpConn.Close()
+	//udpConn := ue.GetUdpConn()
+	//udpConn.Close()
 
 	// clean xfrm policy and states
 	err := netlink.XfrmPolicyFlush()
 	if err != nil {
-		return false
+		return fmt.Errorf("Error in delete XFRM Policy")
 	}
 
 	err = netlink.XfrmStateFlush(netlink.XFRM_PROTO_IPSEC_ANY)
 	if err != nil {
-		return false
+		return fmt.Errorf("Error in delete XFRM State")
 	}
 
-	return true
+	return nil
 }
 
 func (ue *UeIke) CreateN3IWFIKESecurityAssociation(ikeSecurity *IKESecurityAssociation) {
