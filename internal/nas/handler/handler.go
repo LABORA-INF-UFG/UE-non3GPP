@@ -32,6 +32,7 @@ func HandlerAuthenticationRequest(ue *context.UeNas, message *nas.Message) []byt
 		// getting NAS Authentication Response.
 		authenticationResponse = nasMessage.BuildAuthenticationResponse(paramAutn,
 			"")
+		ue.AuthTime = time.Since(ue.BeginTime)
 	}
 
 	// sending to IKE stack
@@ -45,6 +46,7 @@ func HandlerSecurityModeCommand(ue *context.UeNas, message *nas.Message) []byte 
 	securityModeComplete := nasMessage.BuildSecurityModeComplete(ue)
 
 	// ipsec is operational send the message in envelope
+	ue.SecurityTime = time.Since(ue.BeginTime)
 
 	// sending to IKE stack
 	return securityModeComplete
@@ -58,7 +60,7 @@ func HandlerRegistrationAccept(ue *context.UeNas, message *nas.Message) []byte {
 	// getting NAS Registration Complete
 	registrationComplete := nasMessage.BuildRegistrationComplete(ue)
 
-	ue.RegisterTime = time.Since(ue.BeginRegister)
+	ue.RegisterTime = time.Since(ue.BeginTime)
 
 	return registrationComplete
 }
@@ -70,7 +72,7 @@ func HandlerDlNasTransportPduaccept(ue *context.UeNas, message *nas.Message) []b
 
 	ue.SetPduSessionActive()
 
-	ue.PduTime = time.Since(ue.BeginPdu)
+	ue.PduTime = time.Since(ue.BeginTime)
 
 	return nil
 }

@@ -36,7 +36,7 @@ func HandlerRegisteredInitiated(ue *context.UeIpSec, msg []byte) {
 
 	// send the pdu establishment request for establish the pdu session
 	log.Info("[UE][IPSEC][NAS] Send PDU Establishment Request")
-	ue.NasContext.BeginPdu = time.Now()
+
 	pduRequest := message.BuildPduEstablishmentRequest(ue.NasContext)
 
 	// set the message as NAS envelope

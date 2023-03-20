@@ -46,6 +46,9 @@ func (ue *UeHandler) getInfoUE(ctx *gin.Context) {
 	// time of Registration and PDU Session
 	ueDto.RegisterTime = ue.nasInfo.RegisterTime.Milliseconds()
 	ueDto.PduTime = ue.nasInfo.PduTime.Milliseconds()
+	ueDto.SecurityTime = ue.nasInfo.SecurityTime.Milliseconds()
+	ueDto.AuthTime = ue.nasInfo.AuthTime.Milliseconds()
+	ueDto.IpsecTime = ue.ikeInfo.IpsecTime.Milliseconds()
 
 	ctx.JSON(http.StatusOK, ueDto)
 }

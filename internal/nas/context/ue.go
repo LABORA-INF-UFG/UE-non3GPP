@@ -36,10 +36,11 @@ type UeNas struct {
 	NasSecurity   NASecurity
 	XfrmInterface netlink.Link
 	tcpIpsec      *net.TCPConn
-	BeginRegister time.Time
-	BeginPdu      time.Time
+	BeginTime     time.Time
 	RegisterTime  time.Duration
 	PduTime       time.Duration
+	SecurityTime  time.Duration
+	AuthTime      time.Duration
 }
 
 type PDUSession struct {
@@ -102,7 +103,7 @@ func NewUeNas(argsNas ArgumentsNas) *UeNas {
 		argsNas.Sst, argsNas.Sd,
 		argsNas.Dnn)
 
-	ue.BeginRegister = time.Now()
+	ue.BeginTime = time.Now()
 
 	return ue
 }
