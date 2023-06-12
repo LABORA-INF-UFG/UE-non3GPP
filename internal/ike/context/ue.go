@@ -9,6 +9,7 @@ import (
 	"github.com/vishvananda/netlink"
 	"math/big"
 	"net"
+	"time"
 )
 
 type UeIke struct {
@@ -29,6 +30,8 @@ type UeIke struct {
 	ONAddrIp                             []byte
 	ONMask                               []byte
 	Utils                                *utils.Utils
+	BeginTime                            time.Time
+	IpsecTime                            time.Duration
 }
 
 type IkeSecurity struct {
@@ -82,6 +85,7 @@ type PDUQoSInfo struct {
 }
 
 func NewUeIke(ueNas *context.UeNas, utils *utils.Utils) *UeIke {
+
 	ue := &UeIke{}
 	ue.NewDiffieHellmanGroup(true)
 	ue.NewEncryptionAlgoritm(true)
@@ -91,6 +95,8 @@ func NewUeIke(ueNas *context.UeNas, utils *utils.Utils) *UeIke {
 	ue.TemporaryExchangeMsgIDChildSAMapping = make(map[uint32]*ChildSecurityAssociation)
 	ue.NasContext = ueNas
 	ue.Utils = utils
+	ue.BeginTime = time.Now()
+
 	return ue
 }
 

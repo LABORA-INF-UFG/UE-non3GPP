@@ -405,6 +405,7 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		eap := ikePayload.BuildEAP(message.EAPCodeResponse, eap.Identifier)
 		eap.EAPTypeData.BuildEAPExpanded(message.VendorID3GPP, message.VendorTypeEAP5G,
 			eapVendorTypeData)
+
 		if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation,
 			ikePayload, responseIKEMessage); err != nil {
 			log.Error("[UE][IKE] Error in Encrypt IKE Procedure")

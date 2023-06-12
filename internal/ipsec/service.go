@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 	"net"
+	"time"
 )
 
 func Run(ueIpAdr []byte,
@@ -81,7 +82,9 @@ func Run(ueIpAdr []byte,
 
 	ueIke.NasContext.SetIpsecTcp(tcpConnWithN3IWF)
 
-	log.Info("[UE][IPSEC] IPSEC Tunnel established")
+	log.Info("[UE][IPSEC] IPSEC SA Tunnel established")
+
+	ueIke.IpsecTime = time.Since(ueIke.BeginTime)
 
 	// handle server tcp/NAS
 	go listenAndServe(ueIpSec)
