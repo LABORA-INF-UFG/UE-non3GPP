@@ -22,7 +22,6 @@ ue:
     sd: "010203" # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
   pdusessionid: 1
   dnnstring: "internet"
-
 n3iwfinfo:
   ikebindaddress: "192.168.122.116" # IP address of Nwu interface (IKE) on N3IWF
   ikebindport: "500"
