@@ -89,8 +89,16 @@ ansible-playbook dev/free5gc-v3.1.1/n3iwf-setup.yaml -i dev/free5gc-v3.1.1/hosts
 ### Setup UE-non3GPP with Ansible
 ansible-playbook dev/UEnon3GPP-setup.yaml -i dev/free5gc-v3.1.1/hosts
 
-### Start Free5GC and N3IWF
-TODO
+### Start Free5GC
+After performing the Free5gc, N3IWF and UE-non3gpp installation, the next step is to initialize the Free5gc network functions. To do this it is necessary to access the VM where Free5gc was deployed in two different terminals, the first will be used to initialize the network functions and the second to initialize the API that provides access to MongoDB.
+
+#### Init Free5GC Network Functions
+Using the first terminal connected to the VM where Free5gc was installed, go to the ```/root/go/src/free5gc``` dir. First of all it is necessary to compile the Free5gc network functions. Run the command ```make``` and wait a few seconds, the process takes a little time. After compiling the project (it is hoped that no errors occurred during the compilation process) we will initialize the network functions using the ```run.sh``` script. It may be necessary to assign additional permission to run the script, this can be done using the command ```chmod 777 -R ./run.sh```. After assigning permission, initialize the Free5gc network functions through the following command ```./run.sh```. The terminal will be linked to the execution process, reproducing the log messages from the network functions as each function executes its responsibilities.
+
+#### Init Free5GC API
+Using the second terminal, we will now initialize the API that provides access to MongoDB registration end-points. In the terminal, access the ```/root/go/src/free5gc/webconsole``` directory and then run the following command ```go run server.go```. After a few seconds, a Log message equivalent to this ```Listening and serving HTTP on :5000```.
+
+### Init N3IWF
 
 ### Register UE-non3GPP into Free5GC
 TODO
