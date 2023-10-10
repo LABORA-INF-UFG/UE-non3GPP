@@ -188,6 +188,12 @@
               args:
                 chdir: "{{ GO_SRC_DIR }}"
 
+            - name: Add NWDAF submodule in free5gc
+              shell: git submodule add https://github.com/ciromacedo/nwdaf.git NFs/nwdaf
+              args:
+                chdir: "{{ FREE5GC_DIR_INSTALL }}"
+              when: nwdaf_install == 'true'
+
             - name  : Create NRF config dir
               shell : |
                 mkdir config
