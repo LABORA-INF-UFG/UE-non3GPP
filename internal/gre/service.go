@@ -5,9 +5,10 @@ import (
 	"UE-non3GPP/internal/ike/context"
 	"UE-non3GPP/internal/xfrm"
 	"fmt"
-	"github.com/vishvananda/netlink"
 	"net"
 	"time"
+
+	"github.com/vishvananda/netlink"
 )
 
 func Run(
@@ -88,6 +89,8 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 		err         error
 	)
 
+	cfg := config.GetConfig()
+
 	if qoSInfo != nil {
 		greKeyField |= (uint32(qoSInfo.QfiList[0]) & 0x3F) << 24
 	}
@@ -101,7 +104,7 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	newGRETunnel := &netlink.Gretun{
 		LinkAttrs: netlink.LinkAttrs{
 			Name: greIfaceName,
-			MTU:  1438, // remain for endpoint IP header(most 40 bytes if IPv6) and ESP header (22 bytes)
+			MTU:  cfg.Ue.LinkGRE.Mtu, // remain for endpoint IP header(most 40 bytes if IPv6) and ESP header (22 bytes)
 		},
 		Link:   uint32(parent.Attrs().Index), // PHYS_DEV in iproute2; IFLA_GRE_LINK in linux kernel
 		Local:  ueTunnelAddr,

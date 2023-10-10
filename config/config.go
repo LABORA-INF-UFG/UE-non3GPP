@@ -32,6 +32,7 @@ type Config struct {
 		LocalPublicPortUDPConnection  string `yaml: "localpublicportudpconnection"`
 		LinkGRE                       struct {
 			Name string `yaml: "name"`
+			Mtu  int    `yaml: "mtu"`
 		} `yaml: "linkgre"`
 
 		IPSecInterfaceName string `yaml: "ipsecinterfacename"`

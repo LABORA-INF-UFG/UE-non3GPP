@@ -15,6 +15,7 @@ ue:
   localpublicportudpconnection : "500"
   linkgre:
     name : "gretun"
+    mtu : 1420
   ipsecinterfacename : "ipsec0" # IP address of IPSec virtual interface (IPsec tunnel enpoint to N3IWF)
   ipsecinterfacemark: 5 # IPSec virtual interface mark (Any value except to 0, default value is 7 if not defined)
   snssai: # Single Network Slice Selection Assistance Information
