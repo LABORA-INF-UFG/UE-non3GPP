@@ -1,5 +1,5 @@
 ---
-    -   hosts: fee5gc, n3iwf, labora-UE-non3GPP
+    -   hosts:  labora-UE-non3GPP
         become: yes
         remote_user: root
         vars:
