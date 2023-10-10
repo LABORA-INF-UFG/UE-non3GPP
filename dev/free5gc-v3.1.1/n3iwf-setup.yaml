@@ -157,13 +157,13 @@
                   # ReportCaller: enable the caller report or not, value: true or false
                   logger:
                     N3IWF: # The default log level is DEBUG to print SA keys. Please change it to INFO when deployed.
-                      debugLevel: warn
+                      debugLevel: info
                       ReportCaller: false
                     NGAP:
-                      debugLevel: warn
+                      debugLevel: info
                       ReportCaller: false
                     Aper:
-                      debugLevel: warn
+                      debugLevel: info
                       ReportCaller: false
 
             - name  : Create .run dir

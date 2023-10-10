@@ -99,6 +99,7 @@ Using the first terminal connected to the VM where Free5gc was installed, go to 
 Using the second terminal, we will now initialize the API that provides access to MongoDB registration end-points. In the terminal, access the ```/root/go/src/free5gc/webconsole``` directory and then run the following command ```go run server.go```. After a few seconds, a Log message equivalent to this ```Listening and serving HTTP on :5000```.
 
 ### Init N3IWF
+Initializing N3WIF is similar to the process performed when initializing free5GC, however, only 1 terminal will be required. Access the VM where N3IWF was installed and navigate to the ```/root/go/src/free5gc/NFs/n3iwf``` directory. After accessing the directory, run the following command ```go run cmd/main.go```.  On the first run, some dependencies will be configured and after a few seconds a Log message similar to ```[INFO][N3IWF][Init] N3IWF running...``` will be displayed. It indicates that the N3IWF is ready and properly connecting to the previously initialized Free5gc.
 
 ### Register UE-non3GPP into Free5GC
 TODO
