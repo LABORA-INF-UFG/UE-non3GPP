@@ -1,5 +1,5 @@
 ---
-    -   hosts: fee5gc-core, fee5gc-n3iwf
+    -   hosts: fee5gc
         become: yes
         remote_user: root
         vars:
@@ -99,44 +99,37 @@
                     name: ['mongodb', 'wget', 'git', 'ca-certificates', 'net-tools', 'gcc', 'cmake', 'autoconf', 'build-essential', 'libtool', 'pkg-config', 'libmnl-dev', 'libyaml-dev']
                     state: present
                     update_cache: yes
-              when: n3iwf_install == 'false'
-
-            - name: Install Basic requirements - n3iwf
-              apt:
-                name: [ 'wget', 'git', 'net-tools', 'ca-certificates', 'net-tools', 'gcc', 'cmake', 'autoconf', 'build-essential', 'libtool', 'pkg-config', 'libmnl-dev', 'libyaml-dev' ]
-                state: present
-                update_cache: yes
-              when: n3iwf_install == 'true'
+              
 
             - name: Start Mongo-DB
               shell:  sudo systemctl start mongodb
-              when: n3iwf_install == 'false'
+              
 
             - name: Install WebConsole front-end dependencies - 1/3
               shell :  |
                     curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
                     echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
                     sudo apt update && sudo apt -y install yarn
-              when: n3iwf_install == 'false'
+              
 
             - name: Remove NodeJS Old version - 2/3
               shell :  |
                     sudo apt-get purge --auto-remove nodejs -y
                     sudo apt-get purge nodejs -y
                     sudo apt-get autoremove
-              when: n3iwf_install == 'false'
+              
 
             - name: Install NodeJS 14 - 3/3
               shell :  |
                     sudo apt -y install curl dirmngr apt-transport-https lsb-release
                     curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
                     sudo apt -y install nodejs
-              when: n3iwf_install == 'false'
+              
 
             - name: Remove GTP5G (if exists)
               shell:  sudo rm -rf {{ GTP5G_DIR_INSTALL }}
               ignore_errors: true
-              when: n3iwf_install == 'false'
+              
 
             - name: Remove free5GC dir (if exists)
               shell:  sudo rm -rf {{ FREE5GC_DIR_INSTALL }}
@@ -146,36 +139,36 @@
               shell : git clone -b v0.5.4 https://github.com/free5gc/gtp5g.git
               args:
                 chdir: "{{ HOME_DIR }}"
-              when: n3iwf_install == 'false'
+              
 
             - name  : Run 'Make' into GTP5G
               shell : make
               args:
                 chdir: "{{ GTP5G_DIR_INSTALL }}"
-              when: n3iwf_install == 'false'
+              
 
             - name  : Install GTP5G
               shell : sudo make install
               args:
                 chdir: "{{ GTP5G_DIR_INSTALL }}"
               ignore_errors: true
-              when: n3iwf_install == 'false'
+              
 
             - name  : Network Setting 1/4
               shell : sudo sysctl -w net.ipv4.ip_forward=1
-              when: n3iwf_install == 'false'
+              
 
             - name  : Network Setting 2/4
               shell : sudo iptables -t nat -A POSTROUTING -o {{ internet_network_interface }} -j MASQUERADE
-              when: n3iwf_install == 'false'
+              
 
             - name  : Network Setting 3/4
               shell : sudo iptables -A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1400
-              when: n3iwf_install == 'false'
+              
 
             - name  : Network Setting 4/4
               shell : sudo systemctl stop ufw
-              when: n3iwf_install == 'false'
+              
 
             - name  : Remove Free5gc old dir if exist
               shell : rm -rf {{ FREE5GC_CHECKOUT_FOLDER_NAME }}
@@ -200,15 +193,15 @@
                 mkdir config/TLS
               args:
                 chdir: "{{ NRF_DIR }}"
-              when: n3iwf_install == 'false'
+              
 
             - name  : Copy NRF cert's 1/2
               shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/nrf.pem {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/nrf/config/TLS/nrf.pem
-              when: n3iwf_install == 'false'
+              
 
             - name  : Copy NRF cert's 2/2
               shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/nrf.key {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/nrf/config/TLS/nrf.key
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build nrfcfg.yaml config file - inside NFs/nrf dir (debug mode)
               copy:
@@ -243,13 +236,13 @@
                     NRF:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name: Remove NRF default config file - (run mode)
               shell: rm nrfcfg.yaml
               args:
                 chdir: "{{ NFS_DIR_CONFIG }}"
-              when: n3iwf_install == 'false'
+              
 
             - name: Build nrfcfg.yaml default config file - (run mode)
               copy:
@@ -284,7 +277,7 @@
                     NRF:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name  : Create UDR config dir
               shell : |
@@ -292,15 +285,15 @@
                 mkdir config/TLS
               args:
                 chdir: "{{ UDR_DIR }}"
-              when: n3iwf_install == 'false'
+              
 
             - name  : Copy UDR cert's 1/2
               shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/udr.pem {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/udr/config/TLS/udr.pem
-              when: n3iwf_install == 'false'
+              
 
             - name  : Copy UDR cert's 2/2
               shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/udr.key {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/udr/config/TLS/udr.key
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build udrcfg.yaml config file
               copy:
@@ -331,13 +324,13 @@
                     UDR:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name: Remove UDR default config file - (run mode)
               shell: rm udrcfg.yaml
               args:
                 chdir: "{{ NFS_DIR_CONFIG }}"
-              when: n3iwf_install == 'false'
+              
 
             - name: Build udrcfg.yaml default config file - (run mode)
               copy:
@@ -368,7 +361,7 @@
                     UDR:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name  : Create UDM config dir
               shell : |
@@ -376,15 +369,15 @@
                 mkdir config/TLS
               args:
                 chdir: "{{ UDM_DIR }}"
-              when: n3iwf_install == 'false'
+              
 
             - name  : Copy UDM cert's 1/2
               shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/udm.pem {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/udm/config/TLS/udm.pem
-              when: n3iwf_install == 'false'
+              
 
             - name  : Copy UDM cert's 2/2
               shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/udm.key {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/udm/config/TLS/udm.key
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build udmcfg.yaml config file
               copy:
@@ -427,13 +420,13 @@
                     UDM:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name: Remove UDM default config file - (run mode)
               shell: rm udmcfg.yaml
               args:
                 chdir: "{{ NFS_DIR_CONFIG }}"
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build udmcfg.yaml default config file - (run mode)
               copy:
@@ -476,7 +469,7 @@
                     UDM:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name  : Create AUSF config dir
               shell : |
@@ -484,15 +477,15 @@
                 mkdir config/TLS
               args:
                 chdir: "{{ AUSF_DIR }}"
-              when: n3iwf_install == 'false'
+              
 
             - name  : Copy AUSF cert's 1/2
               shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/ausf.pem {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/ausf/config/TLS/ausf.pem
-              when: n3iwf_install == 'false'
+              
 
             - name  : Copy AUSF cert's 2/2
               shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/ausf.key {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/ausf/config/TLS/ausf.key
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build ausf.yaml config file
               copy:
@@ -529,13 +522,13 @@
                     AUSF:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name: Remove AUSF default config file - (run mode)
               shell: rm ausfcfg.yaml
               args:
                 chdir: "{{ NFS_DIR_CONFIG }}"
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build ausf.yaml default config file - (run mode)
               copy:
@@ -572,7 +565,7 @@
                     AUSF:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name  : Create NSSF config dir
               shell : |
@@ -580,16 +573,16 @@
                 mkdir config/TLS
               args:
                 chdir: "{{ NSSF_DIR }}"
-              when: n3iwf_install == 'false'
+              
 
 
             - name  : Copy NSSF cert's 1/2
               shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/nssf.pem {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/nssf/config/TLS/nssf.pem
-              when: n3iwf_install == 'false'
+              
 
             - name  : Copy NSSF cert's 2/2
               shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/nssf.key {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/nssf/config/TLS/nssf.key
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build nssfcfg.yaml config file
               copy:
@@ -950,13 +943,13 @@
                     NSSF:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name: Remove NSSF default config file - (run mode)
               shell: rm nssfcfg.yaml
               args:
                 chdir: "{{ NFS_DIR_CONFIG }}"
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build nssfcfg.yaml default config file - (run mode)
               copy:
@@ -1317,7 +1310,7 @@
                     NSSF:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name  : Create AMF config dir
               shell : |
@@ -1325,15 +1318,15 @@
                 mkdir config/TLS
               args:
                 chdir: "{{ AMF_DIR }}"
-              when: n3iwf_install == 'false'
+              
 
             - name  : Copy AMF cert's 1/2
               shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/amf.pem {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/amf/config/TLS/amf.pem
-              when: n3iwf_install == 'false'
+              
 
             - name  : Copy AMF cert's 2/2
               shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/amf.key {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/amf/config/TLS/amf.key
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build amfcfg.yaml config file
               copy:
@@ -1458,13 +1451,13 @@
                     Aper:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name: Remove AMF default config file - (run mode)
               shell: rm amfcfg.yaml
               args:
                 chdir: "{{ NFS_DIR_CONFIG }}"
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build amfcfg.yaml default config file - (run mode)
               copy:
@@ -1589,7 +1582,7 @@
                     Aper:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name  : Create PCF config dir
               shell : |
@@ -1597,15 +1590,15 @@
                 mkdir config/TLS
               args:
                 chdir: "{{ PCF_DIR }}"
-              when: n3iwf_install == 'false'
+              
 
             - name  : Copy PCF cert's 1/2
               shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/pcf.pem {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/pcf/config/TLS/pcf.pem
-              when: n3iwf_install == 'false'
+              
 
             - name  : Copy AMF cert's 2/2
               shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/pcf.key {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/pcf/config/TLS/pcf.key
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build pcfcfg.yaml config file
               copy:
@@ -1649,13 +1642,13 @@
                     PCF:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name: Remove PCF default config file - (run mode)
               shell: rm pcfcfg.yaml
               args:
                 chdir: "{{ NFS_DIR_CONFIG }}"
-              when: n3iwf_install == 'false'
+              
 
             - name: Build pcfcfg.yaml default config file - (run mode)
               copy:
@@ -1699,7 +1692,7 @@
                     PCF:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name  : Create SMF config dir
               shell : |
@@ -1707,15 +1700,15 @@
                 mkdir config/TLS
               args:
                 chdir: "{{ SMF_DIR }}"
-              when: n3iwf_install == 'false'
+              
 
             - name  : Copy SMF cert's 1/2
               shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/smf.pem {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/smf/config/TLS/smf.pem
-              when: n3iwf_install == 'false'
+              
 
             - name  : Copy SMF cert's 2/2
               shell : cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/smf.key {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/smf/config/TLS/smf.key
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build smfcfg.yaml config file
               copy:
@@ -1811,7 +1804,7 @@
                     PFCP:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name: Remove SMF default config file - (run mode)
               shell: |
@@ -1819,7 +1812,7 @@
                   rm uerouting.yaml
               args:
                 chdir: "{{ NFS_DIR_CONFIG }}"
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build smfcfg.yaml default config file - (run mode)
               copy:
@@ -1915,7 +1908,7 @@
                     PFCP:
                       debugLevel: warn
                       ReportCaller: false
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build uerouting.yaml config file
               copy:
@@ -1961,7 +1954,7 @@
                           # the order of UPF nodes in this path. We use the UPF's name to represent each UPF node.
                           # The UPF's name should be consistent with smfcfg.yaml
                           path: [BranchingUPF, AnchorUPF2]
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build uerouting.yaml default config file - (run mode)
               copy:
@@ -2007,98 +2000,14 @@
                           # the order of UPF nodes in this path. We use the UPF's name to represent each UPF node.
                           # The UPF's name should be consistent with smfcfg.yaml
                           path: [BranchingUPF, AnchorUPF2]
-              when: n3iwf_install == 'false'
-
-            - name  : Create N3IWF config dir
-              shell : |
-                mkdir config
-                mkdir config/TLS
-              args:
-                chdir: "{{ N3IWF_DIR }}"
-              when: n3iwf_install == 'true'
-
-            - name  : Copy N3IWF cert's 1/2
-              shell : cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/n3iwf.pem {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/n3iwf/config/TLS/n3iwf.pem
-              when: n3iwf_install == 'true'
-
-            - name  : Copy N3IWF cert's 2/2
-              shell : cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/config/TLS/n3iwf.key {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/n3iwf/config/TLS/n3iwf.key
-              when: n3iwf_install == 'true'
-
-            - name  : Build n3iwfcfg.yaml config file
-              copy:
-                dest: "{{ N3IWF_DIR }}/config/n3iwfcfg.yaml"
-                content: |
-                  info:
-                    version: 1.0.1
-                    description: N3IWF initial local configuration
-
-                  configuration:
-                    N3IWFInformation:
-                      GlobalN3IWFID: # ID used to globally identify an N3IWF
-                        PLMNID: # Public Land Mobile Network ID, <PLMN ID> = <MCC><MNC>
-                          MCC: 208 # Mobile Country Code (3 digits string, digit: 0~9)
-                          MNC: 93 # Mobile Network Code (2 or 3 digits string, digit: 0~9)
-                        N3IWFID: 135 # ID used to identify an N3IWF in PLMN (uinteger, range: 0~65535)
-                      Name: free5GC_N3IWF # The name of this N3IWF
-                      SupportedTAList: # Tracking Area supported by this N3IWF
-                        - TAC: 000001 # Tracking Area Code (3 bytes hex string, range: 000000~FFFFFF)
-                          BroadcastPLMNList: # Refer to TS 38.413
-                            - PLMNID: # Public Land Mobile Network ID
-                                MCC: 208 # Mobile Country Code (3 digits string, digit: 0~9)
-                                MNC: 93 # Mobile Network Code (2 or 3 digits string, digit: 0~9)
-                              TAISliceSupportList: # Network Slice supported in this TAI
-                                - SNSSAI: # Single Network Slice Selection Assistance Information
-                                    SST: 1 # Slice/Service Type (1 byte hex string, range: 0~F)
-                                    SD: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
-                                - SNSSAI: # Single Network Slice Selection Assistance Information
-                                    SST: 1 # Slice/Service Type (1 byte hex string, range: 0~F)
-                                    SD: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
-                    AMFSCTPAddresses: # the IP list of N2 interfaces (SCTP) on AMF when using NGAP
-                      - IP:
-                        - {{ free5gc_ip_address }}
-                        Port: {{ N3IWF_AMF_SCTP_PORT }}
-
-                    # --- Bind Interfaces ---
-                    IKEBindAddress: {{ N3IWF_IKE_BIND_ADDRESS }} # IP address of Nwu interface (IKE) on this N3IWF
-
-                    IPSecInterfaceAddress: {{ N3IWF_IP_SEC_INTERFACE_ADDRESS }} # IP address of IPSec virtual interface (IPsec tunnel enpoint on this N3IWF)
-
-                    UEIPAddressRange: {{ N3IWF_UE_IP_ADDRESS_RANGE }}/24 # IP address allocated to UE in IPSec tunnel
-
-                    IPSecInterfaceMark: {{ N3IWF_IP_SEC_INTERFACE_MARK }} # IPSec virtual interface mark (Any value except to 0, default value is 7 if not defined)
-
-                    GTPBindAddress: {{ AMF_NGAP_IP_ADDRESS }} # IP address of N3 interface (GTP) on this N3IWF
-
-                    NASTCPPort: {{ N3IWF_NAS_TCP_PORT }} # TCP port which the NAS listens on
-
-                    FQDN: n3iwf.free5gc.org # FQDN of this N3IWF
-
-                    # --- Security ---
-                    PrivateKey: config/TLS/n3iwf.key # Private key file path
-                    CertificateAuthority: config/TLS/n3iwf.pem # Certificate Authority (CA) file path
-                    Certificate: config/TLS/n3iwf.pem # Certificate file path
-
-                  # the kind of log output
-                  # debugLevel: how detailed to output, value: trace, debug, info, warn, error, fatal, panic
-                  # ReportCaller: enable the caller report or not, value: true or false
-                  logger:
-                    N3IWF: # The default log level is DEBUG to print SA keys. Please change it to INFO when deployed.
-                      debugLevel: warn
-                      ReportCaller: false
-                    NGAP:
-                      debugLevel: warn
-                      ReportCaller: false
-                    Aper:
-                      debugLevel: warn
-                      ReportCaller: false
-              when: n3iwf_install == 'true'
+              
+            
 
             - name  : Remove webuicfg.yaml default file config
               shell : rm config/webuicfg.yaml
               args:
                 chdir: "{{ WEB_CONSOLE_BASE_DIR }}"
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build webuicfg.yaml config file
               copy:
@@ -2113,13 +2022,13 @@
                       name: free5gc # name of the mongodb
                       url: {{ MONGO_URL_CONNECTION }} # a valid URL of the mongodb
 
-              when: n3iwf_install == 'false'
+              
 
             - name  : Remove UPF default file config
               shell : rm upfcfg.yaml
               args:
                 chdir: "{{ NFS_DIR_CONFIG }}"
-              when: n3iwf_install == 'false'
+              
 
             - name: Build upfcfg.yaml config file
               copy:
@@ -2154,7 +2063,7 @@
                         cidr: {{ CLASSLESS_INTER_DOMAIN_ROUTING_IPV4_POOL_OF_UE }}/24 # Classless Inter-Domain Routing for assigned IPv4 pool of UE
                         # [optional] dnn_list[*].natifname
                         # natifname: eth0
-              when: n3iwf_install == 'false'
+              
 
             - name  : Create .run dir
               shell : |
@@ -2177,7 +2086,7 @@
                       <method v="2" />
                     </configuration>
                   </component>
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build B - UDR.run.xml config file
               copy:
@@ -2194,7 +2103,7 @@
                       <method v="2" />
                     </configuration>
                   </component>
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build C - UDM.run.xml config file
               copy:
@@ -2211,7 +2120,7 @@
                       <method v="2" />
                     </configuration>
                   </component>
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build D - AUSF.run.xml config file
               copy:
@@ -2228,7 +2137,7 @@
                       <method v="2" />
                     </configuration>
                   </component>
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build E - NSSF.run.xml config file
               copy:
@@ -2245,7 +2154,7 @@
                       <method v="2" />
                     </configuration>
                   </component>
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build F - AMF.run.xml config file
               copy:
@@ -2262,7 +2171,7 @@
                       <method v="2" />
                     </configuration>
                   </component>
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build Free5GC-Base-Init.run.xml config file
               copy:
@@ -2281,7 +2190,7 @@
                       <method v="2" />
                     </configuration>
                   </component>
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build G - PCF.run.xml config file
               copy:
@@ -2298,7 +2207,7 @@
                       <method v="2" />
                     </configuration>
                   </component>
-              when: n3iwf_install == 'false'
+              
 
             - name  : Build I - SMF.run.xml config file
               copy:
@@ -2315,62 +2224,23 @@
                       <method v="2" />
                     </configuration>
                   </component>
-              when: n3iwf_install == 'false'
+           
+            - name  : Build I - NWDAF.run.xml config file
+              copy:
+                dest: "{{ FREE5GC_DIR_INSTALL }}/.run/I - NWDAF.run.xml"
+                content: |
+                  <component name="ProjectRunConfigurationManager">
+                    <configuration default="false" name="I - SMF" type="GoApplicationRunConfiguration" factoryName="Go Application" singleton="false">
+                      <module name="free5gc" />
+                      <working_directory value="$PROJECT_DIR$/NFs/nwdaf" />
+                      <kind value="PACKAGE" />
+                      <package value="github.com/ciromacedo/nwdaf/cmd" />
+                      <directory value="$PROJECT_DIR$" />
+                      <filePath value="$PROJECT_DIR$/NFs/nwdaf/cmd/main.go" />
+                      <method v="2" />
+                    </configuration>
+                  </component>
+              when: nwdaf_install == 'true'
+              
 
-            - name  : Remove N3IWF ipsec0 (if exist)
-              shell : |
-                sudo ip link del {{ N3IWF_IPSEC_INTERFACE_NAME }}
-              ignore_errors: true
-              when: n3iwf_install == 'true'
-
-            - name  : Create N3IWF ipsec0 interface
-              shell : |
-                sudo ip link add name {{ N3IWF_IPSEC_INTERFACE_NAME }} type vti local {{ N3IWF_IKE_BIND_ADDRESS }} remote 0.0.0.0 key {{ N3IWF_IPSEC_INTERFACE_XFRM_MARK }}
-                sudo ip addr add {{ N3IWF_IP_SEC_INTERFACE_ADDRESS }}/{{ MASCARA_REDE_DECIMAL }} dev {{ N3IWF_IPSEC_INTERFACE_NAME }}
-                sudo ip link set {{ N3IWF_IPSEC_INTERFACE_NAME }} up
-              when: n3iwf_install == 'true'
-
-            - name: Remove Unused NFs dir form N3IWF VM
-              shell: |
-                rm -rf {{ AMF_DIR }}
-                rm -rf {{ AUSF_DIR }}
-                rm -rf {{ NRF_DIR }}
-                rm -rf {{ NSSF_DIR }}
-                rm -rf {{ PCF_DIR }}
-                rm -rf {{ SMF_DIR }}
-                rm -rf {{ UDM_DIR }}
-                rm -rf {{ UDR_DIR }}
-                rm -rf {{ UPF_DIR }}
-              when: n3iwf_install == 'true'
-
-            - name: Remove Unused config files form N3IWF VM
-              shell: |
-                rm -rf {{ NFS_DIR_CONFIG }}/multiUPF
-                rm {{ NFS_DIR_CONFIG }}/TLS/amf.key
-                rm {{ NFS_DIR_CONFIG }}/TLS/amf.pem
-                rm {{ NFS_DIR_CONFIG }}/TLS/ausf.key
-                rm {{ NFS_DIR_CONFIG }}/TLS/ausf.pem
-                rm {{ NFS_DIR_CONFIG }}/TLS/nrf.key
-                rm {{ NFS_DIR_CONFIG }}/TLS/nrf.pem
-                rm {{ NFS_DIR_CONFIG }}/TLS/nssf.key
-                rm {{ NFS_DIR_CONFIG }}/TLS/nssf.pem
-                rm {{ NFS_DIR_CONFIG }}/TLS/pcf.key
-                rm {{ NFS_DIR_CONFIG }}/TLS/pcf.pem
-                rm {{ NFS_DIR_CONFIG }}/TLS/smf.key
-                rm {{ NFS_DIR_CONFIG }}/TLS/smf.pem
-                rm {{ NFS_DIR_CONFIG }}/TLS/udm.key
-                rm {{ NFS_DIR_CONFIG }}/TLS/udm.pem
-                rm {{ NFS_DIR_CONFIG }}/TLS/udr.key
-                rm {{ NFS_DIR_CONFIG }}/TLS/udr.pem
-                rm {{ NFS_DIR_CONFIG }}/amfcfg.yaml
-                rm {{ NFS_DIR_CONFIG }}/ausfcfg.yaml
-                rm {{ NFS_DIR_CONFIG }}/nrfcfg.yaml
-                rm {{ NFS_DIR_CONFIG }}/nssfcfg.yaml
-                rm {{ NFS_DIR_CONFIG }}/pcfcfg.yaml
-                rm {{ NFS_DIR_CONFIG }}/smfcfg.yaml
-                rm {{ NFS_DIR_CONFIG }}/udmfcfg.yaml
-                rm {{ NFS_DIR_CONFIG }}/udrcfg.yaml
-                rm {{ NFS_DIR_CONFIG }}/uerouting.yaml
-                rm {{ NFS_DIR_CONFIG }}/upfcfg.yaml
-                rm {{ NFS_DIR_CONFIG }}/webuicfg.yaml
-              when: n3iwf_install == 'true'
+           

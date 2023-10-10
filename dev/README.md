@@ -60,13 +60,13 @@ ssh-copy-id -i ~/.ssh/id_ecdsa.pub root@<n3iwf-ip-address>
 ```
 
 ### Test Ansible Connection
-Now let's test the Ansible connection with the respective hosts configured in the previous steps. In the terminal, inside the ```UE-non3GPP/dev_environment_setup``` directory, run the following command:
+Now let's test the Ansible connection with the respective hosts configured in the previous steps. In the terminal, inside the ```UE-non3GPP/dev``` directory, run the following command:
 ```
 ansible -i ./hosts -m ping all -u root
 ```
 
 ### Go Install with Ansible
-The command below installs GO v.1.14 on each of VMs
+The command below installs GO v.1.14 on each of VMs. The following description assumes running the command from the project root dir (UE-non3GPP).
 ```
 ansible-playbook dev/free5gc-v3.1.1/go-install.yaml -i dev/free5gc-v3.1.1/hosts
 ```
@@ -75,10 +75,15 @@ Now it is necessary to access each of the VMs and update bashrc
 source ~/.bashrc
 ```
 
-### Setup Free5GC and N3IWF with Ansible
-Now let's run the script responsible for configuring free5gc (except the N3IWF network function) and a version of free5gc containing only the N3IWF network function
+### Free5GC and N3IWF Setup with Ansible
+Now let's run the script responsible for configuring free5gc (except the N3IWF network function) and a version of free5gc containing only the N3IWF network function. The following description assumes running the command from the project root dir (UE-non3GPP).
+#### Free5GC Setup
 ```
-ansible-playbook dev/free5gc-v3.1.1/free5gc-n3iwf-setup.yaml -i dev/free5gc-v3.1.1/hosts
+ansible-playbook dev/free5gc-v3.1.1/free5gc-setup.yaml -i dev/free5gc-v3.1.1/hosts
+```
+#### N3IWF Setup
+```
+ansible-playbook dev/free5gc-v3.1.1/n3iwf-setup.yaml -i dev/free5gc-v3.1.1/hosts
 ```
 
 ### Setup UE-non3GPP with Ansible
