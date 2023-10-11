@@ -9,3 +9,13 @@ type UeStatus struct {
 	SecurityTime int64  `json:"securityProcedureNasTime"`
 	IpsecTime    int64  `json:"ipsecTime"`
 }
+
+type NetworkStatus struct {
+	NetworkInterfaceName string        `json:"networkInterfaceName"`
+	Leak                 []NetworkLeak `json:"inputLeak"`
+}
+
+type NetworkLeak struct {
+	InputThroughput  uint64 `json:"inputThroughput"`
+	OutputThroughput uint64 `json:"outputThroughput"`
+}

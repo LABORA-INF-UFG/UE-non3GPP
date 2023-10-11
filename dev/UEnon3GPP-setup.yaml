@@ -110,7 +110,7 @@
                     ipsecifaceprotocol: "udp"
 
                   metricinfo:
-                    httpaddress: "127.0.0.1"
+                    httpaddress: "{{ UE_NON3GPP_IP_ADDR }}"
                     httport: "5001"
 
                   logs:

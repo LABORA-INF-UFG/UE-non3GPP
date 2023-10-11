@@ -30,7 +30,7 @@ n3iwfinfo:
   ipsecifaceprotocol: "udp"
 
 metricinfo:
-  httpaddress: "127.0.0.1"
+  httpaddress: "165.22.184.39"
   httport: "5001"
 
 logs:

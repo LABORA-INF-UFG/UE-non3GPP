@@ -14,8 +14,6 @@ func NewUtils() *Utils {
 	return util
 }
 
-// get the interface by IP
-// copyright FREE5GC
 func (utils *Utils) GetInterfaceName(IPAddress string) (interfaceName string, err error) {
 	interfaces, err := net.Interfaces()
 	if err != nil {

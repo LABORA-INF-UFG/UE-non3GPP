@@ -5,7 +5,7 @@ import (
 	controlPlane "UE-non3GPP/internal/ike"
 	"UE-non3GPP/internal/ike/context"
 	contextNas "UE-non3GPP/internal/nas/context"
-	ueController "UE-non3GPP/pkg/controller"
+	controllers "UE-non3GPP/pkg/controller"
 	"UE-non3GPP/pkg/utils"
 	"fmt"
 	"net/http"
@@ -47,15 +47,18 @@ func UENon3GPPConnection() {
 	ueIke := context.NewUeIke(ueNas, utils)
 	log.Info("[UE][IKE] IKE Context Created")
 
-	_ = ueController.NewUEHandler(routerUe, ueNas, ueIke)
-	log.Info("[UE][HTTP] Metrics Context Created")
+	_ = controllers.NewUEHandler(routerUe, ueNas, ueIke)
+	controllers.NewNetworkMonitorHandler(routerUe)
+	log.Info("[UE][METRICS][HTTP] Metrics Context Created")
 
 	// init ue control plane
 	controlPlane.Run(cfg, ueIke)
 
 	// init http server for metrics
 	go SetServer(cfg.MetricInfo.Httport, cfg.MetricInfo.HttpAddress, routerUe)
-	log.Info("[UE][HTTP] Metric Server is running")
+
+	address := fmt.Sprintf("%s:%s", cfg.MetricInfo.HttpAddress, cfg.MetricInfo.Httport)
+	log.Info("[UE][METRICS][HTTP] Metric Server is running - " + address)
 
 	// control the signals
 	sigUE := make(chan os.Signal, 1)
@@ -76,7 +79,6 @@ func UENon3GPPConnection() {
 		log.Error("[UE][NAS] ", err)
 		return
 	}
-
 	log.Info("[UE] UE terminated")
 }
 
@@ -100,10 +102,11 @@ func GetRouter() *gin.Engine {
 func SetServer(port, ip string, router *gin.Engine) {
 	// set the server
 	address := fmt.Sprintf("%s:%s", ip, port)
-
+	log.Info("[UE][METRICS][HTTP] Init HTTP Server " + address)
 	err := http.ListenAndServe(address, router)
 	if err != nil {
-		log.Fatal("[UE][HTTP] Error in set HTTP server")
+		log.Fatal("[UE][METRICS][HTTP] Error in set HTTP server")
 		return
 	}
+
 }
