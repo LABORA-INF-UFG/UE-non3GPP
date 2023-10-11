@@ -51,6 +51,11 @@ type Config struct {
 		IPSecIfaceProtocol string `yaml: "ipsecifaceprotocol"`
 	} `yaml:"n3iwfinfo"`
 
+	MetricInfo struct {
+		HttpAddress string `yaml: "httpaddress"`
+		Httport     string `yaml: "httport"`
+	} `yaml:"metricinfo"`
+
 	Logs struct {
 		Level int `yaml: "level"`
 	} `yaml:"logs"`

@@ -3,10 +3,11 @@ package main
 import (
 	"UE-non3GPP/config"
 	"UE-non3GPP/pkg/template"
+	"os"
+
 	"github.com/davecgh/go-spew/spew"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli/v2"
-	"os"
 )
 
 const version = "1.0.0"
@@ -33,7 +34,7 @@ func main() {
 			{
 				Name:    "ue",
 				Aliases: []string{"ue"},
-				Usage:   "Testing Non 3GPP UE connection",
+				Usage:   "Non-3GPP UE-Connection",
 				Action: func(c *cli.Context) error {
 					name := "Testing an Non 3GPP UE attached with configuration"
 					cfg := config.Data

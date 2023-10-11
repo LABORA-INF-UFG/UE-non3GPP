@@ -109,5 +109,9 @@
                     ikebindport: "500"
                     ipsecifaceprotocol: "udp"
 
+                  metricinfo:
+                    httpaddress: "127.0.0.1"
+                    httport: "5001"
+
                   logs:
                     level: 4
