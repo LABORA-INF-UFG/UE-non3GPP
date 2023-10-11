@@ -5,15 +5,17 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"net"
+	"reflect"
+	"regexp"
+	"time"
+
 	"github.com/free5gc/nas/nasType"
 	"github.com/free5gc/nas/security"
 	"github.com/free5gc/openapi/models"
 	"github.com/free5gc/util/milenage"
 	"github.com/free5gc/util/ueauth"
 	"github.com/vishvananda/netlink"
-	"net"
-	"reflect"
-	"regexp"
 )
 
 const (
@@ -35,6 +37,11 @@ type UeNas struct {
 	NasSecurity   NASecurity
 	XfrmInterface netlink.Link
 	tcpIpsec      *net.TCPConn
+	BeginTime     time.Time
+	RegisterTime  time.Duration
+	PduTime       time.Duration
+	SecurityTime  time.Duration
+	AuthTime      time.Duration
 }
 
 type PDUSession struct {
@@ -96,6 +103,8 @@ func NewUeNas(argsNas ArgumentsNas) *UeNas {
 	ue.PduSession = newPDUSession(1,
 		argsNas.Sst, argsNas.Sd,
 		argsNas.Dnn)
+
+	ue.BeginTime = time.Now()
 
 	return ue
 }

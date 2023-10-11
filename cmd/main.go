@@ -36,7 +36,7 @@ func main() {
 				Aliases: []string{"ue"},
 				Usage:   "Non-3GPP UE-Connection",
 				Action: func(c *cli.Context) error {
-					name := "Testing an Non 3GPP UE attached with configuration"
+					name := "Non 3GPP UE attached with configuration"
 					cfg := config.Data
 					log.Info("---------------------------------------")
 					log.Info("[UE-non3GPP] Starting connect function: ", name)
