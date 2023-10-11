@@ -4,7 +4,7 @@ ue:
     opcvalue: "7488464c7c52eb6e5036234984ad0bcf"
     opvalue: "7488763286b5b9ffbdf56e1297d0887b"
     sequencenumber: "7488b3f70fc0"
-  msin: "2089300007488"
+  msin: "00007488"
   hplmn:
     mcc: "208"
     mnc: "93"
@@ -23,6 +23,7 @@ ue:
     sd: "010203" # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
   pdusessionid: 1
   dnnstring: "internet"
+
 n3iwfinfo:
   ikebindaddress: "192.241.149.123" # IP address of Nwu interface (IKE) on N3IWF
   ikebindport: "500"
