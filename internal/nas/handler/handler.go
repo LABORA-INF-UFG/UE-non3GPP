@@ -71,6 +71,6 @@ func HandlerDlNasTransportPduaccept(ue *context.UeNas, message *nas.Message) []b
 	ue.PduSession.PDUAdress = nasMessage.GetPduAddresFromPduEstablishmentAccept(message)
 	ue.SetPduSessionActive()
 	ue.PduTime = time.Since(ue.BeginTime)
-	
+
 	return nil
 }

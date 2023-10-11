@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 	"net"
+	"time"
 )
 
 func Run(ueIpAdr []byte,
@@ -32,6 +33,7 @@ func Run(ueIpAdr []byte,
 	// get interface by name
 	interfaceName, err := ueIke.Utils.GetInterfaceName(cfg.Ue.LocalPublicIPAddr)
 	if err != nil {
+		log.Error("[UE][IPSEC] Error in get UE interface name")
 		return
 	}
 
@@ -43,6 +45,7 @@ func Run(ueIpAdr []byte,
 		interfaceName,
 		cfg.Ue.IPSecInterfaceMark,
 		&ueInnerAddr); err != nil {
+		log.Error("[UE][IPSEC] Error in setup IPSEC interface")
 		return
 	}
 
@@ -53,6 +56,7 @@ func Run(ueIpAdr []byte,
 		true,
 		cfg.Ue.IPSecInterfaceMark,
 		childSecurityAssociation); err != nil {
+		log.Error("[UE][IPSEC] Error in setup XFRM rules")
 		return
 	}
 
@@ -66,7 +70,7 @@ func Run(ueIpAdr []byte,
 		localTCPAddr,
 		N3IWFNasAddr)
 	if err != nil {
-		fmt.Println(err)
+		log.Error("[UE][IPSEC][CP] Error in setup dial TCP")
 		return
 	}
 
@@ -77,6 +81,9 @@ func Run(ueIpAdr []byte,
 		newXfrmiName)
 
 	ueIke.NasContext.SetIpsecTcp(tcpConnWithN3IWF)
+
+	log.Info("[UE][IPSEC] IPSEC SA Tunnel established")
+	ueIke.IpsecTime = time.Since(ueIke.BeginTime)
 
 	// handle server tcp/NAS
 	go listenAndServe(ueIpSec)
@@ -91,7 +98,7 @@ func listenAndServe(ue *contextIpsec.UeIpSec) {
 
 		n, err := listener.Read(data)
 		if err != nil {
-			log.Error("Read From TCP failed: %+v", err)
+			log.Error("[UE][IPSEC][TCP] Read From TCP failed: %+v", err)
 			continue
 		}
 
