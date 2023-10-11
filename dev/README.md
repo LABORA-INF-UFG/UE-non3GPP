@@ -67,8 +67,19 @@ ansible -i ./hosts -m ping all -u root
 
 ### Go Install with Ansible
 The command below installs GO v.1.14 on each of VMs. The following description assumes running the command from the project root dir (UE-non3GPP).
+
+#### Free5gc and N3IWF - Go Version 1.14
 ```
-ansible-playbook dev/free5gc-v3.1.1/go-install.yaml -i dev/free5gc-v3.1.1/hosts
+ansible-playbook dev/free5gc-v3.1.1/go-install-1.14.yaml -i dev/free5gc-v3.1.1/hosts
+```
+Now it is necessary to access each of the VMs and update bashrc
+```
+source ~/.bashrc
+```
+
+#### UE-non3GPP - Go Version 1.21
+```
+ansible-playbook dev/free5gc-v3.1.1/go-install-1.21.yaml -i dev/free5gc-v3.1.1/hosts
 ```
 Now it is necessary to access each of the VMs and update bashrc
 ```
