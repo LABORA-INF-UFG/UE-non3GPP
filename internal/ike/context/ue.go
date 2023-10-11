@@ -6,9 +6,11 @@ import (
 	"UE-non3GPP/pkg/utils"
 	"encoding/binary"
 	"fmt"
-	"github.com/vishvananda/netlink"
 	"math/big"
 	"net"
+	"time"
+
+	"github.com/vishvananda/netlink"
 )
 
 type UeIke struct {
@@ -29,6 +31,8 @@ type UeIke struct {
 	ONAddrIp                             []byte
 	ONMask                               []byte
 	Utils                                *utils.Utils
+	BeginTime                            time.Time
+	IpsecTime                            time.Duration
 }
 
 type IkeSecurity struct {
@@ -91,6 +95,7 @@ func NewUeIke(ueNas *context.UeNas, utils *utils.Utils) *UeIke {
 	ue.TemporaryExchangeMsgIDChildSAMapping = make(map[uint32]*ChildSecurityAssociation)
 	ue.NasContext = ueNas
 	ue.Utils = utils
+	ue.BeginTime = time.Now()
 	return ue
 }
 
