@@ -28,6 +28,10 @@
             - name: Install Go 1.21.3 - 2/5
               shell:  sudo tar -C /usr/local -zxvf go1.21.3.linux-amd64.tar.gz
 
+            - name: Remove Go-lang install 1/2
+              shell:  sudo rm -rf ~/go
+              ignore_errors: true
+
             - name: Install Go 1.21.3 - 3/5
               shell: |
                 mkdir ~/go
