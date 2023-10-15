@@ -1,8 +1,8 @@
 package main
 
 import (
+	controllers "UE-non3GPP/webconsole/backend/controller"
 	"UE-non3GPP/webconsole/config"
-	controllers "UE-non3GPP/webconsole/controller"
 	"fmt"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/gin-contrib/cors"

@@ -2,7 +2,7 @@ package controller
 
 import (
 	"UE-non3GPP/pkg/metrics"
-	"UE-non3GPP/webconsole/api"
+	"UE-non3GPP/webconsole/backend/api"
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/net"
 	log "github.com/sirupsen/logrus"

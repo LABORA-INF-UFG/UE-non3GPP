@@ -1,4 +1,4 @@
-# WebC onsole for UE-non3GPP
+# Web Cnoonsole for UE-non3GPP
 Set of APIs and Web DashBoard to monitor the connection between User Equipment for non-3GPP and free5gc N3IWF
 
 ## Start API Server
@@ -25,3 +25,17 @@ Provides information about momentary traffic on a network interface over a perio
 ```
 <<ue-non3gpp-server-ip>>:<<ue-non3gpp-server-port>>/ue/interface/:interface/network/status/:interval
 ```
+
+### FrontEnd
+Angular project
+Dependencias:
+node V18 --> Passos aqui - https://joshtronic.com/2022/04/24/how-to-install-nodejs-18-on-ubuntu-2004-lts/
+sudo apt update
+sudo apt upgrade
+sudo apt install -y curl
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+npm --> apt install npm
+angularCLI --> npm install -g @angular/cli
+
