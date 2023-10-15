@@ -6,6 +6,7 @@ import (
 	contextIpsec "UE-non3GPP/internal/ipsec/context"
 	"UE-non3GPP/internal/ipsec/dispatch"
 	"UE-non3GPP/internal/xfrm"
+	ueMetrics "UE-non3GPP/pkg/metrics"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
@@ -84,6 +85,7 @@ func Run(ueIpAdr []byte,
 
 	log.Info("[UE][IPSEC] IPSEC SA Tunnel established")
 	ueIke.IpsecTime = time.Since(ueIke.BeginTime)
+	ueMetrics.AddIpsecTime(time.Since(ueIke.BeginTime))
 
 	// handle server tcp/NAS
 	go listenAndServe(ueIpSec)

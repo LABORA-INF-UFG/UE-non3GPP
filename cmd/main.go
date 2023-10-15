@@ -2,6 +2,7 @@ package main
 
 import (
 	"UE-non3GPP/config"
+	"UE-non3GPP/pkg/metrics"
 	"UE-non3GPP/pkg/template"
 	"os"
 
@@ -43,6 +44,7 @@ func main() {
 					log.Info("[UE-non3GPP][UE] MSIN: ", cfg.Ue.Msin)
 
 					//controlPlane.Run(cfg)
+					metrics.RemoveMetricsFile()
 					template.UENon3GPPConnection()
 
 					return nil

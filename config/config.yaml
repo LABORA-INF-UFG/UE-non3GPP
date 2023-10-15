@@ -29,9 +29,5 @@ n3iwfinfo:
   ikebindport: "500"
   ipsecifaceprotocol: "udp"
 
-metricinfo:
-  httpaddress: "67.205.142.5"
-  httport: "5001"
-
 logs:
   level: 4

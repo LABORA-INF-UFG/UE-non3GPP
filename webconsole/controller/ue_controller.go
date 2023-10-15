@@ -3,7 +3,7 @@ package controller
 import (
 	contextIke "UE-non3GPP/internal/ike/context"
 	"UE-non3GPP/internal/nas/context"
-	"UE-non3GPP/pkg/api"
+	"UE-non3GPP/webconsole/api"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/net"

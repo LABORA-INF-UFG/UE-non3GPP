@@ -1,0 +1,6 @@
+metricinfo:
+  httpaddress: "67.205.142.5"
+  httport: "5001"
+
+logs:
+  level: 4
