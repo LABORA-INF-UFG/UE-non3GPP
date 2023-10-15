@@ -62,7 +62,7 @@ ssh-copy-id -i ~/.ssh/id_ecdsa.pub root@<n3iwf-ip-address>
 ### Test Ansible Connection
 Now let's test the Ansible connection with the respective hosts configured in the previous steps. In the terminal, inside the ```UE-non3GPP/dev``` directory, run the following command:
 ```
-ansible -i ./hosts -m ping all -u root
+ansible -i ./dev/free5gc-v3.1.1/hosts -m ping all -u root
 ```
 
 ### Go Install with Ansible
