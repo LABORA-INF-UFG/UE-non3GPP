@@ -123,10 +123,10 @@ func GetNetworkThroughput(ctx *gin.Context) {
 
 func NewUEConnectionInfo(router *gin.Engine) {
 	routesUE := router.Group("ue")
-	routesUE.GET("/info", getInfoUE)
+	routesUE.GET("/info", GetInfoUE)
 }
 
-func getInfoUE(ctx *gin.Context) {
+func GetInfoUE(ctx *gin.Context) {
 	ueDto := &api.UeStatus{}
 
 	// time of Registration and PDU Session
