@@ -5,6 +5,7 @@
         vars:
             UE_NON3GPP_DIR_INSTALL: "/root/go/src/UE-non3GPP"
             UE_NON3GPP_CONFIG_DIR: "/root/go/src/UE-non3GPP/config"
+            WEBCONSOLE_CONFIG_DIR: "/root/go/src/UE-non3GPP/webconsole/config"
             UE_NON3GPP_DEV_DIR: "/root/go/src/UE-non3GPP/dev"
             HOME_DIR: "/root"
             PERMANENT_KEY_VALUE: "250214c33e723a5dd523fc145fc0"
@@ -69,6 +70,22 @@
                   --compressed \
                   --insecure
 
+            - name: Remove WebConsole config file
+              shell: rm config.yaml
+              args:
+                chdir: "{{ WEBCONSOLE_CONFIG_DIR }}"
+
+            - name: Build WebConsole config.yaml
+              copy:
+                dest: "{{ WEBCONSOLE_CONFIG_DIR }}/config.yaml"
+                content: |
+                  metricinfo:
+                    httpaddress: "{{ UE_NON3GPP_IP_ADDR }}"
+                    httport: "5001"
+
+                  logs:
+                    level: 4
+
             - name: Remove UE-non3GPP config file
               shell: rm config.yaml
               args:
@@ -108,10 +125,6 @@
                     ikebindaddress: "{{ n3iwf_ike_ip_address }}" # IP address of Nwu interface (IKE) on N3IWF
                     ikebindport: "500"
                     ipsecifaceprotocol: "udp"
-
-                  metricinfo:
-                    httpaddress: "{{ UE_NON3GPP_IP_ADDR }}"
-                    httport: "5001"
 
                   logs:
                     level: 4

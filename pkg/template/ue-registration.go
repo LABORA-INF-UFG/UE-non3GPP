@@ -33,8 +33,6 @@ func UENon3GPPConnection() {
 		Dnn:         cfg.Ue.DNNString,
 	}
 
-	//	routerUe := GetRouter()
-
 	ueNas := contextNas.NewUeNas(argsNas)
 	log.Info("[UE][NAS] NAS Context Created")
 
@@ -42,20 +40,9 @@ func UENon3GPPConnection() {
 	ueIke := context.NewUeIke(ueNas, utils)
 	log.Info("[UE][IKE] IKE Context Created")
 
-	//_ = controllers.NewUEHandler(routerUe, ueNas, ueIke)
-	//	controllers.NewNetworkMonitorHandler(routerUe)
-	//	log.Info("[UE][METRICS][HTTP] Metrics Context Created")
-
 	// init ue control plane
 	controlPlane.Run(cfg, ueIke)
 
-	// init http server for metrics
-	//go SetServer(cfg.MetricInfo.Httport, cfg.MetricInfo.HttpAddress, routerUe)
-
-	//	address := fmt.Sprintf("%s:%s", cfg.MetricInfo.HttpAddress, cfg.MetricInfo.Httport)
-	//	log.Info("[UE][METRICS][HTTP] Metric Server is running - " + address)
-
-	// control the signals
 	sigUE := make(chan os.Signal, 1)
 	signal.Notify(sigUE, os.Interrupt)
 
@@ -81,76 +68,3 @@ type UeHandler struct {
 	nasInfo *contextNas.UeNas
 	ikeInfo *context.UeIke
 }
-
-//func RegLogUeInitInfoHandler(ueNas *contextNas.UeNas, ueIke *context.UeIke) {
-//	handler := &UeHandler{
-//		nasInfo: ueNas,
-//		ikeInfo: ueIke,
-//	}
-//}
-
-//func RegLogUeInitInfo(ueNas *contextNas.UeNas, ueIke *context.UeIke) {
-//
-//	ueDto := &api.UeStatus{}
-//
-//	// PDU Session information
-//	if ueNas.StateSM == 2 {
-//		ueDto.PduIsActive = "Yes"
-//	} else {
-//		ueDto.PduIsActive = "No"
-//	}
-//
-//	// Registration information
-//	if ueNas.StateMM == 1 {
-//		ueDto.UeIsRegister = "Yes"
-//	} else {
-//		ueDto.UeIsRegister = "No"
-//	}
-//
-//	// time of Registration and PDU Session
-//	ueDto.RegisterTime = ueNas.RegisterTime.Milliseconds()
-//	ueDto.PduTime = ueNas.PduTime.Milliseconds()
-//	ueDto.SecurityTime = ueNas.SecurityTime.Milliseconds()
-//	ueDto.AuthTime = ueNas.AuthTime.Milliseconds()
-//	ueDto.IpsecTime = ueIke.IpsecTime.Milliseconds()
-//
-//	fmt.Println("ueDto.RegisterTime: " + strconv.FormatInt(ueDto.RegisterTime, 10))
-//	fmt.Println("ueDto.PduTime: " + strconv.FormatInt(ueDto.PduTime, 10))
-//	fmt.Println("ueDto.IpsecTime: " + strconv.FormatInt(ueDto.IpsecTime, 10))
-//	fmt.Println("ueDto.AuthTime: " + strconv.FormatInt(ueDto.AuthTime, 10))
-//	fmt.Println("ueDto.SecurityTime: " + strconv.FormatInt(ueDto.SecurityTime, 10))
-//
-//}
-
-/*func GetRouter() *gin.Engine {
-
-	// set the infraestructure
-	router := gin.Default()
-
-	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"PUT", "GET", "DELETE", "POST"},
-		AllowHeaders:     []string{"Origin", "Content-Length", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour},
-	))
-
-	return router
-}
-*/
-
-/*
-func SetServer(port, ip string, router *gin.Engine) {
-	// set the server
-	address := fmt.Sprintf("%s:%s", ip, port)
-	log.Info("[UE][METRICS][HTTP] Init HTTP Server " + address)
-	err := http.ListenAndServe(address, router)
-	if err != nil {
-		log.Fatal("[UE][METRICS][HTTP] Error in set HTTP server")
-		return
-	}
-
-}
-
-*/

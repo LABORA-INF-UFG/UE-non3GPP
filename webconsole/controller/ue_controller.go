@@ -1,142 +1,149 @@
 package controller
 
 import (
-	contextIke "UE-non3GPP/internal/ike/context"
-	"UE-non3GPP/internal/nas/context"
+	"UE-non3GPP/pkg/metrics"
 	"UE-non3GPP/webconsole/api"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/net"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"strconv"
 	"time"
 )
 
-type UeHandler struct {
-	nasInfo *context.UeNas
-	ikeInfo *contextIke.UeIke
+func NewNetworkStatustHandler(router *gin.Engine) {
+	routesNetwork := router.Group("ue")
+	routesNetwork.GET("/interface/:interface/network/status/:interval", GetNetworkStatus)
 }
 
-func NewNetworkMonitorHandler(router *gin.Engine) {
-	routesNetwork := router.Group("network")
-	routesNetwork.GET("/monitor", getNetworkStatus)
-}
+func GetNetworkStatus(ctx *gin.Context) {
+	net_name := ctx.Param("interface")
 
-func getNetTeste(ctx *gin.Context) {
-	//interfaceName := "eth0" // Substitua "eth0" pelo nome da sua interface de rede
+	interval := ctx.Param("interval")
 
-	// Obtenha as estatísticas da interface de rede
-	netStats, err := net.IOCounters(true)
+	num, err := strconv.Atoi(interval)
 	if err != nil {
-		fmt.Println("Erro ao obter estatísticas de rede:", err)
+		log.Fatal("[UE][Metrics][Throughput] It is mandatory to inform :interval - /interface/:interface/throughput/monitor/:interval ")
 		return
 	}
 
-	// Procure as estatísticas da interface específica
-	for _, stats := range netStats {
-		//if stats.Name == interfaceName {
-		fmt.Printf("Interface: %s\n", stats.Name)
-		fmt.Printf("Bytes Recebidos: %d\n", stats.BytesRecv)
-		fmt.Printf("Bytes Enviados: %d\n", stats.BytesSent)
-		fmt.Printf("Pacotes Recebidos: %d\n", stats.PacketsRecv)
-		fmt.Printf("Pacotes Enviados: %d\n", stats.PacketsSent)
-		//}
+	netStatusDto := &api.NetworkStatus{}
+	netStatusDto.NetworkInterfaceName = net_name
+
+	var statusValues []api.StatusValue
+
+	for i := 0; i < num; i++ {
+
+		time.Sleep(1 * time.Second)
+		netStats, err := net.IOCounters(true)
+
+		if err != nil {
+			log.Fatal("[UE][Metrics][Status] Error getting network  prev statistics from interface "+net_name, err)
+			return
+		}
+		for _, stats := range netStats {
+			if stats.Name == net_name {
+				netStatusDto := api.StatusValue{}
+
+				netStatusDto.BytesRecv = stats.BytesRecv
+				netStatusDto.BytesSent = stats.BytesSent
+				netStatusDto.PacketsRecv = stats.PacketsRecv
+				netStatusDto.PacketsSent = stats.PacketsSent
+
+				statusValues = append(statusValues, netStatusDto)
+
+			}
+		}
 	}
+	if statusValues == nil {
+		log.Fatal("[UE][Metrics][Status] NetWork Interface not found! "+net_name, err)
+		return
+	}
+	netStatusDto.Values = statusValues
+	ctx.JSON(http.StatusOK, netStatusDto)
 }
 
-func getNetworkStatus(ctx *gin.Context) {
-	netStatusDto := &api.NetworkStatus{}
-	interfaceName := "gretun1"
+func NewNetworkThroughputHandler(router *gin.Engine) {
+	routesNetwork := router.Group("ue")
+	routesNetwork.GET("/interface/:interface/throughput/monitor/:interval", GetNetworkThroughput)
+}
 
-	netStatusDto.NetworkInterfaceName = interfaceName
+func GetNetworkThroughput(ctx *gin.Context) {
+	net_name := ctx.Param("interface")
+	interval := ctx.Param("interval")
 
-	var lsLeak []api.NetworkLeak
-	for i := 0; i < 10; i++ {
-		leakDto := api.NetworkLeak{}
+	num, err := strconv.Atoi(interval)
+	if err != nil {
+		log.Fatal("[UE][Metrics][Throughput] It is mandatory to inform :interval - /interface/:interface/throughput/monitor/:interval ")
+		return
+	}
 
-		/* captura latencia */
+	netStatusDto := &api.NetworkThroughput{}
+	netStatusDto.NetworkInterfaceName = net_name
+
+	var lsLeak []api.Throughput
+	for i := 0; i < num; i++ {
+		leakDto := api.Throughput{}
+
 		prevNetStat, err := net.IOCounters(true)
 		if err != nil {
-			fmt.Println("Erro ao obter estatísticas de rede:", err)
+			log.Fatal("[UE][Metrics][Throughput] Error getting network  prev statistics from interface "+net_name, err)
 			return
 		}
 		time.Sleep(1 * time.Second)
-
 		currentNetStat, err := net.IOCounters(true)
 		if err != nil {
-			fmt.Println("Erro ao obter estatísticas de rede:", err)
+			log.Fatal("[UE][Metrics][Throughput] Error getting network current statistics from interface "+net_name, err)
 			return
 		}
-
-		// Encontra a interface de rede desejada
 		var prevStat, currentStat *net.IOCountersStat
-
 		for _, stat := range prevNetStat {
-
-			if stat.Name == interfaceName {
+			if stat.Name == net_name {
 				prevStat = &stat
 				break
 			}
 		}
 
 		for _, stat := range currentNetStat {
-
-			if stat.Name == interfaceName {
+			if stat.Name == net_name {
 				currentStat = &stat
 				break
 			}
 		}
 
-		// Calcula a vazão de entrada e saída em bytes por segundo
 		if prevStat != nil && currentStat != nil {
-			leakDto.InputThroughput = currentStat.BytesRecv - prevStat.BytesRecv
-			leakDto.OutputThroughput = currentStat.BytesSent - prevStat.BytesSent
-		} else {
-			//fmt.Println("Interface de rede não encontrada.")
+			leakDto.In = currentStat.BytesRecv - prevStat.BytesRecv
+			leakDto.Out = currentStat.BytesSent - prevStat.BytesSent
 		}
-
 		lsLeak = append(lsLeak, leakDto)
 	}
-	netStatusDto.Leak = lsLeak
-
+	netStatusDto.Throughputs = lsLeak
 	ctx.JSON(http.StatusOK, netStatusDto)
 }
 
-func NewUEHandler(router *gin.Engine, nas *context.UeNas, ike *contextIke.UeIke) *UeHandler {
+func NewUEConnectionInfo(router *gin.Engine) {
 	routesUE := router.Group("ue")
-	handler := &UeHandler{
-		nasInfo: nas,
-		ikeInfo: ike,
-	}
-	routesUE.GET("/info", handler.getInfoUE)
-	return handler
+	routesUE.GET("/info", getInfoUE)
 }
 
-func (ue *UeHandler) getInfoUE(ctx *gin.Context) {
+func getInfoUE(ctx *gin.Context) {
 	ueDto := &api.UeStatus{}
 
-	// PDU Session information
-	if ue.nasInfo.StateSM == 2 {
-		ueDto.PduIsActive = "Yes"
-	} else {
-		ueDto.PduIsActive = "No"
-	}
-
-	// Registration information
-	if ue.nasInfo.StateMM == 1 {
-		ueDto.UeIsRegister = "Yes"
-	} else {
-		ueDto.UeIsRegister = "No"
-	}
-
 	// time of Registration and PDU Session
-	ueDto.RegisterTime = ue.nasInfo.RegisterTime.Milliseconds()
-	ueDto.PduTime = ue.nasInfo.PduTime.Milliseconds()
-	ueDto.SecurityTime = ue.nasInfo.SecurityTime.Milliseconds()
-	ueDto.AuthTime = ue.nasInfo.AuthTime.Milliseconds()
-	ueDto.IpsecTime = ue.ikeInfo.IpsecTime.Milliseconds()
+	RegTime, _ := metrics.GetMetricsValue("RegisterTime")
+	ueDto.RegisterTime = RegTime
 
-	log.Info("Metrics Server Request ok!")
+	PduTime, _ := metrics.GetMetricsValue("PduTime")
+	ueDto.PduTime = PduTime
+
+	SecurityTime, _ := metrics.GetMetricsValue("SecurityTime")
+	ueDto.SecurityTime = SecurityTime
+
+	AuthTime, _ := metrics.GetMetricsValue("AuthTime")
+	ueDto.AuthTime = AuthTime
+
+	IpsecTime, _ := metrics.GetMetricsValue("IpsecTime")
+	ueDto.IpsecTime = IpsecTime
 
 	ctx.JSON(http.StatusOK, ueDto)
 }

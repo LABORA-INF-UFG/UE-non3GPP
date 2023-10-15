@@ -40,10 +40,9 @@ func main() {
 					name := "Non 3GPP UE attached with configuration"
 					cfg := config.Data
 					log.Info("---------------------------------------")
-					log.Info("[UE-non3GPP] Starting connect function: ", name)
-					log.Info("[UE-non3GPP][UE] MSIN: ", cfg.Ue.Msin)
+					log.Info("[UE] Starting connect function: ", name)
+					log.Info("[UE] Info MSIN: ", cfg.Ue.Msin)
 
-					//controlPlane.Run(cfg)
 					metrics.RemoveMetricsFile()
 					template.UENon3GPPConnection()
 
