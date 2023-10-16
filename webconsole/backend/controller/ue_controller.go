@@ -27,11 +27,7 @@ func GetNetworkStatus(ctx *gin.Context) {
 		return
 	}
 
-	netStatusDto := &api.NetworkStatus{}
-	netStatusDto.NetworkInterfaceName = net_name
-
 	var statusValues []api.StatusValue
-
 	for i := 0; i < num; i++ {
 
 		time.Sleep(1 * time.Second)
@@ -59,8 +55,8 @@ func GetNetworkStatus(ctx *gin.Context) {
 		log.Fatal("[UE][Metrics][Status] NetWork Interface not found! "+net_name, err)
 		return
 	}
-	netStatusDto.Values = statusValues
-	ctx.JSON(http.StatusOK, netStatusDto)
+
+	ctx.JSON(http.StatusOK, statusValues)
 }
 
 func NewNetworkThroughputHandler(router *gin.Engine) {
@@ -78,10 +74,7 @@ func GetNetworkThroughput(ctx *gin.Context) {
 		return
 	}
 
-	netStatusDto := &api.NetworkThroughput{}
-	netStatusDto.NetworkInterfaceName = net_name
-
-	var lsLeak []api.Throughput
+	var lsThroughput []api.Throughput
 	for i := 0; i < num; i++ {
 		leakDto := api.Throughput{}
 
@@ -112,13 +105,12 @@ func GetNetworkThroughput(ctx *gin.Context) {
 		}
 
 		if prevStat != nil && currentStat != nil {
-			leakDto.In = currentStat.BytesRecv - prevStat.BytesRecv
-			leakDto.Out = currentStat.BytesSent - prevStat.BytesSent
+			leakDto.ThroughputIn = currentStat.BytesRecv - prevStat.BytesRecv
+			leakDto.ThroughputOut = currentStat.BytesSent - prevStat.BytesSent
 		}
-		lsLeak = append(lsLeak, leakDto)
+		lsThroughput = append(lsThroughput, leakDto)
 	}
-	netStatusDto.Throughputs = lsLeak
-	ctx.JSON(http.StatusOK, netStatusDto)
+	ctx.JSON(http.StatusOK, lsThroughput)
 }
 
 func NewUEConnectionInfo(router *gin.Engine) {
@@ -129,11 +121,10 @@ func NewUEConnectionInfo(router *gin.Engine) {
 func GetInfoUE(ctx *gin.Context) {
 	ueDto := &api.UeStatus{}
 
-	// time of Registration and PDU Session
 	RegTime, _ := metrics.GetMetricsValue("RegisterTime")
 	ueDto.RegisterTime = RegTime
 
-	PduTime, _ := metrics.GetMetricsValue("PduTime")
+	PduTime, _ := metrics.GetMetricsValue("PDUTime")
 	ueDto.PduTime = PduTime
 
 	SecurityTime, _ := metrics.GetMetricsValue("SecurityTime")

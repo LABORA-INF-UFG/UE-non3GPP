@@ -8,11 +8,6 @@ type UeStatus struct {
 	IpsecTime    string `json:"ipsecTime"`
 }
 
-type NetworkStatus struct {
-	NetworkInterfaceName string        `json:"networkInterfaceName"`
-	Values               []StatusValue `json:"statusValue"`
-}
-
 type StatusValue struct {
 	BytesRecv   uint64 `json:"bytesRecv"`
 	BytesSent   uint64 `json:"bytesSent"`
@@ -20,12 +15,7 @@ type StatusValue struct {
 	PacketsRecv uint64 `json:"packetsRecv"`
 }
 
-type NetworkThroughput struct {
-	NetworkInterfaceName string       `json:"networkInterfaceName"`
-	Throughputs          []Throughput `json:"throughputs"`
-}
-
 type Throughput struct {
-	In  uint64 `json:"in"`
-	Out uint64 `json:"out"`
+	ThroughputIn  uint64 `json:"throughputIn"`
+	ThroughputOut uint64 `json:"throughputOut"`
 }

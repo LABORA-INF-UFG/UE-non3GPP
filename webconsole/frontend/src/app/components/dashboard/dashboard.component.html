@@ -4,15 +4,66 @@
     <div class="row">
       <div class="column">
         <div class="ui left floated header">
-          UE-non3GPP DashBoard
+          UE-non3GPP - DashBoard
         </div>
       </div>
     </div>
     <div class="row">
       <div class="column">
         <div class="ui basic segment">
-            <app-network-status-line-chart></app-network-status-line-chart>
-          <!--app-line-chart-example></app-line-chart-example-->
+          <form id="cad-cultura" class="ui form" onsubmit="return false;">
+            <div class="two fields">
+              <div class="field">
+                <label>Authentication NAS Time</label>
+                <input type="text"
+                       [readonly]="true"
+                       name="descricao"
+                       [value]="ueStatus.authenticationNasTime">
+
+
+              </div>
+              <div class="field">
+                <label>IPsec Time</label>
+                <input type="text"
+                       [readonly]="true"
+                       name="descricao"
+                       [value]="ueStatus.ipsecTime">
+
+
+              </div>
+            </div>
+            <div class="three fields">
+              <div class="field">
+                <label>Security Procedure NAS Time</label>
+                <input type="text"
+                       [readonly]="true"
+                       name="descricao"
+                       [value]="ueStatus.securityProcedureNasTime">
+
+              </div>
+              <div class="field">
+                <label>Register Time</label>
+                <input type="text"
+                       [readonly]="true"
+                       name="descricao"
+                       [value]="ueStatus.registerTime">
+
+              </div>
+              <div class="field">
+                <label>PDU Session Time</label>
+                <input type="text"
+                       [readonly]="true"
+                       name="descricao"
+                       [(ngModel)]="ueStatus.pduSessionTime">
+
+
+              </div>
+            </div>
+            <br/>
+          </form>
+
+          <app-network-status-line-chart></app-network-status-line-chart>
+           <!--app-line-chart-example></app-line-chart-example-->
         </div>
       </div>
     </div>
