@@ -123,27 +123,21 @@ export class NetworkStatusLineChartComponent {
 
   /* ------ */
   ngOnInit(): void{
-    this.initNetworkStatusMonitor();
+    this.getNetworkStatus(3);
     setInterval(() => {
-      this.initNetworkStatusMonitor();
-    }, 3000);
+      this.getNetworkStatus(1);
+    }, 2000);
   }
 
 
-
-  callMethod(){
-    console.log('Call Function Every Five Seconds.', new Date());
+  clearNetworkStatusLocalData(){
+    this.lineChartData.datasets[0].data = [];
+    this.lineChartData.datasets[1].data = [];
+    this.lineChartData.labels = [];
   }
 
-
-
-  initNetworkStatusMonitor():void{
-      this.getNetworkStatus();
-
-  }
-
-  getNetworkStatus():void{
-    this.service.getNetworkStatus('gretun1', 1).subscribe((values) => {
+  getNetworkStatus(interval:number):void{
+    this.service.getNetworkStatus('gretun1', interval).subscribe((values) => {
       this.updateBytesReceived(values)
     })
   }
