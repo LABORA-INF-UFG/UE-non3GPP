@@ -62,8 +62,19 @@
             <br/>
           </form>
 
-          <app-network-status-line-chart></app-network-status-line-chart>
-           <!--app-line-chart-example></app-line-chart-example-->
+          <div class="ui equal width stackable grid">
+            <div class="row">
+              <div class="eight wide column">
+                <app-net-interface-bytes-send-received></app-net-interface-bytes-send-received>
+              </div>
+
+              <div class="eight wide column">
+                <app-net-interface-packets-send-received></app-net-interface-packets-send-received>
+
+              </div>
+
+            </div>
+          </div>
         </div>
       </div>
     </div>

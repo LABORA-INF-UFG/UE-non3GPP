@@ -1,0 +1,17 @@
+<div class="ui form very padded segment">
+  <div class="ui header">gretun1 - Packets</div>
+  <canvas
+    baseChart
+    class="chartPacketsSentReceived"
+    [data]="lineChartDataPacketsSentAndReceived"
+    [options]="lineChartOptions"
+    [type]="lineChartType"
+  ></canvas>
+
+  <div class="button-row">
+    <button mat-button mat-raised-button color="primary" (click)="clearPacketsSentReceivedData()">
+      Clear
+    </button>
+  </div>
+</div>
+

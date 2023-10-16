@@ -7,10 +7,10 @@ import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { NgChartsModule, NgChartsConfiguration } from 'ng2-charts';
-import { NetworkStatusLineChartComponent } from './components/network-status-line-chart/network-status-line-chart.component';
-import { LineChartExampleComponent } from './components/line-chart-example/line-chart-example.component';
 import {HttpClient, HttpClientModule} from "@angular/common/http";
 import {FormsModule} from "@angular/forms";
+import { NetInterfaceBytesSendReceivedComponent } from './components/charts/net-interface-bytes-send-received/net-interface-bytes-send-received.component';
+import { NetInterfacePacketsSendReceivedComponent } from './components/charts/net-interface-packets-send-received/net-interface-packets-send-received.component';
 
 @NgModule({
   declarations: [
@@ -18,8 +18,9 @@ import {FormsModule} from "@angular/forms";
     HeaderComponent,
     FooterComponent,
     DashboardComponent,
-    NetworkStatusLineChartComponent,
-    LineChartExampleComponent
+
+    NetInterfaceBytesSendReceivedComponent,
+    NetInterfacePacketsSendReceivedComponent
   ],
   imports: [
     BrowserModule,
