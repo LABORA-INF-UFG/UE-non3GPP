@@ -1,6 +1,6 @@
 #!/bin/bash
 
-HOST=174.138.34.94
+HOST=192.34.59.31
 PORT=5000
 
 BASE_URL="http://$HOST:$PORT/api/subscriber"
