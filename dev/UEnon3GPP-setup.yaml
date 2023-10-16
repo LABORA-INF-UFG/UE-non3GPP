@@ -26,6 +26,18 @@
             - set_fact:
                 UE_NON3GPP_IP_ADDR: "{{ ansible_default_ipv4.address }}"
 
+            - name: Remove NodeJS Old version - 2/3
+              shell :  |
+                    sudo apt-get purge --auto-remove nodejs -y
+                    sudo apt-get purge nodejs -y
+                    sudo apt-get autoremove
+              
+            - name: Install NodeJS 20.x - 3/3
+              shell :  |
+                    sudo apt -y install curl dirmngr apt-transport-https lsb-release
+                    curl -sL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+                    sudo apt -y install nodejs
+
             - name: Remove UE-non3GPP dir (if exists)
               shell:  sudo rm -rf {{ UE_NON3GPP_DIR_INSTALL }}
               ignore_errors: true
