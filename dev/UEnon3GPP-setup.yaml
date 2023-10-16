@@ -37,6 +37,14 @@
                     sudo apt -y install curl dirmngr apt-transport-https lsb-release
                     curl -sL https://deb.nodesource.com/setup_20.x | sudo -E bash -
                     sudo apt -y install nodejs
+              
+            - name: Install NPM
+              shell :  |
+                    sudo apt -y install npm
+            
+            - name: Install Angular CLI
+              shell :  |
+                    sudo npm install -g @angular/cli
 
             - name: Remove UE-non3GPP dir (if exists)
               shell:  sudo rm -rf {{ UE_NON3GPP_DIR_INSTALL }}
