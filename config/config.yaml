@@ -11,7 +11,7 @@ ue:
   ranuengapid: 1
   amfuengapid: 1
   authenticationmanagementfield : "8000"
-  localpublicipaddr : "147.182.218.24"
+  localpublicipaddr : "206.189.197.240"
   localpublicportudpconnection : "500"
   linkgre:
     name : "gretun"
@@ -25,7 +25,7 @@ ue:
   dnnstring: "internet"
 
 n3iwfinfo:
-  ikebindaddress: "137.184.49.244" # IP address of Nwu interface (IKE) on N3IWF
+  ikebindaddress: "159.203.179.28" # IP address of Nwu interface (IKE) on N3IWF
   ikebindport: "500"
   ipsecifaceprotocol: "udp"
 

@@ -36,6 +36,13 @@ sudo apt install -y curl
 curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
 sudo apt install -y nodejs
 
-npm --> apt install npm
-angularCLI --> npm install -g @angular/cli
+Instalar versão atualizada do npm ``` npm install -g npm@10.2.0 ```
+Instalar Angular CLI ``` npm install -g @angular/cli ```
+Entrar em WebConsole e rodar ```npm install``` para instalar as dependencias do Angular.
+
+No terminal do linux abrir o arquivo: ```sudo nano /etc/sysctl.conf```
+Adicionar a seguinte linha no arquivo: ``` fs.inotify.max_user_watches=524288 ```
+Atualizar e salvar: ```sudo sysctl -p```
+Inicializar o serviço ANgular: ```ng serve --host <<ue-non3gpp-ip>>```
+
 
