@@ -11,6 +11,7 @@ import {HttpClient, HttpClientModule} from "@angular/common/http";
 import {FormsModule} from "@angular/forms";
 import { NetInterfaceBytesSendReceivedComponent } from './components/charts/net-interface-bytes-send-received/net-interface-bytes-send-received.component';
 import { NetInterfacePacketsSendReceivedComponent } from './components/charts/net-interface-packets-send-received/net-interface-packets-send-received.component';
+import { NetInterfaceThrougputComponent } from './components/charts/net-interface-througput/net-interface-througput.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { NetInterfacePacketsSendReceivedComponent } from './components/charts/ne
     DashboardComponent,
 
     NetInterfaceBytesSendReceivedComponent,
-    NetInterfacePacketsSendReceivedComponent
+    NetInterfacePacketsSendReceivedComponent,
+    NetInterfaceThrougputComponent
   ],
   imports: [
     BrowserModule,

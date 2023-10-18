@@ -1,0 +1,16 @@
+<div class="ui form very padded segment">
+  <div class="ui header">gretun1 - Througput</div>
+  <canvas
+    baseChart
+    class="chartThrouput"
+    [data]="lineChartThrouput"
+    [options]="lineChartOptions"
+    [type]="lineChartType"
+  ></canvas>
+
+  <div class="button-row">
+    <button mat-button mat-raised-button color="primary" (click)="clearChartData()">
+      Clear
+    </button>
+  </div>
+</div>

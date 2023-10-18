@@ -27,4 +27,9 @@ export class DashboardService {
     return this.http.get<NetworkStatus[]>(url)
   }
 
+  getNetworkThroughput(net_interface_name: string, nm_interval: number): Observable<NetworkThrougput[]>{
+    const url = `${this.apiConfigService.UE_INTERFACE}/${net_interface_name}/throughput/monitor/${nm_interval}`
+    return this.http.get<NetworkThrougput[]>(url)
+  }
+
 }

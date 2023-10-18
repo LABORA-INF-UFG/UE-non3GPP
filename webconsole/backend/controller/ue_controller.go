@@ -3,6 +3,7 @@ package controller
 import (
 	"UE-non3GPP/pkg/metrics"
 	"UE-non3GPP/webconsole/backend/api"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/shirou/gopsutil/net"
 	log "github.com/sirupsen/logrus"
@@ -80,18 +81,21 @@ func GetNetworkThroughput(ctx *gin.Context) {
 
 		prevNetStat, err := net.IOCounters(true)
 		if err != nil {
-			log.Fatal("[UE][Metrics][Throughput] Error getting network  prev statistics from interface "+net_name, err)
+			fmt.Println("Erro ao obter estatísticas de rede:", err)
 			return
 		}
+
 		time.Sleep(1 * time.Second)
 		currentNetStat, err := net.IOCounters(true)
 		if err != nil {
-			log.Fatal("[UE][Metrics][Throughput] Error getting network current statistics from interface "+net_name, err)
+			fmt.Println("Erro ao obter estatísticas de rede:", err)
 			return
 		}
+
 		var prevStat, currentStat *net.IOCountersStat
 		for _, stat := range prevNetStat {
 			if stat.Name == net_name {
+				fmt.Println("achou... prev")
 				prevStat = &stat
 				break
 			}
@@ -99,14 +103,21 @@ func GetNetworkThroughput(ctx *gin.Context) {
 
 		for _, stat := range currentNetStat {
 			if stat.Name == net_name {
+				fmt.Println("achou... current ")
 				currentStat = &stat
 				break
 			}
 		}
 
 		if prevStat != nil && currentStat != nil {
-			leakDto.ThroughputIn = currentStat.BytesRecv - prevStat.BytesRecv
-			leakDto.ThroughputOut = currentStat.BytesSent - prevStat.BytesSent
+			inputThroughput := currentStat.BytesRecv - prevStat.BytesRecv
+			outputThroughput := currentStat.BytesSent - prevStat.BytesSent
+
+			leakDto.ThroughputIn = inputThroughput
+			leakDto.ThroughputOut = outputThroughput
+
+			fmt.Println("IN: " + strconv.FormatUint(leakDto.ThroughputIn, 10))
+			fmt.Println("Out: " + strconv.FormatUint(leakDto.ThroughputOut, 10))
 		}
 		lsThroughput = append(lsThroughput, leakDto)
 	}
