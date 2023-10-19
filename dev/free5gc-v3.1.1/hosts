@@ -6,7 +6,7 @@
 192.81.216.94 free5gc_ip_address=192.81.211.16
 
 [labora-UE-non3GPP]
-192.81.216.94 n3iwf_ike_ip_address=192.81.216.94 free5gc_ip_address=192.81.211.16 msin=7488
+157.230.224.211 n3iwf_ike_ip_address=192.81.216.94 free5gc_ip_address=192.81.211.16 msin=7488
 #206.81.23.176 n3iwf_ike_ip_address=192.81.216.94 free5gc_ip_address=192.81.211.16 msin=7487
 #161.35.19.72 n3iwf_ike_ip_address=192.81.216.94 free5gc_ip_address=192.81.211.16 msin=7486
 #167.71.55.71 n3iwf_ike_ip_address=192.81.216.94 free5gc_ip_address=192.81.211.16 msin=7485

@@ -26,23 +26,5 @@ Provides information about momentary traffic on a network interface over a perio
 <<ue-non3gpp-server-ip>>:<<ue-non3gpp-server-port>>/ue/interface/:interface/network/status/:interval
 ```
 
-### FrontEnd
-Angular project
-Dependencias:
-node V18 --> Passos aqui - https://joshtronic.com/2022/04/24/how-to-install-nodejs-18-on-ubuntu-2004-lts/
-sudo apt update
-sudo apt upgrade
-sudo apt install -y curl
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
-sudo apt install -y nodejs
-
-Instalar versão atualizada do npm ``` npm install -g npm@10.2.0 ```
-Instalar Angular CLI ``` npm install -g @angular/cli ```
-Entrar em WebConsole e rodar ```npm install``` para instalar as dependencias do Angular.
-
-No terminal do linux abrir o arquivo: ```sudo nano /etc/sysctl.conf```
-Adicionar a seguinte linha no arquivo: ``` fs.inotify.max_user_watches=524288 ```
-Atualizar e salvar: ```sudo sysctl -p```
-Inicializar o serviço ANgular: ```ng serve --host <<ue-non3gpp-ip>>```
 
 

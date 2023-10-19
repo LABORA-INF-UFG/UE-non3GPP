@@ -25,3 +25,23 @@ Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To u
 ## Further help
 
 To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+
+
+### FrontEnd
+Angular project
+Dependencias:
+node V18 --> Passos aqui - https://joshtronic.com/2022/04/24/how-to-install-nodejs-18-on-ubuntu-2004-lts/
+sudo apt update
+sudo apt upgrade
+sudo apt install -y curl
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+Instalar versão atualizada do npm ``` npm install -g npm@10.2.0 ```
+Instalar Angular CLI ``` npm install -g @angular/cli ```
+Entrar em WebConsole e rodar ```npm install``` para instalar as dependencias do Angular.
+
+No terminal do linux abrir o arquivo: ```sudo nano /etc/sysctl.conf```
+Adicionar a seguinte linha no arquivo: ``` fs.inotify.max_user_watches=524288 ```
+Atualizar e salvar: ```sudo sysctl -p```
+Inicializar o serviço ANgular: ```ng serve --host <<ue-non3gpp-ip>>```
