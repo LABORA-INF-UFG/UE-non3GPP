@@ -30,14 +30,18 @@ type Config struct {
 		AuthenticationManagementField string `yaml: "authenticationmanagementfield"`
 		LocalPublicIPAddr             string `yaml: "localpublicipaddr"`
 		LocalPublicPortUDPConnection  string `yaml: "localpublicportudpconnection"`
-		LinkGRE                       struct {
+		GREInterface                  struct {
 			Name string `yaml: "name"`
 			Mtu  int    `yaml: "mtu"`
-		} `yaml: "linkgre"`
+		} `yaml: "greinterface"`
 
-		IPSecInterfaceName string `yaml: "ipsecinterfacename"`
-		IPSecInterfaceMark uint32 `yaml: "ipsecinterfacemark"`
-		Snssai             struct {
+		IPSecInterface struct {
+			Name string `yaml: "name"`
+			Mark uint32 `yaml: "mark"`
+			Mtu  int    `yaml: "mtu"`
+		} `yaml: "ipsecinterface"`
+
+		Snssai struct {
 			Sst int32  `yaml: "sst"`
 			Sd  string `yaml: "sd"`
 		} `yaml: "snssai"`

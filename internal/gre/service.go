@@ -30,7 +30,7 @@ func Run(
 	// Apply XFRM rules
 	if err = xfrm.ApplyXFRMRule(
 		false,
-		cfg.Ue.IPSecInterfaceMark,
+		cfg.Ue.IPSecInterface.Mark,
 		childSecurityAssociation); err != nil {
 		// TODO implements LOG
 		return
@@ -47,8 +47,8 @@ func Run(
 		time.Sleep(1 * time.Second)
 	}
 
-	newGREName := fmt.Sprintf("%s%d", cfg.Ue.LinkGRE.Name, cfg.Ue.PDUSessionId)
-	parentIfaceName := fmt.Sprintf("%s-%s", cfg.Ue.IPSecInterfaceName, "default")
+	newGREName := fmt.Sprintf("%s%d", cfg.Ue.GREInterface.Name, cfg.Ue.PDUSessionId)
+	parentIfaceName := fmt.Sprintf("%s-%s", cfg.Ue.IPSecInterface.Name, "default")
 
 	if linkGRE, err = setupGreTunnel(
 		newGREName,
@@ -104,7 +104,7 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	newGRETunnel := &netlink.Gretun{
 		LinkAttrs: netlink.LinkAttrs{
 			Name: greIfaceName,
-			MTU:  cfg.Ue.LinkGRE.Mtu, // remain for endpoint IP header(most 40 bytes if IPv6) and ESP header (22 bytes)
+			MTU:  cfg.Ue.GREInterface.Mtu, // remain for endpoint IP header(most 40 bytes if IPv6) and ESP header (22 bytes)
 		},
 		Link:   uint32(parent.Attrs().Index), // PHYS_DEV in iproute2; IFLA_GRE_LINK in linux kernel
 		Local:  ueTunnelAddr,

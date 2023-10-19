@@ -11,13 +11,15 @@ ue:
   ranuengapid: 1
   amfuengapid: 1
   authenticationmanagementfield : "8000"
-  localpublicipaddr : "206.189.197.240"
+  localpublicipaddr : "157.230.224.211"
   localpublicportudpconnection : "500"
-  linkgre:
+  greinterface:
     name : "gretun"
-    mtu : 1420
-  ipsecinterfacename : "ipsec0" # IP address of IPSec virtual interface (IPsec tunnel enpoint to N3IWF)
-  ipsecinterfacemark: 5 # IPSec virtual interface mark (Any value except to 0, default value is 7 if not defined)
+    mtu : 1500
+  ipsecinterface:
+    name : "ipsec0" # IP address of IPSec virtual interface (IPsec tunnel enpoint to N3IWF)
+    mark: 5 # IPSec virtual interface mark (Any value except to 0, default value is 7 if not defined)
+    mtu: 1500
   snssai: # Single Network Slice Selection Assistance Information
     sst: 1 # Slice/Service Type (1 byte hex string, range: 0~F)
     sd: "010203" # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
@@ -25,7 +27,7 @@ ue:
   dnnstring: "internet"
 
 n3iwfinfo:
-  ikebindaddress: "159.203.179.28" # IP address of Nwu interface (IKE) on N3IWF
+  ikebindaddress: "192.81.216.94" # IP address of Nwu interface (IKE) on N3IWF
   ikebindport: "500"
   ipsecifaceprotocol: "udp"
 

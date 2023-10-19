@@ -1,6 +1,7 @@
 package xfrm
 
 import (
+	"UE-non3GPP/config"
 	"UE-non3GPP/internal/ike/context"
 	"UE-non3GPP/internal/ike/message"
 	"fmt"
@@ -183,13 +184,15 @@ func SetupIPsecXfrmi(xfrmIfaceName, parentIfaceName string,
 		err           error
 	)
 
+	cfg := config.GetConfig()
+
 	if parent, err = netlink.LinkByName(parentIfaceName); err != nil {
 		return nil, err
 	}
 
 	link := &netlink.Xfrmi{
 		LinkAttrs: netlink.LinkAttrs{
-			MTU:         1478,
+			MTU:         cfg.Ue.IPSecInterface.Mtu,
 			Name:        xfrmIfaceName,
 			ParentIndex: parent.Attrs().Index,
 		},
