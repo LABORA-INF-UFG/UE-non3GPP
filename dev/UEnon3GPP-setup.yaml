@@ -6,6 +6,7 @@
             UE_NON3GPP_DIR_INSTALL: "/root/go/src/UE-non3GPP"
             UE_NON3GPP_CONFIG_DIR: "/root/go/src/UE-non3GPP/config"
             WEBCONSOLE_CONFIG_DIR: "/root/go/src/UE-non3GPP/webconsole/config"
+            FRONT_END_DIR: "/root/go/src/UE-non3GPP/webconsole/frontend"
             UE_NON3GPP_DEV_DIR: "/root/go/src/UE-non3GPP/dev"
             HOME_DIR: "/root"
             PERMANENT_KEY_VALUE: "250214c33e723a5dd523fc145fc0"
@@ -26,19 +27,26 @@
             - set_fact:
                 UE_NON3GPP_IP_ADDR: "{{ ansible_default_ipv4.address }}"
 
-            - name: Remove NodeJS Old version - 2/3
+            - name: Remove NodeJS Old version
               shell :  |
                     sudo apt-get purge --auto-remove nodejs -y
                     sudo apt-get purge nodejs -y
                     sudo apt-get autoremove
               
-            - name: Install NodeJS 20.x - 3/3
+            - name: Install NodeJS 20.x
               shell :  |
                     sudo apt -y install curl dirmngr apt-transport-https lsb-release
                     curl -sL https://deb.nodesource.com/setup_20.x | sudo -E bash -
                     sudo apt -y install nodejs
-              
-           
+
+            - name: Update NPM to npm@10.2.0
+              shell :  |
+                    npm install -g npm@10.2.0
+
+            - name: Install AngularCLI
+              shell :  |
+                    npm install -g @angular/cli
+                         
             - name: Remove UE-non3GPP dir (if exists)
               shell:  sudo rm -rf {{ UE_NON3GPP_DIR_INSTALL }}
               ignore_errors: true
@@ -103,7 +111,7 @@
               shell: rm config.yaml
               args:
                 chdir: "{{ UE_NON3GPP_CONFIG_DIR }}"
-
+   
             - name: Build UE-non3GPP config.yaml
               copy:
                 dest: "{{ UE_NON3GPP_CONFIG_DIR }}/config.yaml"
@@ -141,3 +149,11 @@
 
                   logs:
                     level: 4
+
+
+
+            
+            - name: Install Front-End dependencies
+              shell: npm install
+              args:
+                chdir: "{{ FRONT_END_DIR }}"
