@@ -26,7 +26,7 @@
             LABORA_UE_NON3GPP_GIT_REPO: "https://github.com/LABORA-INF-UFG/UE-non3GPP.git"
             FREE5GC_CHECKOUT_FOLDER_NAME: "free5gc"
             PREDEFINED_IP_ADDRESS: "false"
-            APPLY_MAXIMUM_SEGMENT_SIZE_IN_UPF_OUT: "false"
+            APPLY_MAXIMUM_SEGMENT_SIZE_IN_UPF_OUT: "true"
             UPF_OUT_MAXIMUM_SEGMENT_SIZE : "1400"
             MONGO_URL_CONNECTION: "mongodb://127.0.0.1:27017"
             NRF_IP_ADDRESS: "127.0.0.10"
