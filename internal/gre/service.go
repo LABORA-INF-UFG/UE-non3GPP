@@ -73,6 +73,7 @@ func Run(
 	}
 
 	ueIke.NasContext.SetGRERoute(upRoute)
+	log.Info(upRoute)
 
 	if err := netlink.RouteAdd(upRoute); err != nil {
 		log.Fatal("[UE][GRE] Error into add GRETUN ROUTE : %v", err)
