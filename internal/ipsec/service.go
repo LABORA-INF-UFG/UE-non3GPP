@@ -42,11 +42,10 @@ func Run(ueIpAdr []byte,
 	newXfrmiName := fmt.Sprintf("%s-default", cfg.Ue.IPSecInterface.Name)
 	// TODO interface IP is hardcoded
 	if linkIPSec, err = xfrm.SetupIPsecXfrmi(
-		newXfrmiName,
 		interfaceName,
 		cfg.Ue.IPSecInterface.Mark,
 		&ueInnerAddr); err != nil {
-		log.Error("[UE][IPSEC] Error in setup IPSEC interface")
+		log.Error("[UE][IPSEC] Error in setup IPSEC interface: %v", err)
 		return
 	}
 

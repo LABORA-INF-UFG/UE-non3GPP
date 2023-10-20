@@ -177,7 +177,7 @@ func ApplyXFRMRule(n3iwf_is_initiator bool, xfrmiId uint32,
 	return nil
 }
 
-func SetupIPsecXfrmi(xfrmIfaceName, parentIfaceName string,
+func SetupIPsecXfrmi(parentIfaceName string,
 	xfrmIfaceId uint32, xfrmIfaceAddr *net.IPNet) (netlink.Link, error) {
 	var (
 		xfrmi, parent netlink.Link
@@ -185,6 +185,7 @@ func SetupIPsecXfrmi(xfrmIfaceName, parentIfaceName string,
 	)
 
 	cfg := config.GetConfig()
+	newXfrmiName := fmt.Sprintf("%s-default", cfg.Ue.IPSecInterface.Name)
 
 	if parent, err = netlink.LinkByName(parentIfaceName); err != nil {
 		return nil, err
@@ -193,7 +194,7 @@ func SetupIPsecXfrmi(xfrmIfaceName, parentIfaceName string,
 	link := &netlink.Xfrmi{
 		LinkAttrs: netlink.LinkAttrs{
 			MTU:         cfg.Ue.IPSecInterface.Mtu,
-			Name:        xfrmIfaceName,
+			Name:        newXfrmiName,
 			ParentIndex: parent.Attrs().Index,
 		},
 		Ifid: xfrmIfaceId,
@@ -204,7 +205,7 @@ func SetupIPsecXfrmi(xfrmIfaceName, parentIfaceName string,
 		return nil, err
 	}
 
-	if xfrmi, err = netlink.LinkByName(xfrmIfaceName); err != nil {
+	if xfrmi, err = netlink.LinkByName(newXfrmiName); err != nil {
 		return nil, err
 	}
 
