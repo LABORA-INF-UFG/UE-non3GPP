@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net"
 	"time"
-	log "github.com/sirupsen/logrus"
+
 	"github.com/vishvananda/netlink"
 )
 
@@ -32,7 +32,7 @@ func Run(
 		false,
 		cfg.Ue.IPSecInterface.Mark,
 		childSecurityAssociation); err != nil {
-			log.Fatal("[UE][GRE] Error in ApplyXFRMRule : %v", err)
+		// TODO implements LOG
 		return
 	}
 
@@ -57,7 +57,7 @@ func Run(
 		n3iwfIpUp,
 		ueIke.NasContext.PduSession.PDUAdress,
 		QosInfo); err != nil {
-			log.Fatal("[UE][GRE] Error in setupGreTunnel : %v", err)
+		// TODO implements LOG
 		return
 	}
 
@@ -73,10 +73,9 @@ func Run(
 	}
 
 	ueIke.NasContext.SetGRERoute(upRoute)
-	log.Info(upRoute)
 
 	if err := netlink.RouteAdd(upRoute); err != nil {
-		log.Fatal("[UE][GRE] Error into add GRETUN ROUTE : %v", err)
+		// TODO implements LOG
 		return
 	}
 }
@@ -97,7 +96,7 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	}
 
 	if parent, err = netlink.LinkByName(parentIfaceName); err != nil {
-		log.Fatal("[UE][GRE] Error in get Link GRETUN By Name: %v", err)
+		// TODO implements LOG
 		return nil, err
 	}
 
@@ -115,14 +114,14 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	}
 
 	if err := netlink.LinkAdd(newGRETunnel); err != nil {
-		log.Fatal("[UE][GRE] Error in add Link to new GRETUN: ", err)
+		// TODO implements LOG
 		return nil, err
 	}
 
 	// Get link info
 	linkGRE, err := netlink.LinkByName(greIfaceName)
 	if err != nil {
-		log.Fatal("[UE][GRE] Error in Get link info GRETUN: %v", err)
+		// TODO implements LOG
 		return nil, fmt.Errorf("No link named %s", greIfaceName)
 	}
 
@@ -134,13 +133,13 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	}
 
 	if err := netlink.AddrAdd(linkGRE, linkGREAddr); err != nil {
-		log.Fatal("[UE][GRE] Error in add Addres in GRETUN: %v", err)
+		// TODO implements LOG
 		return nil, err
 	}
 
 	// Set GRE interface up
 	if err := netlink.LinkSetUp(linkGRE); err != nil {
-		log.Fatal("[UE][GRE] Error in Set GRE interface up: %v", err)
+		// TODO implements LOG
 		return nil, err
 	}
 
