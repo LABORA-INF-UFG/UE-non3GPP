@@ -114,7 +114,7 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	}
 
 	if err := netlink.LinkAdd(newGRETunnel); err != nil {
-		log.Fatal("[UE][GRE] Error in add Lin to new GRETUN: %v", err)
+		log.Fatal("[UE][GRE] Error in add Link to new GRETUN: ", err)
 		return nil, err
 	}
 

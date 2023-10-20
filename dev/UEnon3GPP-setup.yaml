@@ -131,7 +131,7 @@
                     authenticationmanagementfield : "{{ AUTH_MN_FIELD }}"
                     localpublicipaddr : "{{ UE_NON3GPP_IP_ADDR }}"
                     localpublicportudpconnection : "{{ UE_NON3GPP_PORT_UDP_CONNECTION }}"
-                    linkgre:
+                    greinterface:
                       name : "gretun"
                       mtu : 1420
                     ipsecinterface:

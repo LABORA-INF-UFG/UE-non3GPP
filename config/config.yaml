@@ -13,7 +13,7 @@ ue:
   authenticationmanagementfield : "8000"
   localpublicipaddr : "137.184.197.13"
   localpublicportudpconnection : "500"
-  linkgre:
+  greinterface:
     name : "gretun"
     mtu : 1420
   ipsecinterface:
