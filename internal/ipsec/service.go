@@ -34,7 +34,7 @@ func Run(ueIpAdr []byte,
 	// get interface by name
 	interfaceName, err := ueIke.Utils.GetInterfaceName(cfg.Ue.LocalPublicIPAddr)
 	if err != nil {
-		log.Error("[UE][IPSEC] Error in get UE interface name")
+		log.Fatal("[UE][IPSEC] Error in get UE interface name")
 		return
 	}
 
@@ -45,7 +45,7 @@ func Run(ueIpAdr []byte,
 		interfaceName,
 		cfg.Ue.IPSecInterface.Mark,
 		&ueInnerAddr); err != nil {
-		log.Error("[UE][IPSEC] Error in setup IPSEC interface: %v", err)
+		log.Fatal("[UE][IPSEC] Error in setup IPSEC interface: %v", err)
 		return
 	}
 
@@ -56,7 +56,7 @@ func Run(ueIpAdr []byte,
 		true,
 		cfg.Ue.IPSecInterface.Mark,
 		childSecurityAssociation); err != nil {
-		log.Error("[UE][IPSEC] Error in setup XFRM rules")
+		log.Fatal("[UE][IPSEC] Error in setup XFRM rules")
 		return
 	}
 
@@ -70,7 +70,7 @@ func Run(ueIpAdr []byte,
 		localTCPAddr,
 		N3IWFNasAddr)
 	if err != nil {
-		log.Error("[UE][IPSEC][CP] Error in setup dial TCP")
+		log.Fatal("[UE][IPSEC][CP] Error in setup dial TCP")
 		return
 	}
 

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net"
 	"time"
-
+	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 )
 
@@ -32,7 +32,7 @@ func Run(
 		false,
 		cfg.Ue.IPSecInterface.Mark,
 		childSecurityAssociation); err != nil {
-		// TODO implements LOG
+			log.Fatal("[UE][GRE] Error in ApplyXFRMRule : %v", err)
 		return
 	}
 
@@ -57,7 +57,7 @@ func Run(
 		n3iwfIpUp,
 		ueIke.NasContext.PduSession.PDUAdress,
 		QosInfo); err != nil {
-		// TODO implements LOG
+			log.Fatal("[UE][GRE] Error in setupGreTunnel : %v", err)
 		return
 	}
 
@@ -75,7 +75,7 @@ func Run(
 	ueIke.NasContext.SetGRERoute(upRoute)
 
 	if err := netlink.RouteAdd(upRoute); err != nil {
-		// TODO implements LOG
+		log.Fatal("[UE][GRE] Error into add GRETUN ROUTE : %v", err)
 		return
 	}
 }
@@ -96,7 +96,7 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	}
 
 	if parent, err = netlink.LinkByName(parentIfaceName); err != nil {
-		// TODO implements LOG
+		log.Fatal("[UE][GRE] Error in get Link GRETUN By Name: %v", err)
 		return nil, err
 	}
 
@@ -114,14 +114,14 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	}
 
 	if err := netlink.LinkAdd(newGRETunnel); err != nil {
-		// TODO implements LOG
+		log.Fatal("[UE][GRE] Error in add Lin to new GRETUN: %v", err)
 		return nil, err
 	}
 
 	// Get link info
 	linkGRE, err := netlink.LinkByName(greIfaceName)
 	if err != nil {
-		// TODO implements LOG
+		log.Fatal("[UE][GRE] Error in Get link info GRETUN: %v", err)
 		return nil, fmt.Errorf("No link named %s", greIfaceName)
 	}
 
@@ -133,13 +133,13 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	}
 
 	if err := netlink.AddrAdd(linkGRE, linkGREAddr); err != nil {
-		// TODO implements LOG
+		log.Fatal("[UE][GRE] Error in add Addres in GRETUN: %v", err)
 		return nil, err
 	}
 
 	// Set GRE interface up
 	if err := netlink.LinkSetUp(linkGRE); err != nil {
-		// TODO implements LOG
+		log.Fatal("[UE][GRE] Error in Set GRE interface up: %v", err)
 		return nil, err
 	}
 
