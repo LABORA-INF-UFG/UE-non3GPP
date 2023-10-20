@@ -26,6 +26,8 @@
             LABORA_UE_NON3GPP_GIT_REPO: "https://github.com/LABORA-INF-UFG/UE-non3GPP.git"
             FREE5GC_CHECKOUT_FOLDER_NAME: "free5gc"
             PREDEFINED_IP_ADDRESS: "false"
+            APPLY_MAXIMUM_SEGMENT_SIZE_IN_UPF_OUT: "false"
+            UPF_OUT_MAXIMUM_SEGMENT_SIZE : "1400"
             MONGO_URL_CONNECTION: "mongodb://127.0.0.1:27017"
             NRF_IP_ADDRESS: "127.0.0.10"
             MASCARA_REDE_DECIMAL: "19"
@@ -162,9 +164,13 @@
               shell : sudo iptables -t nat -A POSTROUTING -o {{ internet_network_interface }} -j MASQUERADE
               
 
-            - name  : Network Setting 3/4
-              shell : sudo iptables -A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss 1400
-              
+            - name  : Network Setting with set Maximum Segment Size into UPF out 3/4
+              shell : sudo iptables -A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss {{ UPF_OUT_MAXIMUM_SEGMENT_SIZE   }}
+              when: APPLY_MAXIMUM_SEGMENT_SIZE_IN_UPF_OUT == 'true'
+
+            - name  : Network Setting without set TCPMSS (Maximum Segment Size) into UPF out 3/4
+              shell : sudo iptables -A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN 
+              when: APPLY_MAXIMUM_SEGMENT_SIZE_IN_UPF_OUT == 'false'
 
             - name  : Network Setting 4/4
               shell : sudo systemctl stop ufw
