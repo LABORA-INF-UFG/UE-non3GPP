@@ -1,13 +1,13 @@
 
 [fee5gc]
-142.93.244.43 internet_network_interface=eth0 n3iwf_install=false nwdaf_install=true
+67.205.149.229 internet_network_interface=eth0 n3iwf_install=false nwdaf_install=true
 
 [n3iwf]
-142.93.240.241 free5gc_ip_address=142.93.244.43
+67.205.157.88 free5gc_ip_address=67.205.149.229
 
 [labora-UE-non3GPP]
-137.184.197.13 n3iwf_ike_ip_address=142.93.240.241 free5gc_ip_address=142.93.244.43 msin=7488
-#206.81.23.176 n3iwf_ike_ip_address=142.93.240.241 free5gc_ip_address=142.93.244.43 msin=7487
-#161.35.19.72 n3iwf_ike_ip_address=142.93.240.241 free5gc_ip_address=142.93.244.43 msin=7486
-#167.71.55.71 n3iwf_ike_ip_address=142.93.240.241 free5gc_ip_address=142.93.244.43 msin=7485
-#167.99.129.8 n3iwf_ike_ip_address=142.93.240.241 free5gc_ip_address=142.93.244.43 msin=7484
+165.22.190.210 n3iwf_ike_ip_address=67.205.157.88 free5gc_ip_address=67.205.149.229 msin=7488
+#206.81.23.176 n3iwf_ike_ip_address=67.205.157.88 free5gc_ip_address=67.205.149.229 msin=7487
+#161.35.19.72 n3iwf_ike_ip_address=67.205.157.88 free5gc_ip_address=67.205.149.229 msin=7486
+#167.71.55.71 n3iwf_ike_ip_address=67.205.157.88 free5gc_ip_address=67.205.149.229 msin=7485
+#167.99.129.8 n3iwf_ike_ip_address=67.205.157.88 free5gc_ip_address=67.205.149.229 msin=7484
