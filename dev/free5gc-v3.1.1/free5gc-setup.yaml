@@ -4,7 +4,7 @@
         remote_user: root
         vars:
             GTP5G_DIR_INSTALL : "/root/gtp5g"
-            GTP5G_BRANCH_VERSION : "v0.8.2" #v0.5.4
+            GTP5G_BRANCH_VERSION : "v0.8.2" 
             FREE5GC_DIR_INSTALL : "/root/go/src/free5gc"
             UPF_DIR_CONFIG : "/root/go/src/free5gc/NFs/upf/build/config"
             WEB_CONSOLE_FRONTEND_DIR : "/root/go/src/free5gc/webconsole/frontend"
