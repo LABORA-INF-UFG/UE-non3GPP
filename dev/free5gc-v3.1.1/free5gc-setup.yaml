@@ -4,6 +4,7 @@
         remote_user: root
         vars:
             GTP5G_DIR_INSTALL : "/root/gtp5g"
+            GTP5G_BRANCH_VERSION : "v0.5.4"
             FREE5GC_DIR_INSTALL : "/root/go/src/free5gc"
             UPF_DIR_CONFIG : "/root/go/src/free5gc/NFs/upf/build/config"
             WEB_CONSOLE_FRONTEND_DIR : "/root/go/src/free5gc/webconsole/frontend"
@@ -138,7 +139,7 @@
               ignore_errors: true
 
             - name  : Git Clone GTP5
-              shell : git clone -b v0.5.4 https://github.com/free5gc/gtp5g.git
+              shell : git clone -b {{ GTP5G_BRANCH_VERSION   }} https://github.com/free5gc/gtp5g.git
               args:
                 chdir: "{{ HOME_DIR }}"
               
