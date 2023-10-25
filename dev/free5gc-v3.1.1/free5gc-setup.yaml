@@ -90,14 +90,10 @@
                 MASCARA_REDE_DECIMAL: "32"
               when: ansible_default_ipv4.netmask == '255.255.255.255'
 
-            - name: "Verify that required internet_network_interface variables are defined"
-              assert:
-                that: 
-                  - "{{ internet_network_interface }} is defined"
-                  - "{{ internet_network_interface }} | length > 0"
-                  - "{{ internet_network_interface }} != None"
-                fail_msg: "{{ internet_network_interface }} needs to be set for the role to work"
-                success_msg: "Required variable {{ internet_network_interface }} is defined"
+            - name: Verify that required internet_network_interface variable are defined
+              fail:
+                msg: "Variable 'internet_network_interface' needs to be set for the role to work"
+              when: internet_network_interface is undefined
 
             - name: "Ansible | Print a Variables"
               debug:
