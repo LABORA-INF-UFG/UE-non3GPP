@@ -11,7 +11,7 @@ The content described in this repository was tested in [Digital Occean](https://
 #### Before starting
 The development environment setup is exec by Ansible. Before starting it is necessary to access via SSH each one of the VM's and execute the following command to install some basic dependencies.
 ```
-sudo apt update && apt -y install python && sudo apt -y install git && sudo apt -y install ansible && sudo apt -y install net-tools
+sudo apt update && apt -y install python && sudo apt -y install git && sudo apt -y install ansible && sudo apt -y install net-tools && sudo apt -y install traceroute
 ```
 
 ### Dev Environment Setup
