@@ -90,7 +90,7 @@ source ~/.bashrc
 Now let's run the script responsible for configuring free5gc (except the N3IWF network function) and a version of free5gc containing only the N3IWF network function. The following description assumes running the command from the project root dir (UE-non3GPP).
 #### Free5GC Setup
 ```
-ansible-playbook dev/free5gc-v3.1.1/free5gc-setup.yaml -i dev/free5gc-v3.1.1/hosts
+ansible-playbook dev/free5gc-v3.1.1/free5gc-setup.yaml -i dev/free5gc-v3.1.1/hosts -e  "internet_network_interface=<< internet network interface name>>"
 ```
 #### N3IWF Setup
 ```
