@@ -98,7 +98,9 @@ ansible-playbook dev/free5gc-v3.1.1/n3iwf-setup.yaml -i dev/free5gc-v3.1.1/hosts
 ```
 
 ### Setup UE-non3GPP with Ansible
+```
 ansible-playbook dev/UEnon3GPP-setup.yaml -i dev/free5gc-v3.1.1/hosts
+```
 
 ### Start Free5GC
 After performing the Free5gc, N3IWF and UE-non3gpp installation, the next step is to initialize the Free5gc network functions. To do this it is necessary to access the VM where Free5gc was deployed in two different terminals, the first will be used to initialize the network functions and the second to initialize the API that provides access to MongoDB.
