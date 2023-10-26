@@ -50,7 +50,6 @@
             SMF_PORT: "8000"
             UPF_IP_ADDRESS: "127.0.0.8"
             GTPU_UPF_IP_ADDRESS: "127.0.0.8"
-            GRE_TUN_IP_ADDRESS_UPF_UE_NON3GGP: "60.60.0.101"
             N3IWF_AMF_SCTP_PORT: "38412"
             N3IWF_IKE_BIND_ADDRESS: "127.0.0.21"
             N3IWF_IP_SEC_INTERFACE_ADDRESS: "10.0.0.1"
