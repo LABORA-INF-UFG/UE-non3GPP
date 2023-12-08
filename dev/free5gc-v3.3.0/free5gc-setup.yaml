@@ -58,6 +58,8 @@
             N3IWF_NAS_TCP_PORT: "20000"
             N3IWF_IPSEC_INTERFACE_NAME: "ipsec0"
             N3IWF_IPSEC_INTERFACE_XFRM_MARK: "5"
+            MCC: "208"
+            MNC: "93"
             
         tasks:
 
@@ -98,7 +100,6 @@
                     name: ['mongodb', 'wget', 'git', 'ca-certificates', 'net-tools', 'gcc', 'cmake', 'autoconf', 'build-essential', 'libtool', 'pkg-config', 'libmnl-dev', 'libyaml-dev']
                     state: present
                     update_cache: yes
-              
 
             - name: Start Mongo-DB
               shell:  sudo systemctl start mongodb
@@ -130,7 +131,6 @@
             - name  : Network Setting 1/4
               shell : sudo sysctl -w net.ipv4.ip_forward=1
               
-
             - name  : Network Setting 2/4
               shell : sudo iptables -t nat -A POSTROUTING -o {{ internet_network_interface }} -j MASQUERADE
 
@@ -139,7 +139,6 @@
 
             - name  : Network Setting 4/4
               shell : sudo systemctl stop ufw
-              
 
             - name  : Remove Free5gc old dir if exist
               shell : rm -rf {{ FREE5GC_CHECKOUT_FOLDER_NAME }}
@@ -151,6 +150,156 @@
               shell : git clone {{ FREE5GC_GIT_CHECKOUT_URL_FREEGC_TAG_VERSION }} {{ FREE5GC_CHECKOUT_FOLDER_NAME }}
               args:
                 chdir: "{{ GO_SRC_DIR }}"
-     
 
-           
+            - name  : Create NRF cert dir
+              shell : |
+                mkdir config
+                mkdir cert
+              args:
+                chdir: "{{ NRF_DIR }}"
+
+            - name  : Copy NRF cert's 1/2
+              shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/cert/nrf.pem {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/nrf/cert/nrf.pem
+
+            - name  : Copy NRF cert's 2/2
+              shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/cert/nrf.key {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/nrf/cert/nrf.key
+
+            - name  : Build nrfcfg.yaml config file - inside NFs/nrf dir (debug mode)
+              copy:
+                dest: "{{ NRF_DIR }}/config/nrfcfg.yaml"
+                content: |
+                  info:
+                    version: 1.0.2
+                    description: NRF initial local configuration
+
+                  configuration:
+                    MongoDBName: free5gc # database name in MongoDB
+                    MongoDBUrl: {{ MONGO_URL_CONNECTION }} # a valid URL of the mongodb
+                    sbi: # Service-based interface information
+                      scheme: http # the protocol for sbi (http or https)
+                      registerIPv4: {{ NRF_IP_ADDRESS }} # IP used to serve NFs or register to another NRF
+                      bindingIPv4: {{ NRF_IP_ADDRESS }}  # IP used to bind the service
+                      port: {{ NRF_PORT }} # port used to bind the service
+                      tls: # the local path of TLS key
+                        pem: cert/nrf.pem # NRF TLS Certificate
+                        key: cert/nrf.key # NRF TLS Private key
+                    DefaultPlmnId:
+                      mcc: {{ MCC }} # Mobile Country Code (3 digits string, digit: 0~9)
+                      mnc: {{ MNC }} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                    serviceNameList: # the SBI services provided by this NRF, refer to TS 29.510
+                      - nnrf-nfm # Nnrf_NFManagement service
+                      - nnrf-disc # Nnrf_NFDiscovery service
+
+                  logger: # log output setting
+                    enable: true # true or false
+                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    reportCaller: false # enable the caller report or not, value: true or false
+
+            - name  : Remove NRF default config file - (run mode)
+              shell: rm nrfcfg.yaml
+              args:
+                chdir: "{{ NFS_DIR_CONFIG }}"
+
+            - name  : Build nrfcfg.yaml default config file - (run mode)
+              copy:
+                dest: "{{ NFS_DIR_CONFIG }}/nrfcfg.yaml"
+                content: |
+                  info:
+                    version: 1.0.2
+                    description: NRF initial local configuration
+
+                  configuration:
+                    MongoDBName: free5gc # database name in MongoDB
+                    MongoDBUrl: {{ MONGO_URL_CONNECTION }} # a valid URL of the mongodb
+                    sbi: # Service-based interface information
+                      scheme: http # the protocol for sbi (http or https)
+                      registerIPv4: {{ NRF_IP_ADDRESS }} # IP used to serve NFs or register to another NRF
+                      bindingIPv4: {{ NRF_IP_ADDRESS }}  # IP used to bind the service
+                      port: {{ NRF_PORT }} # port used to bind the service
+                      tls: # the local path of TLS key
+                        pem: cert/nrf.pem # NRF TLS Certificate
+                        key: cert/nrf.key # NRF TLS Private key
+                    DefaultPlmnId:
+                      mcc: {{ MCC }} # Mobile Country Code (3 digits string, digit: 0~9)
+                      mnc: {{ MNC }} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                    serviceNameList: # the SBI services provided by this NRF, refer to TS 29.510
+                      - nnrf-nfm # Nnrf_NFManagement service
+                      - nnrf-disc # Nnrf_NFDiscovery service
+
+                  logger: # log output setting
+                    enable: true # true or false
+                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    reportCaller: false # enable the caller report or not, value: true or false
+              
+            - name  : Create UDR config dir
+              shell : |
+                mkdir config
+                mkdir cert
+              args:
+                chdir: "{{ UDR_DIR }}"
+
+            - name  : Copy UDR cert's 1/2
+              shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/cert/udr.pem {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/udr/cert/udr.pem
+
+            - name  : Copy UDR cert's 2/2
+              shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/cert/udr.key {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/udr/cert/udr.key
+
+            - name  : Build udrcfg.yaml config file
+              copy:
+                dest: "{{ UDR_DIR }}/config/udrcfg.yaml"
+                content: |
+                  info:
+                    version: 1.0.2
+                    description: UDR initial local configuration
+
+                  configuration:
+                    sbi: # Service-based interface information
+                      scheme: http # the protocol for sbi (http or https)
+                      registerIPv4: {{ UDR_IP_ADDRESS }} # IP used to register to NRF
+                      bindingIPv4: {{ UDR_IP_ADDRESS }}  # IP used to bind the service
+                      port: {{ UDR_PORT }} # port used to bind the service
+                      tls: # the local path of TLS key
+                        pem: cert/udr.pem # UDR TLS Certificate
+                        key: cert/udr.key # UDR TLS Private key
+                    mongodb:
+                      name: free5gc # Database name in MongoDB
+                      url: {{ MONGO_URL_CONNECTION }} # URL of MongoDB
+                    nrfUri: http://{{ NRF_IP_ADDRESS }}:{{ NRF_PORT }} # a valid URI of NRF
+
+                  logger: # log output setting
+                    enable: true # true or false
+                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    reportCaller: false # enable the caller report or not, value: true or false
+
+            - name  : Remove UDR default config file - (run mode)
+              shell: rm udrcfg.yaml
+              args:
+                chdir: "{{ NFS_DIR_CONFIG }}"                  
+              
+            - name: Build udrcfg.yaml default config file - (run mode)
+              copy:
+                dest: "{{ NFS_DIR_CONFIG }}/udrcfg.yaml"
+                content: |
+                  info:
+                    version: 1.0.2
+                    description: UDR initial local configuration
+
+                  configuration:
+                    sbi: # Service-based interface information
+                      scheme: http # the protocol for sbi (http or https)
+                      registerIPv4: {{ UDR_IP_ADDRESS }} # IP used to register to NRF
+                      bindingIPv4: {{ UDR_IP_ADDRESS }}  # IP used to bind the service
+                      port: {{ UDR_PORT }} # port used to bind the service
+                      tls: # the local path of TLS key
+                        pem: cert/udr.pem # UDR TLS Certificate
+                        key: cert/udr.key # UDR TLS Private key
+                    mongodb:
+                      name: free5gc # Database name in MongoDB
+                      url: {{ MONGO_URL_CONNECTION }} # URL of MongoDB
+                    nrfUri: http://{{ NRF_IP_ADDRESS }}:{{ NRF_PORT }} # a valid URI of NRF
+
+                  logger: # log output setting
+                    enable: true # true or false
+                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    reportCaller: false # enable the caller report or not, value: true or false
+             
