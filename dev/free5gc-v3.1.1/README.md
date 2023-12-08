@@ -86,7 +86,7 @@ Now it is necessary to access each of the VMs and update bashrc
 source ~/.bashrc
 ```
 
-### Free5GC and N3IWF Setup with Ansible
+### Free5GC and N3IWF Setup with Ansible (v3.1.1)
 Now let's run the script responsible for configuring free5gc (except the N3IWF network function) and a version of free5gc containing only the N3IWF network function. The following description assumes running the command from the project root dir (UE-non3GPP).
 #### Free5GC Setup
 ```
