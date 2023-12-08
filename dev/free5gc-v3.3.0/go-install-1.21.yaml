@@ -1,0 +1,51 @@
+---
+    -   hosts: labora-UE-non3GPP
+        become: yes
+        remote_user: root
+        vars:
+            GO_VERSION: "1.21.3"
+        tasks:
+            - name: Upgrade all apt packages
+              apt: upgrade=dist
+
+            - name: Install Basic requirements
+              apt:
+                name: ['wget', 'git', 'ca-certificates', 'net-tools', 'gcc', 'cmake', 'autoconf', 'build-essential', 'libtool', 'pkg-config', 'libmnl-dev', 'libyaml-dev']
+                state: present
+                update_cache: yes
+
+            - name: Remove Go-lang install 1/2
+              shell:  sudo rm -rf /usr/local/go
+              ignore_errors: true
+
+            - name: Remove Go-lang install 2/2
+              shell:  apt remove golang-go
+              ignore_errors: true
+
+            - name: Install Go 1.21.3 - 1/5
+              shell:  wget https://go.dev/dl/go1.21.3.linux-amd64.tar.gz
+
+            - name: Install Go 1.21.3 - 2/5
+              shell:  sudo tar -C /usr/local -zxvf go1.21.3.linux-amd64.tar.gz
+
+            - name: Remove Go-lang install 1/2
+              shell:  sudo rm -rf ~/go
+              ignore_errors: true
+
+            - name: Install Go 1.21.3 - 3/5
+              shell: |
+                mkdir ~/go
+                mkdir ~/go/bin
+                mkdir ~/go/pkg
+                mkdir ~/go/src    
+              ignore_errors: true
+
+            - name: Install Go 1.21.3 - 4/5
+              shell:  |
+                echo 'export GOPATH=$HOME/go' >> ~/.bashrc
+                echo 'export GOROOT=/usr/local/go' >> ~/.bashrc
+                echo 'export PATH=$PATH:$GOPATH/bin:$GOROOT/bin' >> ~/.bashrc
+                echo 'export GO111MODULE=auto' >> ~/.bashrc
+
+            - name: Remove GO 1.21.3 install file - 5/5
+              shell:  rm -rf go1.21.3.linux-amd64.tar.gz
