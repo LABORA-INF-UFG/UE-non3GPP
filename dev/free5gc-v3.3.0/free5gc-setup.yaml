@@ -522,11 +522,11 @@
                     nrfUri: http://{{ NRF_IP_ADDRESS }}:{{ NRF_PORT }} # a valid URI of NRF
                     supportedPlmnList: # the PLMNs (Public land mobile network) list supported by this NSSF
                       - mcc: {{ MCC_1 }} # Mobile Country Code (3 digits string, digit: 0~9)
-                        mnc: 93 # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                        mnc: {{ MNC_1 }} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
                     supportedNssaiInPlmnList: # Supported S-NSSAI List for each PLMN
                       - plmnId: # Public Land Mobile Network ID, <PLMN ID> = <MCC><MNC>
                           mcc: {{ MCC_1 }} # Mobile Country Code (3 digits string, digit: 0~9)
-                          mnc: 93 # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                          mnc: {{ MNC_1 }} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
                         supportedSnssaiList: # Supported S-NSSAIs of the PLMN
                           - sst: 1 # Slice/Service Type (uinteger, range: 0~255)
                             sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
@@ -884,11 +884,11 @@
                     nrfUri: http://{{ NRF_IP_ADDRESS }}:{{ NRF_PORT }} # a valid URI of NRF
                     supportedPlmnList: # the PLMNs (Public land mobile network) list supported by this NSSF
                       - mcc: {{ MCC_1 }} # Mobile Country Code (3 digits string, digit: 0~9)
-                        mnc: 93 # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                        mnc: {{ MNC_1 }} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
                     supportedNssaiInPlmnList: # Supported S-NSSAI List for each PLMN
                       - plmnId: # Public Land Mobile Network ID, <PLMN ID> = <MCC><MNC>
                           mcc: {{ MCC_1 }} # Mobile Country Code (3 digits string, digit: 0~9)
-                          mnc: 93 # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                          mnc: {{ MNC_1 }} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
                         supportedSnssaiList: # Supported S-NSSAIs of the PLMN
                           - sst: 1 # Slice/Service Type (uinteger, range: 0~255)
                             sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
@@ -1591,5 +1591,344 @@
                     level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
                     reportCaller: false # enable the caller report or not, value: true or false
 
+            - name  : Create SMF config dir
+              shell : |
+                mkdir config
+                mkdir cert
+              args:
+                chdir: "{{ SMF_DIR }}"
+              
+            - name  : Copy SMF cert's 1/2
+              shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/cert/smf.pem {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/smf/cert/smf.pem
 
+            - name  : Copy SMF cert's 2/2
+              shell : cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/cert/smf.key {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/smf/cert/smf.key
+
+            - name  : Build smfcfg.yaml config file
+              copy:
+                dest: "{{ SMF_DIR }}/config/smfcfg.yaml"
+                content: |
+                  info:
+                    version: 1.0.7
+                    description: SMF initial local configuration
+
+                  configuration:
+                    smfName: SMF # the name of this SMF
+                    sbi: # Service-based interface information
+                      scheme: http # the protocol for sbi (http or https)
+                      registerIPv4: {{ SMF_IP_ADDRESS }} # IP used to register to NRF
+                      bindingIPv4: {{ SMF_IP_ADDRESS }} # IP used to bind the service
+                      port: {{ SMF_PORT }} # Port used to bind the service
+                      tls: # the local path of TLS key
+                        key: cert/smf.key # SMF TLS Certificate
+                        pem: cert/smf.pem # SMF TLS Private key
+                    serviceNameList: # the SBI services provided by this SMF, refer to TS 29.502
+                      - nsmf-pdusession # Nsmf_PDUSession service
+                      - nsmf-event-exposure # Nsmf_EventExposure service
+                      - nsmf-oam # OAM service
+                    snssaiInfos: # the S-NSSAI (Single Network Slice Selection Assistance Information) list supported by this AMF
+                      - sNssai: # S-NSSAI (Single Network Slice Selection Assistance Information)
+                          sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+                          sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+                        dnnInfos: # DNN information list
+                          - dnn: internet # Data Network Name
+                            dns: # the IP address of DNS
+                              ipv4: 8.8.8.8
+                              ipv6: 2001:4860:4860::8888
+                      - sNssai: # S-NSSAI (Single Network Slice Selection Assistance Information)
+                          sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+                          sd: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+                        dnnInfos: # DNN information list
+                          - dnn: internet # Data Network Name
+                            dns: # the IP address of DNS
+                              ipv4: 8.8.8.8
+                              ipv6: 2001:4860:4860::8888
+                    plmnList: # the list of PLMN IDs that this SMF belongs to (optional, remove this key when unnecessary)
+                      - mcc: {{ MCC_1 }} # Mobile Country Code (3 digits string, digit: 0~9)
+                        mnc: {{ MNC_1 }} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                    locality: area1 # Name of the location where a set of AMF, SMF, PCF and UPFs are located
+                    pfcp: # the IP address of N4 interface on this SMF (PFCP)
+                      # addr config is deprecated in smf config v1.0.3, please use the following config
+                      nodeID: {{ SMF_N4_INTERFACE_IP_ADDRESS }} # the Node ID of this SMF
+                      listenAddr: {{ SMF_N4_INTERFACE_IP_ADDRESS }} # the IP/FQDN of N4 interface on this SMF (PFCP)
+                      externalAddr: {{ SMF_N4_INTERFACE_IP_ADDRESS }} # the IP/FQDN of N4 interface on this SMF (PFCP)
+                    userplaneInformation: # list of userplane information
+                      upNodes: # information of userplane node (AN or UPF)
+                        gNB1: # the name of the node
+                          type: AN # the type of the node (AN or UPF)
+                        UPF: # the name of the node
+                          type: UPF # the type of the node (AN or UPF)
+                          nodeID: {{ UPF_IP_ADDRESS   }} # the Node ID of this UPF
+                          addr: {{ UPF_IP_ADDRESS   }} # the IP/FQDN of N4 interface on this UPF (PFCP)
+                          sNssaiUpfInfos: # S-NSSAI information list for this UPF
+                            - sNssai: # S-NSSAI (Single Network Slice Selection Assistance Information)
+                                sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+                                sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+                              dnnUpfInfoList: # DNN information list for this S-NSSAI
+                                - dnn: internet
+                                  pools:
+                                    - cidr: {{ CLASSLESS_INTER_DOMAIN_ROUTING_IPV4_POOL_OF_UE }}/16
+                                  staticPools:
+                                    - cidr: 10.60.100.0/24
+                            - sNssai: # S-NSSAI (Single Network Slice Selection Assistance Information)
+                                sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+                                sd: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+                              dnnUpfInfoList: # DNN information list for this S-NSSAI
+                                - dnn: internet
+                                  pools:
+                                    - cidr: 10.61.0.0/16
+                                  staticPools:
+                                    - cidr: 10.61.100.0/24
+                          interfaces: # Interface list for this UPF
+                            - interfaceType: N3 # the type of the interface (N3 or N9)
+                              endpoints: # the IP address of this N3/N9 interface on this UPF
+                                - {{ SMF_N3_INTERFACE_IP_ADDRESS }}
+                              networkInstances:  # Data Network Name (DNN)
+                                - internet
+                      links: # the topology graph of userplane, A and B represent the two nodes of each link
+                        - A: gNB1
+                          B: UPF
+                    # retransmission timer for pdu session modification command
+                    t3591:
+                      enable: true     # true or false
+                      expireTime: 16s   # default is 6 seconds
+                      maxRetryTimes: 3 # the max number of retransmission
+                    # retransmission timer for pdu session release command
+                    t3592:
+                      enable: true     # true or false
+                      expireTime: 16s   # default is 6 seconds
+                      maxRetryTimes: 3 # the max number of retransmission
+                    nrfUri: http://{{ NRF_IP_ADDRESS }}:{{ NRF_PORT }} # a valid URI of NRF
+                    #urrPeriod: 10 # default usage report period in seconds
+                    #urrThreshold: 1000 # default usage report threshold in bytes
+
+                  logger: # log output setting
+                    enable: true # true or false
+                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    reportCaller: false # enable the caller report or not, value: true or false
+
+            - name  : Remove SMF default configs files - (run mode)
+              shell: |
+                  rm smfcfg.yaml
+                  rm uerouting.yaml
+              args:
+                chdir: "{{ NFS_DIR_CONFIG }}"
+
+            - name  : Build smfcfg.yaml default config file - (run mode)
+              copy:
+                dest: "{{ NFS_DIR_CONFIG }}/smfcfg.yaml"
+                content: |
+                  info:
+                    version: 1.0.7
+                    description: SMF initial local configuration
+
+                  configuration:
+                    smfName: SMF # the name of this SMF
+                    sbi: # Service-based interface information
+                      scheme: http # the protocol for sbi (http or https)
+                      registerIPv4: {{ SMF_IP_ADDRESS }} # IP used to register to NRF
+                      bindingIPv4: {{ SMF_IP_ADDRESS }} # IP used to bind the service
+                      port: {{ SMF_PORT }} # Port used to bind the service
+                      tls: # the local path of TLS key
+                        key: cert/smf.key # SMF TLS Certificate
+                        pem: cert/smf.pem # SMF TLS Private key
+                    serviceNameList: # the SBI services provided by this SMF, refer to TS 29.502
+                      - nsmf-pdusession # Nsmf_PDUSession service
+                      - nsmf-event-exposure # Nsmf_EventExposure service
+                      - nsmf-oam # OAM service
+                    snssaiInfos: # the S-NSSAI (Single Network Slice Selection Assistance Information) list supported by this AMF
+                      - sNssai: # S-NSSAI (Single Network Slice Selection Assistance Information)
+                          sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+                          sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+                        dnnInfos: # DNN information list
+                          - dnn: internet # Data Network Name
+                            dns: # the IP address of DNS
+                              ipv4: 8.8.8.8
+                              ipv6: 2001:4860:4860::8888
+                      - sNssai: # S-NSSAI (Single Network Slice Selection Assistance Information)
+                          sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+                          sd: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+                        dnnInfos: # DNN information list
+                          - dnn: internet # Data Network Name
+                            dns: # the IP address of DNS
+                              ipv4: 8.8.8.8
+                              ipv6: 2001:4860:4860::8888
+                    plmnList: # the list of PLMN IDs that this SMF belongs to (optional, remove this key when unnecessary)
+                      - mcc: {{ MCC_1 }} # Mobile Country Code (3 digits string, digit: 0~9)
+                        mnc: {{ MNC_1 }} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                    locality: area1 # Name of the location where a set of AMF, SMF, PCF and UPFs are located
+                    pfcp: # the IP address of N4 interface on this SMF (PFCP)
+                      # addr config is deprecated in smf config v1.0.3, please use the following config
+                      nodeID: {{ SMF_N4_INTERFACE_IP_ADDRESS }} # the Node ID of this SMF
+                      listenAddr: {{ SMF_N4_INTERFACE_IP_ADDRESS }} # the IP/FQDN of N4 interface on this SMF (PFCP)
+                      externalAddr: {{ SMF_N4_INTERFACE_IP_ADDRESS }} # the IP/FQDN of N4 interface on this SMF (PFCP)
+                    userplaneInformation: # list of userplane information
+                      upNodes: # information of userplane node (AN or UPF)
+                        gNB1: # the name of the node
+                          type: AN # the type of the node (AN or UPF)
+                        UPF: # the name of the node
+                          type: UPF # the type of the node (AN or UPF)
+                          nodeID: {{ UPF_IP_ADDRESS   }} # the Node ID of this UPF
+                          addr: {{ UPF_IP_ADDRESS   }} # the IP/FQDN of N4 interface on this UPF (PFCP)
+                          sNssaiUpfInfos: # S-NSSAI information list for this UPF
+                            - sNssai: # S-NSSAI (Single Network Slice Selection Assistance Information)
+                                sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+                                sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+                              dnnUpfInfoList: # DNN information list for this S-NSSAI
+                                - dnn: internet
+                                  pools:
+                                    - cidr: {{ CLASSLESS_INTER_DOMAIN_ROUTING_IPV4_POOL_OF_UE }}/16
+                                  staticPools:
+                                    - cidr: 10.60.100.0/24
+                            - sNssai: # S-NSSAI (Single Network Slice Selection Assistance Information)
+                                sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+                                sd: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+                              dnnUpfInfoList: # DNN information list for this S-NSSAI
+                                - dnn: internet
+                                  pools:
+                                    - cidr: 10.61.0.0/16
+                                  staticPools:
+                                    - cidr: 10.61.100.0/24
+                          interfaces: # Interface list for this UPF
+                            - interfaceType: N3 # the type of the interface (N3 or N9)
+                              endpoints: # the IP address of this N3/N9 interface on this UPF
+                                - {{ SMF_N3_INTERFACE_IP_ADDRESS }}
+                              networkInstances:  # Data Network Name (DNN)
+                                - internet
+                      links: # the topology graph of userplane, A and B represent the two nodes of each link
+                        - A: gNB1
+                          B: UPF
+                    # retransmission timer for pdu session modification command
+                    t3591:
+                      enable: true     # true or false
+                      expireTime: 16s   # default is 6 seconds
+                      maxRetryTimes: 3 # the max number of retransmission
+                    # retransmission timer for pdu session release command
+                    t3592:
+                      enable: true     # true or false
+                      expireTime: 16s   # default is 6 seconds
+                      maxRetryTimes: 3 # the max number of retransmission
+                    nrfUri: http://{{ NRF_IP_ADDRESS }}:{{ NRF_PORT }} # a valid URI of NRF
+                    #urrPeriod: 10 # default usage report period in seconds
+                    #urrThreshold: 1000 # default usage report threshold in bytes
+
+                  logger: # log output setting
+                    enable: true # true or false
+                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    reportCaller: false # enable the caller report or not, value: true or false
+
+            - name  : Build uerouting.yaml config file
+              copy:
+                dest: "{{ SMF_DIR }}/config/uerouting.yaml"
+                content: |
+                  info:
+                    version: 1.0.7
+                    description: Routing information for UE
+
+                  ueRoutingInfo: # the list of UE routing information
+                    UE1: # Group Name
+                      members:
+                      - imsi-2089300007487 # Subscription Permanent Identifier of the UE
+                      - imsi-2089300007488
+                      - imsi-2089300007489
+                      - imsi-2089300007440
+                      - imsi-2089300007441
+                      topology: # Network topology for this group (Uplink: A->B, Downlink: B->A)
+                      # default path derived from this topology
+                      # node name should be consistent with smfcfg.yaml
+                        - A: gNB1
+                          B: BranchingUPF
+                        - A: BranchingUPF
+                          B: AnchorUPF1
+                      specificPath:
+                        - dest: 10.60.0.103/32 # the destination IP address on Data Network (DN)
+                          # the order of UPF nodes in this path. We use the UPF's name to represent each UPF node.
+                          # The UPF's name should be consistent with smfcfg.yaml
+                          path: [BranchingUPF, AnchorUPF2]
+
+                    UE2: # Group Name
+                      members:
+                      - imsi-208930000007486 # Subscription Permanent Identifier of the UE
+                      topology: # Network topology for this group (Uplink: A->B, Downlink: B->A)
+                      # default path derived from this topology
+                      # node name should be consistent with smfcfg.yaml
+                        - A: gNB1
+                          B: BranchingUPF
+                        - A: BranchingUPF
+                          B: AnchorUPF1
+                      specificPath:
+                        - dest: 10.0.0.11/32 # the destination IP address on Data Network (DN)
+                          # the order of UPF nodes in this path. We use the UPF's name to represent each UPF node.
+                          # The UPF's name should be consistent with smfcfg.yaml
+                          path: [BranchingUPF, AnchorUPF2]
+
+                  routeProfile: # Maintains the mapping between RouteProfileID and ForwardingPolicyID of UPF
+                    MEC1: # Route Profile identifier
+                      forwardingPolicyID: 10 # Forwarding Policy ID of the route profile
+
+                  pfdDataForApp: # PFDs for an Application
+                    - applicationId: edge # Application identifier
+                      pfds: # PFDs for the Application
+                        - pfdID: pfd1 # PFD identifier
+                          flowDescriptions: # Represents a 3-tuple with protocol, server ip and server port for UL/DL application traffic
+                            - permit out ip from 10.60.0.1 8080 to any
+
+            - name  : Build uerouting.yaml default config file - (run mode)
+              copy:
+                dest: "{{ NFS_DIR_CONFIG }}/uerouting.yaml"
+                content: |
+                  info:
+                    version: 1.0.7
+                    description: Routing information for UE
+
+                  ueRoutingInfo: # the list of UE routing information
+                    UE1: # Group Name
+                      members:
+                      - imsi-2089300007487 # Subscription Permanent Identifier of the UE
+                      - imsi-2089300007488
+                      - imsi-2089300007489
+                      - imsi-2089300007440
+                      - imsi-2089300007441
+                      topology: # Network topology for this group (Uplink: A->B, Downlink: B->A)
+                      # default path derived from this topology
+                      # node name should be consistent with smfcfg.yaml
+                        - A: gNB1
+                          B: BranchingUPF
+                        - A: BranchingUPF
+                          B: AnchorUPF1
+                      specificPath:
+                        - dest: 10.60.0.103/32 # the destination IP address on Data Network (DN)
+                          # the order of UPF nodes in this path. We use the UPF's name to represent each UPF node.
+                          # The UPF's name should be consistent with smfcfg.yaml
+                          path: [BranchingUPF, AnchorUPF2]
+
+                    UE2: # Group Name
+                      members:
+                      - imsi-208930000007486 # Subscription Permanent Identifier of the UE
+                      topology: # Network topology for this group (Uplink: A->B, Downlink: B->A)
+                      # default path derived from this topology
+                      # node name should be consistent with smfcfg.yaml
+                        - A: gNB1
+                          B: BranchingUPF
+                        - A: BranchingUPF
+                          B: AnchorUPF1
+                      specificPath:
+                        - dest: 10.0.0.11/32 # the destination IP address on Data Network (DN)
+                          # the order of UPF nodes in this path. We use the UPF's name to represent each UPF node.
+                          # The UPF's name should be consistent with smfcfg.yaml
+                          path: [BranchingUPF, AnchorUPF2]
+
+                  routeProfile: # Maintains the mapping between RouteProfileID and ForwardingPolicyID of UPF
+                    MEC1: # Route Profile identifier
+                      forwardingPolicyID: 10 # Forwarding Policy ID of the route profile
+
+                  pfdDataForApp: # PFDs for an Application
+                    - applicationId: edge # Application identifier
+                      pfds: # PFDs for the Application
+                        - pfdID: pfd1 # PFD identifier
+                          flowDescriptions: # Represents a 3-tuple with protocol, server ip and server port for UL/DL application traffic
+                            - permit out ip from 10.60.0.1 8080 to any
+
+
+               
        
