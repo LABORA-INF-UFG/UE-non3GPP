@@ -1820,7 +1820,7 @@
                     UE1: # Group Name
                       members:
                       - imsi-2089300007487 # Subscription Permanent Identifier of the UE
-                      - imsi-002089300007488
+                      - imsi-2089300007488
                       - imsi-2089300007489
                       - imsi-2089300007440
                       - imsi-2089300007441
@@ -1876,7 +1876,7 @@
                     UE1: # Group Name
                       members:
                       - imsi-2089300007487 # Subscription Permanent Identifier of the UE
-                      - imsi-002089300007488
+                      - imsi-2089300007488
                       - imsi-2089300007489
                       - imsi-2089300007440
                       - imsi-2089300007441
@@ -2043,3 +2043,8 @@
                     curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
                     echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
                     sudo apt update && sudo apt install yarn
+
+            - name  : Front End install with Yarn
+              shell : yarn install
+              args:
+                chdir: "{{ WEB_CONSOLE_FRONTEND_DIR }}"
