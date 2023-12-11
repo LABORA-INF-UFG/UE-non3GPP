@@ -6,7 +6,6 @@
             GTP5G_DIR_INSTALL : "/root/gtp5g"
             GTP5G_BRANCH_VERSION : "v0.8.3" 
             FREE5GC_DIR_INSTALL : "/root/go/src/free5gc"
-            UPF_DIR_CONFIG : "/root/go/src/free5gc/NFs/upf/build/config"
             WEB_CONSOLE_FRONTEND_DIR : "/root/go/src/free5gc/webconsole/frontend"
             WEB_CONSOLE_BASE_DIR : "/root/go/src/free5gc/webconsole"
             NFS_DIR_CONFIG : "/root/go/src/free5gc/config"
@@ -50,14 +49,7 @@
             SMF_PORT: "8000"
             UPF_IP_ADDRESS: "127.0.0.8"
             GTPU_UPF_IP_ADDRESS: "127.0.0.8"
-            N3IWF_AMF_SCTP_PORT: "38412"
-            N3IWF_IKE_BIND_ADDRESS: "127.0.0.21"
-            N3IWF_IP_SEC_INTERFACE_ADDRESS: "10.0.0.1"
-            N3IWF_UE_IP_ADDRESS_RANGE: "10.0.0.0"
-            N3IWF_IP_SEC_INTERFACE_MARK: "5"
-            N3IWF_NAS_TCP_PORT: "20000"
-            N3IWF_IPSEC_INTERFACE_NAME: "ipsec0"
-            N3IWF_IPSEC_INTERFACE_XFRM_MARK: "5"
+            AMF_SCTP_PORT: "38412"
             MCC_1: "208"
             MNC_1: "93"
             MCC_2: "123"
@@ -67,7 +59,6 @@
 
             - set_fact:
                 AMF_NGAP_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
-                N3IWF_IKE_BIND_ADDRESS: "{{ ansible_default_ipv4.address }}"
                 SMF_N3_INTERFACE_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
                 SMF_N4_INTERFACE_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
                 GTPU_UPF_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
@@ -1242,7 +1233,7 @@
                     amfName: AMF # the name of this AMF
                     ngapIpList:  # the IP list of N2 interfaces on this AMF
                       - {{ AMF_NGAP_IP_ADDRESS }}
-                    ngapPort: 38412 # the SCTP port listened by NGAP
+                    ngapPort: {{ AMF_SCTP_PORT }} # the SCTP port listened by NGAP
                     sbi: # Service-based interface information
                       scheme: http # the protocol for sbi (http or https)
                       registerIPv4: {{ AMF_IP_ADDRESS }} # IP used to register to NRF
@@ -1376,7 +1367,7 @@
                     amfName: AMF # the name of this AMF
                     ngapIpList:  # the IP list of N2 interfaces on this AMF
                       - {{ AMF_NGAP_IP_ADDRESS }}
-                    ngapPort: 38412 # the SCTP port listened by NGAP
+                    ngapPort: {{ AMF_SCTP_PORT }} # the SCTP port listened by NGAP
                     sbi: # Service-based interface information
                       scheme: http # the protocol for sbi (http or https)
                       registerIPv4: {{ AMF_IP_ADDRESS }} # IP used to register to NRF
@@ -1929,6 +1920,109 @@
                           flowDescriptions: # Represents a 3-tuple with protocol, server ip and server port for UL/DL application traffic
                             - permit out ip from 10.60.0.1 8080 to any
 
+            - name  : Remove webuicfg.yaml default file config
+              shell : rm config/webuicfg.yaml
+              args:
+                chdir: "{{ WEB_CONSOLE_BASE_DIR }}"
 
-               
-       
+            - name  : Build webuicfg.yaml config file
+              copy:
+                dest: "{{ WEB_CONSOLE_BASE_DIR }}/config/webuicfg.yaml"
+                content: |
+                  info:
+                    version: 1.0.1
+                    description: WebUI initial local configuration
+
+                  configuration:
+                    mongodb: # the mongodb connected by this webui
+                      name: free5gc # name of the mongodb
+                      url: {{ MONGO_URL_CONNECTION }} # a valid URL of the mongodb
+
+                  logger: # log output setting
+                    enable: true # true or false
+                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    reportCaller: false # enable the caller report or not, value: true or false
+
+            - name  : Remove UPF default file config
+              shell : rm upfcfg.yaml
+              args:
+                chdir: "{{ NFS_DIR_CONFIG }}"
+
+            - name  : Build upfcfg.yaml config file
+              copy:
+                dest: "{{ NFS_DIR_CONFIG }}/upfcfg.yaml"
+                content: |
+                  version: 1.0.3
+                  description: UPF initial local configuration
+
+                  # The listen IP and nodeID of the N4 interface on this UPF (Can't set to 0.0.0.0)
+                  pfcp:
+                    addr: {{ UPF_IP_ADDRESS }}   # IP addr for listening
+                    nodeID: {{ UPF_IP_ADDRESS }} # External IP or FQDN can be reached
+                    retransTimeout: 1s # retransmission timeout
+                    maxRetrans: 3 # the max number of retransmission
+
+                  gtpu:
+                    forwarder: gtp5g
+                    # The IP list of the N3/N9 interfaces on this UPF
+                    # If there are multiple connection, set addr to 0.0.0.0 or list all the addresses
+                    ifList:
+                      - addr: {{ GTPU_UPF_IP_ADDRESS }}
+                        type: N3
+                        # name: upf.5gc.nctu.me
+                        # ifname: gtpif
+                        # mtu: 1400
+
+                  # The DNN list supported by UPF
+                  dnnList:
+                    - dnn: internet # Data Network Name
+                      cidr: {{ CLASSLESS_INTER_DOMAIN_ROUTING_IPV4_POOL_OF_UE }}/24 # Classless Inter-Domain Routing for assigned IPv4 pool of UE
+                      # natifname: eth0
+
+                  logger: # log output setting
+                    enable: true # true or false
+                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    reportCaller: false # enable the caller report or not, value: true or false
+
+            - name  : Create UPF config dir
+              shell : |
+                mkdir config
+              args:
+                chdir: "{{ UPF_DIR }}"
+
+            - name  : Build upfcfg.yaml config file (debug mode)
+              copy:
+                dest: "{{ UPF_DIR }}/config/upfcfg.yaml"
+                content: |
+                  version: 1.0.3
+                  description: UPF initial local configuration
+
+                  # The listen IP and nodeID of the N4 interface on this UPF (Can't set to 0.0.0.0)
+                  pfcp:
+                    addr: {{ UPF_IP_ADDRESS }}   # IP addr for listening
+                    nodeID: {{ UPF_IP_ADDRESS }} # External IP or FQDN can be reached
+                    retransTimeout: 1s # retransmission timeout
+                    maxRetrans: 3 # the max number of retransmission
+
+                  gtpu:
+                    forwarder: gtp5g
+                    # The IP list of the N3/N9 interfaces on this UPF
+                    # If there are multiple connection, set addr to 0.0.0.0 or list all the addresses
+                    ifList:
+                      - addr: {{ GTPU_UPF_IP_ADDRESS }}
+                        type: N3
+                        # name: upf.5gc.nctu.me
+                        # ifname: gtpif
+                        # mtu: 1400
+
+                  # The DNN list supported by UPF
+                  dnnList:
+                    - dnn: internet # Data Network Name
+                      cidr: {{ CLASSLESS_INTER_DOMAIN_ROUTING_IPV4_POOL_OF_UE }}/24 # Classless Inter-Domain Routing for assigned IPv4 pool of UE
+                      # natifname: eth0
+
+                  logger: # log output setting
+                    enable: true # true or false
+                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    reportCaller: false # enable the caller report or not, value: true or false
+                 

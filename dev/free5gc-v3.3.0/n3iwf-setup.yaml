@@ -1,0 +1,222 @@
+---
+    -   hosts: n3iwf
+        become: yes
+        remote_user: root
+        vars:
+            FREE5GC_DIR_INSTALL : "/root/go/src/free5gc"
+            NFS_DIR_CONFIG : "/root/go/src/free5gc/config"
+            UPF_DIR : "/root/go/src/free5gc/NFs/upf"
+            NRF_DIR : "/root/go/src/free5gc/NFs/nrf"
+            UDR_DIR : "/root/go/src/free5gc/NFs/udr"
+            UDM_DIR : "/root/go/src/free5gc/NFs/udm"
+            AUSF_DIR : "/root/go/src/free5gc/NFs/ausf"
+            NSSF_DIR : "/root/go/src/free5gc/NFs/nssf"
+            AMF_DIR : "/root/go/src/free5gc/NFs/amf"
+            PCF_DIR : "/root/go/src/free5gc/NFs/pcf"
+            SMF_DIR : "/root/go/src/free5gc/NFs/smf"
+            N3IWF_DIR : "/root/go/src/free5gc/NFs/n3iwf" 
+            GO_SRC_DIR : "/root/go/src"
+            FREE5GC_GIT_CHECKOUT_URL_FREEGC_TAG_VERSION: "--recursive -b v3.3.0 -j `nproc` https://github.com/free5gc/free5gc.git"
+            FREE5GC_CHECKOUT_FOLDER_NAME: "free5gc"
+            PREDEFINED_IP_ADDRESS: "false"
+            MASCARA_REDE_DECIMAL: "19"
+            AMF_NGAP_IP_ADDRESS: "127.0.0.1"
+            N3IWF_AMF_SCTP_PORT: "38412"
+            N3IWF_IKE_BIND_ADDRESS: "127.0.0.21"
+            N3IWF_IP_SEC_INTERFACE_ADDRESS: "10.0.0.1"
+            N3IWF_UE_IP_ADDRESS_RANGE: "10.0.0.0"
+            N3IWF_IP_SEC_INTERFACE_MARK: "5"
+            N3IWF_NAS_TCP_PORT: "20000"
+            N3IWF_IPSEC_INTERFACE_NAME: "ipsec0"
+            N3IWF_IPSEC_INTERFACE_XFRM_MARK: "5"
+            MCC_1: "208"
+            MNC_1: "93"
+            MCC_2: "123"
+            MNC_2: "45"
+            
+        tasks:
+
+            - set_fact:
+                AMF_NGAP_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
+                N3IWF_IKE_BIND_ADDRESS: "{{ ansible_default_ipv4.address }}"
+              when: PREDEFINED_IP_ADDRESS == 'false'
+
+            - set_fact:
+                MASCARA_REDE_DECIMAL: "20"
+              when: ansible_default_ipv4.netmask == '255.255.240.0'
+
+            - set_fact:
+                MASCARA_REDE_DECIMAL: "24"
+              when: ansible_default_ipv4.netmask == '255.255.255.0'
+
+            - set_fact:
+                MASCARA_REDE_DECIMAL: "32"
+              when: ansible_default_ipv4.netmask == '255.255.255.255'
+
+            - name: "Ansible | Print a Variables"
+              debug:
+                  msg: "Network Mask: {{ MASCARA_REDE_DECIMAL }}"
+
+            - name: Upgrade all apt packages
+              apt: upgrade=dist force_apt_get=yes
+
+            - name: Install Basic requirements - n3iwf
+              apt:
+                name: [ 'wget', 'git', 'net-tools', 'ca-certificates', 'net-tools', 'gcc', 'cmake', 'autoconf', 'build-essential', 'libtool', 'pkg-config', 'libmnl-dev', 'libyaml-dev' ]
+                state: present
+                update_cache: yes
+
+            - name: Remove free5GC dir (if exists)
+              shell:  sudo rm -rf {{ FREE5GC_DIR_INSTALL }}
+              ignore_errors: true
+
+            - name  : Remove Free5gc old dir if exist
+              shell : rm -rf {{ FREE5GC_CHECKOUT_FOLDER_NAME }}
+              args:
+                chdir: "{{ GO_SRC_DIR }}"
+              ignore_errors: true
+
+            - name  : Git Clone by free5gc TAG Version
+              shell : git clone {{ FREE5GC_GIT_CHECKOUT_URL_FREEGC_TAG_VERSION }} {{ FREE5GC_CHECKOUT_FOLDER_NAME }}
+              args:
+                chdir: "{{ GO_SRC_DIR }}"
+
+            - name  : Create N3IWF config dir
+              shell : |
+                mkdir config
+                mkdir cert
+              args:
+                chdir: "{{ N3IWF_DIR }}"
+
+            - name  : Copy N3IWF cert's 1/2
+              shell : cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/cert/n3iwf.pem {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/n3iwf/cert/n3iwf.pem
+
+            - name  : Copy N3IWF cert's 2/2
+              shell : cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/cert/n3iwf.key {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/n3iwf/cert/n3iwf.key
+
+            - name  : Build n3iwfcfg.yaml config file
+              copy:
+                dest: "{{ N3IWF_DIR }}/config/n3iwfcfg.yaml"
+                content: |
+                  info:
+                    version: 1.0.5
+                    description: N3IWF initial local configuration
+
+                  configuration:
+                    N3IWFInformation:
+                      GlobalN3IWFID: # ID used to globally identify an N3IWF
+                        PLMNID: # Public Land Mobile Network ID, <PLMN ID> = <MCC><MNC>
+                          MCC: {{MCC_1}} # Mobile Country Code (3 digits string, digit: 0~9)
+                          MNC: {{MNC_1}} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                        N3IWFID: 135 # ID used to identify an N3IWF in PLMN (uinteger, range: 0~65535)
+                      Name: free5GC_N3IWF # The name of this N3IWF
+                      SupportedTAList: # Tracking Area supported by this N3IWF
+                        - TAC: 000001 # Tracking Area Code (3 bytes hex string, range: 000000~FFFFFF)
+                          BroadcastPLMNList: # Refer to TS 38.413
+                            - PLMNID: # Public Land Mobile Network ID
+                                MCC: {{MCC_1}} # Mobile Country Code (3 digits string, digit: 0~9)
+                                MNC: {{MNC_1}} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                              TAISliceSupportList: # Network Slice supported in this TAI
+                                - SNSSAI: # Single Network Slice Selection Assistance Information
+                                    SST: 1 # Slice/Service Type (1 byte hex string, range: 0~F)
+                                    SD: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+                                - SNSSAI: # Single Network Slice Selection Assistance Information
+                                    SST: 1 # Slice/Service Type (1 byte hex string, range: 0~F)
+                                    SD: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+
+                    # --- N2 Interfaces ---
+                    AMFSCTPAddresses: # the IP list of N2 interfaces (SCTP) on AMF when using NGAP
+                      - IP:
+                          - {{ free5gc_ip_address }}
+                        Port: {{ N3IWF_AMF_SCTP_PORT }}
+                    NASTCPPort: {{ N3IWF_NAS_TCP_PORT }} # TCP port which the NAS listens on
+
+                    # --- Nwu Interfaces ---
+                    IKEBindAddress: {{ N3IWF_IKE_BIND_ADDRESS }} # Nwu interface  IP address (IKE) on this N3IWF
+                    IPSecTunnelAddress: {{ N3IWF_IP_SEC_INTERFACE_ADDRESS }} # Tunnel IP address of XFRM interface on this N3IWF
+                    UEIPAddressRange: {{ N3IWF_UE_IP_ADDRESS_RANGE }}/24 # IP address pool allocated to UE in IPSec tunnel
+                    XFRMInterfaceName: xfrmi # Prefix of XFRM interface name created by N3IWF
+                    XFRMInterfaceID: {{ N3IWF_IP_SEC_INTERFACE_MARK }} # XFRM interface if_id for IPSec routing (Any value except to 0, default value is 7 if not defined)
+
+                    # --- N3 Interfaces ---
+                    GTPBindAddress: {{ AMF_NGAP_IP_ADDRESS }}  # IP address of N3 interface (GTP) on this N3IWF
+
+                    FQDN: n3iwf.free5gc.org # FQDN of this N3IWF
+
+                    # --- Security ---
+                    PrivateKey: cert/n3iwf.key # Private key file path
+                    CertificateAuthority: cert/n3iwf.pem # Certificate Authority (CA) file path
+                    Certificate: cert/n3iwf.pem # Certificate file path
+
+                    # sending dead peer detection message
+                    LivenessCheck:
+                      enable: true # true or false
+                      transFreq: 60s # frequency of transmission
+                      maxRetryTimes: 4 # the max number of DPD response of UE
+
+                  logger: # log output setting
+                    enable: true # true or false
+                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    reportCaller: false # enable the caller report or not, value: true or false
+                  
+
+            - name  : Create .run dir
+              shell : |
+                mkdir .run
+              args:
+                chdir: "{{ FREE5GC_DIR_INSTALL }}"
+
+
+            - name  : Remove N3IWF ipsec0 (if exist)
+              shell : |
+                sudo ip link del {{ N3IWF_IPSEC_INTERFACE_NAME }}
+              ignore_errors: true
+
+            - name  : Create N3IWF ipsec0 interface
+              shell : |
+                sudo ip link add name {{ N3IWF_IPSEC_INTERFACE_NAME }} type vti local {{ N3IWF_IKE_BIND_ADDRESS }} remote 0.0.0.0 key {{ N3IWF_IPSEC_INTERFACE_XFRM_MARK }}
+                sudo ip addr add {{ N3IWF_IP_SEC_INTERFACE_ADDRESS }}/{{ MASCARA_REDE_DECIMAL }} dev {{ N3IWF_IPSEC_INTERFACE_NAME }}
+                sudo ip link set {{ N3IWF_IPSEC_INTERFACE_NAME }} up
+
+            - name: Remove Unused NFs dir form N3IWF VM
+              shell: |
+                rm -rf {{ AMF_DIR }}
+                rm -rf {{ AUSF_DIR }}
+                rm -rf {{ NRF_DIR }}
+                rm -rf {{ NSSF_DIR }}
+                rm -rf {{ PCF_DIR }}
+                rm -rf {{ SMF_DIR }}
+                rm -rf {{ UDM_DIR }}
+                rm -rf {{ UDR_DIR }}
+                rm -rf {{ UPF_DIR }}
+
+            - name: Remove Unused config files form N3IWF VM
+              shell: |
+                rm -rf {{ NFS_DIR_CONFIG }}/multiUPF
+                rm {{ NFS_DIR_CONFIG }}/TLS/amf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/amf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/ausf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/ausf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/nrf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/nrf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/nssf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/nssf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/pcf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/pcf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/smf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/smf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/udm.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/udm.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/udr.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/udr.pem
+                rm {{ NFS_DIR_CONFIG }}/amfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/ausfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/nrfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/nssfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/pcfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/smfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/udmfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/udrcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/uerouting.yaml
+                rm {{ NFS_DIR_CONFIG }}/upfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/webuicfg.yaml
