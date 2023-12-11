@@ -261,7 +261,7 @@
 
                   logger: # log output setting
                     enable: true # true or false
-                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    level: trace # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
                     reportCaller: false # enable the caller report or not, value: true or false
 
             - name  : Remove UDR default config file - (run mode)
@@ -293,7 +293,7 @@
 
                   logger: # log output setting
                     enable: true # true or false
-                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    level: trace # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
                     reportCaller: false # enable the caller report or not, value: true or false
 
             - name  : Create UDM config dir
@@ -1695,7 +1695,7 @@
 
                   logger: # log output setting
                     enable: true # true or false
-                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    level: trace # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
                     reportCaller: false # enable the caller report or not, value: true or false
 
             - name  : Remove SMF default configs files - (run mode)
@@ -1805,7 +1805,7 @@
 
                   logger: # log output setting
                     enable: true # true or false
-                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    level: trace # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
                     reportCaller: false # enable the caller report or not, value: true or false
 
             - name  : Build uerouting.yaml config file
@@ -1820,7 +1820,7 @@
                     UE1: # Group Name
                       members:
                       - imsi-2089300007487 # Subscription Permanent Identifier of the UE
-                      - imsi-2089300007488
+                      - imsi-002089300007488
                       - imsi-2089300007489
                       - imsi-2089300007440
                       - imsi-2089300007441
@@ -1876,7 +1876,7 @@
                     UE1: # Group Name
                       members:
                       - imsi-2089300007487 # Subscription Permanent Identifier of the UE
-                      - imsi-2089300007488
+                      - imsi-002089300007488
                       - imsi-2089300007489
                       - imsi-2089300007440
                       - imsi-2089300007441
@@ -2025,4 +2025,21 @@
                     enable: true # true or false
                     level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
                     reportCaller: false # enable the caller report or not, value: true or false
-                 
+
+            - name  : Remove NodeJS Old version
+              shell :  |
+                    sudo apt-get purge --auto-remove nodejs -y
+                    sudo apt-get purge nodejs -y
+                    sudo apt-get autoremove
+              
+            - name  : Install NodeJS 20.x
+              shell :  |
+                    sudo apt -y install curl dirmngr apt-transport-https lsb-release
+                    curl -sL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+                    sudo apt -y install nodejs
+           
+            - name  : Install Yarn
+              shell :  |
+                    curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+                    echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+                    sudo apt update && sudo apt install yarn
