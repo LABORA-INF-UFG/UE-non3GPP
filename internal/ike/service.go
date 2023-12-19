@@ -5,8 +5,9 @@ import (
 	"UE-non3GPP/internal/ike/context"
 	"UE-non3GPP/internal/ike/dispatch"
 	"UE-non3GPP/internal/ike/trigger"
-	log "github.com/sirupsen/logrus"
 	"net"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func Run(cfg config.Config, ue *context.UeIke) {
@@ -28,7 +29,7 @@ func Run(cfg config.Config, ue *context.UeIke) {
 	// connect to n3wif/UE udp
 	connUdp, err := net.DialUDP("udp", ueUdp, n3iwfUdp)
 	if err != nil {
-		log.Fatal("UDP Connection N3IWF failed!")
+		log.Fatal("UDP Connection N3IWF failed:  %+v", err)
 		panic(err)
 	}
 
