@@ -16,14 +16,14 @@ func Run(cfg config.Config, ue *context.UeIke) {
 	n3wifAddr := cfg.N3iwfInfo.IKEBindAddress + ":" + cfg.N3iwfInfo.IKEBindPort
 	n3iwfUdp, err := net.ResolveUDPAddr("udp", n3wifAddr)
 	if err != nil {
-		log.Fatal("Resolve N3WIF UDP address failed")
+		log.Fatal("Resolve N3WIF UDP address failed: %+v", err)
 	}
 
 	// UE UDP address
 	ueAddr := cfg.Ue.LocalPublicIPAddr + ":" + cfg.Ue.LocalPublicPortUDPConnection
 	ueUdp, err := net.ResolveUDPAddr("udp", ueAddr)
 	if err != nil {
-		log.Fatal("Resolve UE UDP address failed")
+		log.Fatal("Resolve UE UDP address failed: %+v", err)
 	}
 
 	// connect to n3wif/UE udp

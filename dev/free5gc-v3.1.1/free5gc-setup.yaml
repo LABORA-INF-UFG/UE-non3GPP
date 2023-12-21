@@ -161,7 +161,6 @@
 
             - name  : Network Setting 1/4
               shell : sudo sysctl -w net.ipv4.ip_forward=1
-              
 
             - name  : Network Setting 2/4
               shell : sudo iptables -t nat -A POSTROUTING -o {{ internet_network_interface }} -j MASQUERADE
