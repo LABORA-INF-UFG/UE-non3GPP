@@ -183,6 +183,7 @@
                 sudo ip link add name {{ N3IWF_IPSEC_INTERFACE_NAME }} type vti local {{ N3IWF_IKE_BIND_ADDRESS }} remote 0.0.0.0 key {{ N3IWF_IPSEC_INTERFACE_XFRM_MARK }}
                 sudo ip addr add {{ N3IWF_IP_SEC_INTERFACE_ADDRESS }}/{{ MASCARA_REDE_DECIMAL }} dev {{ N3IWF_IPSEC_INTERFACE_NAME }}
                 sudo ip link set {{ N3IWF_IPSEC_INTERFACE_NAME }} up
+                sudo ip link set dev {{ N3IWF_IPSEC_INTERFACE_NAME }} mtu 1500
 
             - name: Remove Unused NFs dir form N3IWF VM
               shell: |
