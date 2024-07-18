@@ -103,8 +103,10 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	// New GRE tunnel interface
 	newGRETunnel := &netlink.Gretun{
 		LinkAttrs: netlink.LinkAttrs{
-			Name: greIfaceName,
-			MTU:  cfg.Ue.GREInterface.Mtu, // remain for endpoint IP header(most 40 bytes if IPv6) and ESP header (22 bytes)
+			Name:        greIfaceName,
+			ParentIndex: parent.Attrs().Index,
+			MTU:         cfg.Ue.GREInterface.Mtu,
+			TxQLen:      1000,
 		},
 		Link:   uint32(parent.Attrs().Index), // PHYS_DEV in iproute2; IFLA_GRE_LINK in linux kernel
 		Local:  ueTunnelAddr,
