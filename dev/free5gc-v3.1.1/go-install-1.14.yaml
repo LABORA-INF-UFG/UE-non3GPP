@@ -10,7 +10,7 @@
 
             - name: Install Basic requirements
               apt:
-                name: ['wget', 'git', 'ca-certificates', 'net-tools', 'gcc', 'cmake', 'autoconf', 'build-essential', 'libtool', 'pkg-config', 'libmnl-dev', 'libyaml-dev', 'traceroute']
+                name: ['wget', 'git', 'ca-certificates', 'net-tools', 'gcc', 'cmake', 'autoconf', 'build-essential', 'libtool', 'pkg-config', 'libmnl-dev', 'libyaml-dev', 'traceroute', 'iperf']
                 state: present
                 update_cache: yes
 
