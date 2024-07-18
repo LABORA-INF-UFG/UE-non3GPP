@@ -111,6 +111,7 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 		Remote: n3iwfTunnelAddr,
 		IKey:   greKeyField,
 		OKey:   greKeyField,
+		Ttl:    cfg.Ue.GREInterface.Ttl, // Define o TTL com base no parâmetro
 	}
 
 	if err := netlink.LinkAdd(newGRETunnel); err != nil {

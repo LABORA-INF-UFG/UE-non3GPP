@@ -33,12 +33,14 @@ type Config struct {
 		GREInterface                  struct {
 			Name string `yaml: "name"`
 			Mtu  int    `yaml: "mtu"`
+			Ttl  int    `yaml: "ttl"`
 		} `yaml: "greinterface"`
 
 		IPSecInterface struct {
 			Name string `yaml: "name"`
 			Mark uint32 `yaml: "mark"`
 			Mtu  int    `yaml: "mtu"`
+			
 		} `yaml: "ipsecinterface"`
 
 		Snssai struct {
