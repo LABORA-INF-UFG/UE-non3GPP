@@ -57,11 +57,21 @@ export class NetInterfaceThrougputComponent {
       },
     },
     scales: {
-
+      x: {
+        title: {
+          display: true,
+          text: 'Time / Secounds',
+        },
+      },
       y: {
         position: 'left',
+        title: {
+          display: true,
+          text: 'MB',
+        },
       },
       y1: {
+
         position: 'right',
         grid: {
           color: 'rgba(255,0,0,0.3)',
@@ -99,8 +109,6 @@ export class NetInterfaceThrougputComponent {
 
   updateNetworkThroughput(values:NetworkThrougput[]):void{
     values.forEach((status, i) => {
-
-      console.log(status)
 
       this.lineChartThrouput.datasets[0].data.push(status.throughputIn);
       this.lineChartThrouput.datasets[1].data.push(status.throughputOut);

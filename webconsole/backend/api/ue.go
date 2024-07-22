@@ -16,6 +16,6 @@ type StatusValue struct {
 }
 
 type Throughput struct {
-	ThroughputIn  uint64 `json:"throughputIn"`
-	ThroughputOut uint64 `json:"throughputOut"`
+	ThroughputIn  float64 `json:"throughputIn"`
+	ThroughputOut float64 `json:"throughputOut"`
 }
