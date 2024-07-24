@@ -78,13 +78,13 @@
                 chdir: "{{ ROOT_SRC_DIR }}"
               ignore_errors: true
 
-            - name  : Git Clone by free5gc TAG Version
+            - name  : Git Clone by Open5GS TAG Version
               shell : git clone {{ OPEN5GS_GIT_CHECKOUT_URL }} {{ OPEN5GS_CHECKOUT_FOLDER_NAME }}
               args:
-                chdir: "{{ FREE5GC_DIR_INSTALL }}"
+                chdir: "{{ ROOT_SRC_DIR }}"
 
             - name: Meson build install
               shell: meson build --prefix=`pwd`/install
               args:
-                chdir: "{{ FREE5GC_DIR_INSTALL }}"
+                chdir: "{{ ROOT_SRC_DIR }}"
           
