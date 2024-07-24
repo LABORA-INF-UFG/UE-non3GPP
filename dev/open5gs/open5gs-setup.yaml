@@ -110,6 +110,32 @@
                   [Install]
                   WantedBy=multi-user.target
 
+            - name: Running ==> rm open5gs-amfd.service
+              shell: rm open5gs-amfd.service
+              args:
+                chdir: "{{ SYSTEM_MD_DIR }}"
+              ignore_errors: true
+
+            - name  : Build open5gs-amfd.service
+              copy:
+                dest: "{{ SYSTEM_MD_DIR }}/open5gs-amfd.service"
+                content: |
+                  [Unit]
+                  Description=Open5GS AMF Daemon
+                  After=network.target
+
+                  [Service]
+                  Type=simple
+                  ExecStart=/root/open5gs/install/bin/open5gs-amfd -c /etc/open5gs/amf.yaml
+                  Restart=on-failure
+                  RestartSec=5
+                  User=root
+                  Group=root
+
+                  [Install]
+                  WantedBy=multi-user.target
+
+
 
             - name: Reload systemd manager configuration
               become: yes
@@ -140,3 +166,15 @@
               become_method: sudo
               become_user: root
               command: systemctl enable open5gs-scpd
+
+            - name: Running ==> systemctl start open5gs-amfd
+              become: yes
+              become_method: sudo
+              become_user: root
+              command: systemctl start open5gs-amfd
+
+            - name: Running ==> systemctl enable open5gs-amfd
+              become: yes
+              become_method: sudo
+              become_user: root
+              command: systemctl enable open5gs-amfd
