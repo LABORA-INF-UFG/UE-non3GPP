@@ -609,3 +609,15 @@
               become_method: sudo
               become_user: root
               command: systemctl enable open5gs-sgwud
+
+            - name: Running ==> systemctl start open5gs-pcrfd
+              become: yes
+              become_method: sudo
+              become_user: root
+              command: systemctl start open5gs-pcrfd
+
+            - name: Running ==> systemctl enable open5gs-pcrfd
+              become: yes
+              become_method: sudo
+              become_user: root
+              command: systemctl enable open5gs-pcrfd
