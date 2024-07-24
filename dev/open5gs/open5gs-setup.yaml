@@ -310,6 +310,130 @@
                   [Install]
                   WantedBy=multi-user.target
 
+            - name: Running ==> rm open5gs-hssd.service
+              shell: rm open5gs-hssd.service
+              args:
+                chdir: "{{ SYSTEM_MD_DIR }}"
+              ignore_errors: true
+
+            - name  : Build open5gs-hssd.service
+              copy:
+                dest: "{{ SYSTEM_MD_DIR }}/open5gs-hssd.service"
+                content: |
+                  [Unit]
+                  Description=Open5GS HSS Daemon
+                  After=network.target
+
+                  [Service]
+                  Type=simple
+                  ExecStart=/root/open5gs/install/bin/open5gs-hssd -c /etc/open5gs/hss.yaml
+                  Restart=on-failure
+                  RestartSec=5
+                  User=root
+                  Group=root
+
+                  [Install]
+                  WantedBy=multi-user.target
+
+            - name: Running ==> rm open5gs-mmed.service
+              shell: rm open5gs-mmed.service
+              args:
+                chdir: "{{ SYSTEM_MD_DIR }}"
+              ignore_errors: true
+
+            - name  : Build open5gs-mmed.service
+              copy:
+                dest: "{{ SYSTEM_MD_DIR }}/open5gs-mmed.service"
+                content: |
+                  [Unit]
+                  Description=Open5GS MME Daemon
+                  After=network.target
+
+                  [Service]
+                  Type=simple
+                  ExecStart=/root/open5gs/install/bin/open5gs-mmed -c /etc/open5gs/mme.yaml
+                  Restart=on-failure
+                  RestartSec=5
+                  User=root
+                  Group=root
+
+                  [Install]
+                  WantedBy=multi-user.target
+
+            - name: Running ==> rm open5gs-sgwcd.service
+              shell: rm open5gs-mmed.service
+              args:
+                chdir: "{{ SYSTEM_MD_DIR }}"
+              ignore_errors: true
+
+            - name  : Build open5gs-sgwcd.service
+              copy:
+                dest: "{{ SYSTEM_MD_DIR }}/open5gs-sgwcd.service"
+                content: |
+                  [Unit]
+                  Description=Open5GS SGWC Daemon
+                  After=network.target
+
+                  [Service]
+                  Type=simple
+                  ExecStart=/root/open5gs/install/bin/open5gs-sgwcd -c /etc/open5gs/sgwc.yaml
+                  Restart=on-failure
+                  RestartSec=5
+                  User=root
+                  Group=root
+
+                  [Install]
+                  WantedBy=multi-user.target
+                  
+            - name: Running ==> rm open5gs-sgwud.service
+              shell: rm open5gs-mmed.service
+              args:
+                chdir: "{{ SYSTEM_MD_DIR }}"
+              ignore_errors: true
+
+            - name  : Build open5gs-sgwud.service
+              copy:
+                dest: "{{ SYSTEM_MD_DIR }}/open5gs-sgwud.service"
+                content: |
+                  [Unit]
+                  Description=Open5GS SGWU Daemon
+                  After=network.target
+
+                  [Service]
+                  Type=simple
+                  ExecStart=/root/open5gs/install/bin/open5gs-sgwud -c /etc/open5gs/sgwu.yaml
+                  Restart=on-failure
+                  RestartSec=5
+                  User=root
+                  Group=root
+
+                  [Install]
+                  WantedBy=multi-user.target
+
+            - name: Running ==> rm open5gs-pcrfd.service
+              shell: rm open5gs-mmed.service
+              args:
+                chdir: "{{ SYSTEM_MD_DIR }}"
+              ignore_errors: true
+
+            - name  : Build open5gs-pcrfd.service
+              copy:
+                dest: "{{ SYSTEM_MD_DIR }}/open5gs-pcrfd.service"
+                content: |
+                  [Unit]
+                  Description=Open5GS PCRF Daemon
+                  After=network.target
+
+                  [Service]
+                  Type=simple
+                  ExecStart=/root/open5gs/install/bin/open5gs-pcrfd -c /etc/open5gs/pcrf.yaml
+                  Restart=on-failure
+                  RestartSec=5
+                  User=root
+                  Group=root
+
+                  [Install]
+                  WantedBy=multi-user.target
 
 
             - name: Reload systemd manager configuration
@@ -437,3 +561,51 @@
               become_method: sudo
               become_user: root
               command: systemctl enable open5gs-bsfd
+
+            - name: Running ==> systemctl start open5gs-hssd
+              become: yes
+              become_method: sudo
+              become_user: root
+              command: systemctl start open5gs-hssd
+
+            - name: Running ==> systemctl enable open5gs-hssd
+              become: yes
+              become_method: sudo
+              become_user: root
+              command: systemctl enable open5gs-hssd
+
+            - name: Running ==> systemctl start open5gs-mmed
+              become: yes
+              become_method: sudo
+              become_user: root
+              command: systemctl start open5gs-mmed
+
+            - name: Running ==> systemctl enable open5gs-mmed
+              become: yes
+              become_method: sudo
+              become_user: root
+              command: systemctl enable open5gs-mmed
+
+            - name: Running ==> systemctl start open5gs-sgwcd
+              become: yes
+              become_method: sudo
+              become_user: root
+              command: systemctl start open5gs-sgwcd
+
+            - name: Running ==> systemctl enable open5gs-sgwcd
+              become: yes
+              become_method: sudo
+              become_user: root
+              command: systemctl enable open5gs-sgwcd
+
+            - name: Running ==> systemctl start open5gs-sgwud
+              become: yes
+              become_method: sudo
+              become_user: root
+              command: systemctl start open5gs-sgwud
+
+            - name: Running ==> systemctl enable open5gs-sgwud
+              become: yes
+              become_method: sudo
+              become_user: root
+              command: systemctl enable open5gs-sgwud
