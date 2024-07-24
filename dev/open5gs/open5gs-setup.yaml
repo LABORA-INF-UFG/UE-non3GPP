@@ -3,61 +3,9 @@
         become: yes
         remote_user: root
         vars:
-            GTP5G_DIR_INSTALL : "/root/gtp5g"
-            GTP5G_BRANCH_VERSION : "v0.8.2" 
-            FREE5GC_DIR_INSTALL : "/root/go/src/free5gc"
-            UPF_DIR_CONFIG : "/root/go/src/free5gc/NFs/upf/build/config"
-            WEB_CONSOLE_FRONTEND_DIR : "/root/go/src/free5gc/webconsole/frontend"
-            WEB_CONSOLE_BASE_DIR : "/root/go/src/free5gc/webconsole"
-            NFS_DIR_CONFIG : "/root/go/src/free5gc/config"
-            UPF_DIR : "/root/go/src/free5gc/NFs/upf"
-            NRF_DIR : "/root/go/src/free5gc/NFs/nrf"
-            UDR_DIR : "/root/go/src/free5gc/NFs/udr"
-            UDM_DIR : "/root/go/src/free5gc/NFs/udm"
-            AUSF_DIR : "/root/go/src/free5gc/NFs/ausf"
-            NSSF_DIR : "/root/go/src/free5gc/NFs/nssf"
-            AMF_DIR : "/root/go/src/free5gc/NFs/amf"
-            PCF_DIR : "/root/go/src/free5gc/NFs/pcf"
-            SMF_DIR : "/root/go/src/free5gc/NFs/smf"
-            N3IWF_DIR : "/root/go/src/free5gc/NFs/n3iwf" 
             ROOT_SRC_DIR : "/root"
             HOME_DIR: "/root"
-            CLASSLESS_INTER_DOMAIN_ROUTING_IPV4_POOL_OF_UE : "60.60.0.0"
             OPEN5GS_GIT_CHECKOUT_URL: "https://github.com/open5gs/open5gs"
-            LABORA_UE_NON3GPP_GIT_REPO: "https://github.com/LABORA-INF-UFG/UE-non3GPP.git"
-            OPEN5GS_CHECKOUT_FOLDER_NAME: "open5gs"
-            PREDEFINED_IP_ADDRESS: "false"
-            MONGO_URL_CONNECTION: "mongodb://127.0.0.1:27017"
-            NRF_IP_ADDRESS: "127.0.0.10"
-            MASCARA_REDE_DECIMAL: "19"
-            NRF_PORT: "8000"
-            UDR_IP_ADDRESS: "127.0.0.4"
-            UDR_PORT: "8000"
-            UDM_IP_ADDRESS: "127.0.0.3"
-            UDM_PORT: "8000"
-            AUSF_IP_ADDRESS: "127.0.0.9"
-            AUSF_PORT: "8000"
-            NSSF_IP_ADDRESS: "127.0.0.31"
-            NSSF_PORT: "8000"
-            AMF_NGAP_IP_ADDRESS: "127.0.0.1"
-            AMF_IP_ADDRESS: "127.0.0.18"
-            AMF_PORT: "8000"
-            PCF_IP_ADDRESS: "127.0.0.7"
-            PCF_PORT: "8000"
-            SMF_N3_INTERFACE_IP_ADDRESS: "127.0.0.1"
-            SMF_N4_INTERFACE_IP_ADDRESS: "127.0.0.1"
-            SMF_IP_ADDRESS: "127.0.0.2"
-            SMF_PORT: "8000"
-            UPF_IP_ADDRESS: "127.0.0.8"
-            GTPU_UPF_IP_ADDRESS: "127.0.0.8"
-            N3IWF_AMF_SCTP_PORT: "38412"
-            N3IWF_IKE_BIND_ADDRESS: "127.0.0.21"
-            N3IWF_IP_SEC_INTERFACE_ADDRESS: "10.0.0.1"
-            N3IWF_UE_IP_ADDRESS_RANGE: "10.0.0.0"
-            N3IWF_IP_SEC_INTERFACE_MARK: "5"
-            N3IWF_NAS_TCP_PORT: "20000"
-            N3IWF_IPSEC_INTERFACE_NAME: "ipsec0"
-            N3IWF_IPSEC_INTERFACE_XFRM_MARK: "5"
             
         tasks:
 
@@ -75,6 +23,7 @@
 
             - name  : Remove Open5GS old dir if exist
               shell : rm -rf {{ OPEN5GS_CHECKOUT_FOLDER_NAME }}
+              args:
                 chdir: "{{ ROOT_SRC_DIR }}"
               ignore_errors: true
 
@@ -87,4 +36,3 @@
               shell: meson build --prefix=`pwd`/install
               args:
                 chdir: "{{ ROOT_SRC_DIR }}"
-          
