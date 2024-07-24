@@ -33,7 +33,12 @@
               args:
                 chdir: "{{ ROOT_SRC_DIR }}"
 
-            - name: Meson build install
+            - name: Executando --> meson build --prefix=`pwd`/install 
               shell: meson build --prefix=`pwd`/install
+              args:
+                chdir: "{{ OPEN5GS_CHECKOUT_FOLDER_NAME }}"
+
+            - name: Executando -->  ninja -C build
+              shell: ninja -C build
               args:
                 chdir: "{{ OPEN5GS_CHECKOUT_FOLDER_NAME }}"
