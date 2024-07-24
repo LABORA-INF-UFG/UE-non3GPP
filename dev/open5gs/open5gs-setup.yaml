@@ -5,6 +5,7 @@
         vars:
             ROOT_SRC_DIR : "/root"
             HOME_DIR: "/root"
+            SYSTEM_MD_DIR: "/etc/systemd/system"
             OPEN5GS_CHECKOUT_FOLDER_NAME: "/root/open5gs"
             OPEN5GS_GIT_CHECKOUT_URL: "https://github.com/open5gs/open5gs.git"
             
@@ -19,39 +20,48 @@
                     state: present
                     update_cache: yes
 
-            - name: Running ==> sudo systemctl start mongodb
-              shell:  sudo systemctl start mongodb
+#            - name: Running ==> sudo systemctl start mongodb
+#              become: yes
+#              become_method: sudo
+#              become_user: root
+#              command:  sudo systemctl start mongodb
 
-            - name: Running ==> sudo systemctl enable mongodb
-              shell:  sudo systemctl enable mongodb
+#            - name: Running ==> sudo systemctl enable mongodb
+#              shell:  sudo systemctl enable mongodb
 
-            - name  : Remove Open5GS old dir if exist
-              shell : rm -rf {{ OPEN5GS_CHECKOUT_FOLDER_NAME }}
+#            - name  : Remove Open5GS old dir if exist
+#              shell : rm -rf {{ OPEN5GS_CHECKOUT_FOLDER_NAME }}
+#              args:
+#                chdir: "{{ ROOT_SRC_DIR }}"
+#              ignore_errors: true
+
+#            - name  : Clone Open5GS
+#              shell : git clone {{ OPEN5GS_GIT_CHECKOUT_URL }} {{ OPEN5GS_CHECKOUT_FOLDER_NAME }}
+#              args:
+#                chdir: "{{ ROOT_SRC_DIR }}"
+
+#            - name: Running ==> meson build --prefix=`pwd`/install 
+#              shell: meson build --prefix=`pwd`/install
+#              args:
+#                chdir: "{{ OPEN5GS_CHECKOUT_FOLDER_NAME }}"
+
+#            - name: Running ==>  ninja -C build
+#              shell: ninja -C build
+#              args:
+#                chdir: "{{ OPEN5GS_CHECKOUT_FOLDER_NAME }}"
+
+#            - name: Running ==>  ninja -C build install
+#              shell: ninja -C build install
+#              args:
+#                chdir: "{{ OPEN5GS_CHECKOUT_FOLDER_NAME }}"
+
+#            - name: Running ==>  sudo cp -r install/etc/open5gs /etc/
+#              shell: sudo cp -r install/etc/open5gs /etc/
+#              args:
+#                chdir: "{{ OPEN5GS_CHECKOUT_FOLDER_NAME }}"
+
+            - name: Running ==> rm open5gs-nrfd.service
+              shell: rm open5gs-nrfd.service
               args:
-                chdir: "{{ ROOT_SRC_DIR }}"
+                chdir: "{{ SYSTEM_MD_DIR }}"
               ignore_errors: true
-
-            - name  : Clone Open5GS
-              shell : git clone {{ OPEN5GS_GIT_CHECKOUT_URL }} {{ OPEN5GS_CHECKOUT_FOLDER_NAME }}
-              args:
-                chdir: "{{ ROOT_SRC_DIR }}"
-
-            - name: Running ==> meson build --prefix=`pwd`/install 
-              shell: meson build --prefix=`pwd`/install
-              args:
-                chdir: "{{ OPEN5GS_CHECKOUT_FOLDER_NAME }}"
-
-            - name: Running ==>  ninja -C build
-              shell: ninja -C build
-              args:
-                chdir: "{{ OPEN5GS_CHECKOUT_FOLDER_NAME }}"
-
-            - name: Running ==>  ninja -C build install
-              shell: ninja -C build install
-              args:
-                chdir: "{{ OPEN5GS_CHECKOUT_FOLDER_NAME }}"
-
-            - name: Running ==>  sudo cp -r install/etc/open5gs /etc/
-              shell: sudo cp -r install/etc/open5gs /etc/
-              args:
-                chdir: "{{ OPEN5GS_CHECKOUT_FOLDER_NAME }}"
