@@ -85,6 +85,32 @@
                   [Install]
                   WantedBy=multi-user.target
 
+            - name: Running ==> rm open5gs-scpd.service
+              shell: rm open5gs-scpd.service
+              args:
+                chdir: "{{ SYSTEM_MD_DIR }}"
+              ignore_errors: true
+
+            - name  : Build open5gs-scpd.service
+              copy:
+                dest: "{{ SYSTEM_MD_DIR }}/open5gs-scpd.service"
+                content: |
+                  [Unit]
+                  Description=Open5GS SCP Daemon
+                  After=network.target
+
+                  [Service]
+                  Type=simple
+                  ExecStart=/root/open5gs/install/bin/open5gs-scpd -c /etc/open5gs/scp.yaml
+                  Restart=on-failure
+                  RestartSec=5
+                  User=root
+                  Group=root
+
+                  [Install]
+                  WantedBy=multi-user.target
+
+
             - name: Reload systemd manager configuration
               become: yes
               become_method: sudo
@@ -102,3 +128,15 @@
               become_method: sudo
               become_user: root
               command: systemctl enable open5gs-nrfd
+
+            - name: Running ==> systemctl start open5gs-scpd
+              become: yes
+              become_method: sudo
+              become_user: root
+              command: systemctl start open5gs-scpd
+
+            - name: Running ==> systemctl enable open5gs-scpd
+              become: yes
+              become_method: sudo
+              become_user: root
+              command: systemctl enable open5gs-scpd
