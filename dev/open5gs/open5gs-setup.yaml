@@ -84,3 +84,9 @@
 
                   [Install]
                   WantedBy=multi-user.target
+
+            - name: Reload systemd manager configuration
+              become: yes
+              become_method: sudo
+              become_user: root
+              command: systemctl daemon-reload
