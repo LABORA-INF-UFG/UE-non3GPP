@@ -36,4 +36,4 @@
             - name: Meson build install
               shell: meson build --prefix=`pwd`/install
               args:
-                chdir: "{{ ROOT_SRC_DIR }}"
+                chdir: "{{ OPEN5GS_CHECKOUT_FOLDER_NAME }}"
