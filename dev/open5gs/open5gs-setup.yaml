@@ -5,6 +5,7 @@
         vars:
             ROOT_SRC_DIR : "/root"
             HOME_DIR: "/root"
+            OPEN5GS_CHECKOUT_FOLDER_NAME: "/root/open5gs"
             OPEN5GS_GIT_CHECKOUT_URL: "https://github.com/open5gs/open5gs.git"
             
         tasks:
