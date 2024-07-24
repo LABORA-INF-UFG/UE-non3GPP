@@ -65,3 +65,22 @@
               args:
                 chdir: "{{ SYSTEM_MD_DIR }}"
               ignore_errors: true
+
+            - name  : Build open5gs-nrfd.service
+              copy:
+                dest: "{{ SYSTEM_MD_DIR }}/open5gs-nrfd.service"
+                content: |
+                  [Unit]
+                  Description=Open5GS NRF Daemon
+                  After=network.target
+
+                  [Service]
+                  Type=simple
+                  ExecStart=/root/open5gs/install/bin/open5gs-nrfd -c /etc/open5gs/nrf.yaml
+                  Restart=on-failure
+                  RestartSec=5
+                  User=root
+                  Group=root
+
+                  [Install]
+                  WantedBy=multi-user.target
