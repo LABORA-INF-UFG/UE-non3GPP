@@ -2,7 +2,7 @@
 User Equipment for non-3GPP access via N3IWF | Working in-progress
 
 ### Environment
-The content described in this repository was tested in [Digital Occean](https://www.digitalocean.com/) cloud environment. 1º VM where free5GC will run (except N3IWF) and 2º VM where the N3IWF, each of them with the following configurations:
+The content described in this repository was tested in [Digital Occean](https://www.digitalocean.com/) cloud environment. 1º VM where Open5GS will run and 2º VM where the Free5GS N3IWF, each of them with the following configurations:
 * SO: Ubuntu 20.04 (LTS) x64
 * Uname -r: 5.4.0-122-generic
 * Memory: 4 GB
@@ -25,7 +25,7 @@ Let's assume that the operator's machine has full access to the _open5gs-core_ a
 
 Let's start with the settings of the host file replace the markers illustrated in the following figure:
 <p align="center">
-    <img src="../images/ip_open5gs_hosts.png"/> 
+    <img src="../../images/ip_open5gs_hosts.png"/> 
 </p>
 
 * Replace all the markers ```<<Open5GS-ip-addr>> ```, with the IP address of the VM where _open5gs-core_ will be configured.
