@@ -1,12 +1,12 @@
 
 [open5gs]
-<<Open5GS-ip-addr>> 
+157.230.180.129 
 
 [n3iwf]
-<<free5gs-n3iwf-ip-addr>> open5gs_ip_address=<<Open5GS-ip-addr>>
+134.209.212.214 open5gs_ip_address=157.230.180.129
 
 [labora-UE-non3GPP]
-<<UEnon3GPP-ip-addr>> n3iwf_ike_ip_address=<<free5gs-n3iwf-ip-addr>> open5gs_ip_address=<<Open5GS-ip-addr>> msin=7488
+157.230.176.202 n3iwf_ike_ip_address=134.209.212.214 open5gs_ip_address=157.230.180.129 msin=7488
 
 
 
