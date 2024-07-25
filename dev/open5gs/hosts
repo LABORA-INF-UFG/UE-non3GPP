@@ -1,9 +1,9 @@
 
 [open5gs]
-161.35.125.169 
+157.230.180.129 
 
 #[n3iwf]
-#104.248.7.121 open5gs_ip_address=161.35.125.169
+#134.209.212.214 open5gs_ip_address=157.230.180.129
 
 #[labora-UE-non3GPP]
-#142.93.117.29 n3iwf_ike_ip_address=104.248.7.121 open5gs_ip_address=161.35.125.169 msin=7488
+#142.93.117.29 n3iwf_ike_ip_address=134.209.212.214 open5gs_ip_address=157.230.180.129 msin=7488
