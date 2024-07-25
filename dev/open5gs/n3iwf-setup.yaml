@@ -129,7 +129,7 @@
                                     SD: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
                     AMFSCTPAddresses: # the IP list of N2 interfaces (SCTP) on AMF when using NGAP
                       - IP:
-                        - {{ free5gc_ip_address }}
+                        - {{ open5gs_ip_address }}
                         Port: {{ N3IWF_AMF_SCTP_PORT }}
 
                     # --- Bind Interfaces ---
