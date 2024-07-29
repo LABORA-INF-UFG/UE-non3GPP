@@ -101,3 +101,23 @@ The UE configuration parameters are contained in the ```~/go/src/UE-non3GPP/conf
 
 ### Start UE-non3GPP
 The final step is to initialize the UE-non3GPP so that the control and data tunnels are configured through the N3IWF. To do this, access the VM where the UE-non3GPP was installed and go to the ```~/go/src/UE-non3GPP``` directory and run the following command: ```go run cmd/main.go ue```. After configuring some dependencies, the connection with N3IWF will be properly established and two network interfaces will be created, the first of type ```ipsec``` and the second named ```gretun1```. To test the operation, simply run a PING test through the ```gretun1``` interface with the following command: ```ping -I gretun1 8.8.8.8```.
+
+## Verificações pos instalação
+Após a instalação algumas verificações devem se feitas.
+
+### Verificar se o UE foi registrado no Mongo
+Para verificar acesse a VM do open5gs e execute os comandos abaixo:
+```
+mongo
+use open5gs
+db.subscribers.find().pretty()
+```
+
+### Monitorar Logs AMF
+Antes de inicializar a N3IWF deve-se fazer um tail no log da AMF. Os logs do open5gs estão em ```/root/open5gs/install/var/log/open5gs```
+```
+tail -f /root/open5gs/install/var/log/open5gs/amf.log
+```
+
+Tem um erro no registro do UE na AMF
+
