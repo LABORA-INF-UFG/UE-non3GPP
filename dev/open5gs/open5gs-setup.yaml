@@ -25,22 +25,6 @@
                     state: present
                     update_cache: yes
 
-            - name: Remove NodeJS Old version
-              shell :  |
-                    sudo apt-get purge --auto-remove nodejs -y
-                    sudo apt-get purge nodejs -y
-                    sudo apt-get autoremove
-              
-            - name: Install NodeJS 20.x
-              shell :  |
-                    sudo apt -y install curl dirmngr apt-transport-https lsb-release
-                    curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
-                    sudo apt -y install nodejs
-
-            - name: Update NPM to npm@6
-              shell :  |
-                    npm install -g npm@6
-
             - name: Running ==> sudo systemctl start mongodb
               become: yes
               become_method: sudo
@@ -896,18 +880,61 @@
               become_user: root
               command: systemctl enable open5gs-pcrfd
 
-            - name: Install WebUI Running ==> npm install
-              become: yes
-              become_method: sudo
-              become_user: root
-              command: npm install
-              args:
-                chdir: "{{ OPEN5GS_WEBUI_CHECKOUT_FOLDER_NAME }}"
+            - name: Ensure MongoDB is running
+              service:
+                name: mongod
+                state: started
+                enabled: yes
 
-#            - name: Build Next.JS  ==> npm install
-#              become: yes
-#              become_method: sudo
-#              become_user: root
-#              command: npm install
-#              args:
-#                chdir: "{{ OPEN5GS_WEBUI_CHECKOUT_FOLDER_NAME }}"
+            - name: Create a script to add UE to MongoDB
+              copy:
+                content: |
+                  db = db.getSiblingDB('open5gs');
+                  db.subscribers.insert({
+                    "imsi": "2089300007488",
+                    "auth": {
+                      "k": "7488250214c33e723a5dd523fc145fc0",
+                      "opc": "7488464c7c52eb6e5036234984ad0bcf",
+                      "op": "7488763286b5b9ffbdf56e1297d0887b",
+                      "sqn": "7488b3f70fc0"
+                    },
+                    "msin": "00007488",
+                    "hplmn": {
+                      "mcc": "208",
+                      "mnc": "93"
+                    },
+                    "ran_ue_ngap_id": 1,
+                    "amf_ue_ngap_id": 1,
+                    "security": {
+                      "k": "7488250214c33e723a5dd523fc145fc0",
+                      "amf": "8000",
+                      "op": "7488763286b5b9ffbdf56e1297d0887b",
+                      "opc": "7488464c7c52eb6e5036234984ad0bcf"
+                    },
+                    "slice": {
+                      "default": {
+                        "sst": 1,
+                        "sd": "010203"
+                      }
+                    },
+                    "ambr": {
+                      "uplink": 100000000,
+                      "downlink": 200000000
+                    },
+                    "auc_3gpp": {
+                      "milenage": {
+                        "op": "7488763286b5b9ffbdf56e1297d0887b",
+                        "opc": "7488464c7c52eb6e5036234984ad0bcf"
+                      }
+                    },
+                    "type": 1
+                  });
+                dest: /tmp/add_non3gpp_ue.js
+
+            - name: Register non-3GPP UE in MongoDB
+              command: mongo /tmp/add_non3gpp_ue.js
+
+            - name: Clean up the script
+              file:
+                path: /tmp/add_non3gpp_ue.js
+                state: absent
