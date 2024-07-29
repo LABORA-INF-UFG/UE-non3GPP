@@ -880,18 +880,12 @@
               become_user: root
               command: systemctl enable open5gs-pcrfd
 
-            - name: Ensure MongoDB is running
-              service:
-                name: mongod
-                state: started
-                enabled: yes
-
             - name: Create a script to add UE to MongoDB
               copy:
                 content: |
                   db = db.getSiblingDB('open5gs');
                   db.subscribers.insert({
-                    "imsi": "2089300007488",
+                    "imsi": "9997000007488",
                     "auth": {
                       "k": "7488250214c33e723a5dd523fc145fc0",
                       "opc": "7488464c7c52eb6e5036234984ad0bcf",
@@ -900,8 +894,8 @@
                     },
                     "msin": "00007488",
                     "hplmn": {
-                      "mcc": "208",
-                      "mnc": "93"
+                      "mcc": "999",
+                      "mnc": "70"
                     },
                     "ran_ue_ngap_id": 1,
                     "amf_ue_ngap_id": 1,
