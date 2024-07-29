@@ -37,9 +37,9 @@
                     curl -sL https://deb.nodesource.com/setup_20.x | sudo -E bash -
                     sudo apt -y install nodejs
 
-            - name: Update NPM to npm@10.2.0
+            - name: Update NPM to npm@latest
               shell :  |
-                    npm install -g npm@10.2.0
+                    npm install -g npm@latest
 
             - name: Running ==> sudo systemctl start mongodb
               become: yes
