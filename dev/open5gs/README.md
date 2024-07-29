@@ -87,23 +87,14 @@ ansible-playbook dev/open5gs/n3iwf-setup.yaml -i dev/open5gs/hosts
 
 ### Setup UE-non3GPP with Ansible
 ```
-ansible-playbook dev/open5gs/UEnon3GPP-setup.yaml -i dev/open5gs/hosts
+ansible-playbook dev/open5gs/ue-non3GPP-setup.yaml -i dev/open5gs/hosts
 ```
 
 ### Start Open5GS
 After performing the Open5GS, N3IWF and UE-non3gpp installation, the next step is to initialize the Free5gc network functions. To do this it is necessary to access the VM where Free5gc was deployed in two different terminals, the first will be used to initialize the network functions and the second to initialize the API that provides access to MongoDB.
 
-#### Init Free5GC Network Functions
-Using the first terminal connected to the VM where Free5gc was installed, go to the ```/root/go/src/free5gc``` dir. First of all it is necessary to compile the Free5gc network functions. Run the command ```make``` and wait a few seconds, the process takes a little time. After compiling the project (it is hoped that no errors occurred during the compilation process) we will initialize the network functions using the ```run.sh``` script. It may be necessary to assign additional permission to run the script, this can be done using the command ```chmod 777 -R ./run.sh```. After assigning permission, initialize the Free5gc network functions through the following command ```./run.sh```. The terminal will be linked to the execution process, reproducing the log messages from the network functions as each function executes its responsibilities.
-
-#### Init Free5GC API
-Using the second terminal, we will now initialize the API that provides access to MongoDB registration end-points. In the terminal, access the ```/root/go/src/free5gc/webconsole``` directory and then run the following command ```go run server.go```. After a few seconds, a Log message equivalent to this ```Listening and serving HTTP on :5000```.
-
 ### Init N3IWF
 Initializing N3WIF is similar to the process performed when initializing free5GC, however, only 1 terminal will be required. Access the VM where N3IWF was installed and navigate to the ```/root/go/src/free5gc/NFs/n3iwf``` directory. After accessing the directory, run the following command ```go run cmd/main.go```.  On the first run, some dependencies will be configured and after a few seconds a Log message similar to ```[INFO][N3IWF][Init] N3IWF running...``` will be displayed. It indicates that the N3IWF is ready and properly connecting to the previously initialized Free5gc.
-
-### Register UE-non3GPP into Free5GC
-With the Free5gc network functions initialized and the MongoDB access API responding on port 5000 of the VM where the Free5GC is located, the next step is to register the UE in the database. To do this, access the VM where the UE was installed and go to the ```~/go/src/UE-non3GPP/dev``` directory. Using the ```ls``` command you can verify that a file called ```include_ue_non3GPP.sh``` was created in this directory. This is a script that, using the ```curl``` command, makes a call to the Free5GC API with the aim of adding a UE containing the same parameters already inserted in the ```~/go/src/UE-non3GPP/config/config.yaml``` configuration file. You will probably need to assign additional permission to run the ```include_ue_non3GPP.sh``` file, this can be done using the following command ```chmod 777 -R ./include_ue_non3GPP.sh```. After assigning permission, simply run the script with the following command ```./include_ue_non3GPP.sh```. As a result, a pair of keys indicating an empty ```JSON``` object will be printed in the LOG like this ```{}```, everything is fine!. Additionally you can check the Free5GC terminal where the API was initialized, you will be able to observe LOG messages indicating the UE registration. If an error message with text similar to ```PostSubscriberByID err: RestfulAPIPostMany err: must provide at least one element in input slice``` has been displayed on the respective terminal, you can disregard it, everything is as expected!
 
 ### Config UE-non3GPP
 The UE configuration parameters are contained in the ```~/go/src/UE-non3GPP/config/config.yaml```. Using the installation process described in this repository, all parameters were properly configured in an automated way, so that no adjustments to the configuration file were necessary.
