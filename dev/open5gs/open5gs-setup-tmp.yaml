@@ -19,12 +19,6 @@
             - name: Upgrade all apt packages
               apt: upgrade=dist force_apt_get=yes
 
-            - name: Ensure MongoDB is running
-              service:
-                name: mongod
-                state: started
-                enabled: yes
-
             - name: Create a script to add UE to MongoDB
               copy:
                 content: |
