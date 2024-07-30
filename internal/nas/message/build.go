@@ -61,9 +61,13 @@ func BuildRegistrationRequest(ue *context.UeNas) []byte {
 	// get mcc and mcc
 	resu := utils.GetMccAndMncInOctets(ue.NasSecurity.Mcc, ue.NasSecurity.Mnc)
 	log.Info("Mcc and Mnc In Octets: % x", resu)
+	log.Info("Mcc and Mnc resu[0]: % x", resu[0])
+	log.Info("Mcc and Mnc resu[1]: % x", resu[1])
+	log.Info("Mcc and Mnc resu[2]: % x", resu[2])
 
 	// get msin
 	suciV1, suciV2, suciV3, suciV4, suciV5 := utils.EncodeUeSuci(ue.NasSecurity.Msin)
+	log.Info("suciV1: % x", suciV1)
 
 	var suci nasType.MobileIdentity5GS
 
