@@ -119,5 +119,14 @@ Antes de inicializar a N3IWF deve-se fazer um tail no log da AMF. Os logs do ope
 tail -f /root/open5gs/install/var/log/open5gs/amf.log
 ```
 
-Tem um erro no registro do UE na AMF
+### Iniciar e habilitar o serviço do Open5GS
+```
+sudo systemctl start open5gs-udrd
+sudo systemctl enable open5gs-udrd
+```
+
+### Checar o status do serviço do Open5GS
+```
+sudo systemctl status open5gs-udrd
+```
 

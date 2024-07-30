@@ -2,6 +2,7 @@ package message
 
 import (
 	"encoding/binary"
+	log "github.com/sirupsen/logrus"
 	"net"
 )
 
@@ -237,6 +238,7 @@ func BuildEAP5GANParameters() []byte {
 	// anParameter = AN-parameter Type | AN-parameter Length | Value part of IE
 
 	// Build GUAMI
+	log.Info("Build GUAMI - Init ")
 	anParameter := make([]byte, 2)
 	guami := make([]byte, 6)
 	guami[0] = 0x02
@@ -262,6 +264,7 @@ func BuildEAP5GANParameters() []byte {
 	anParameters = append(anParameters, anParameter...)
 
 	// Build PLMN ID
+	log.Info("Build PLMN ID - Init ")
 	anParameter = make([]byte, 2)
 	plmnID := make([]byte, 3)
 	plmnID[0] = 0x02
