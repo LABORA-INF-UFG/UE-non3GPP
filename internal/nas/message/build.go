@@ -2,13 +2,14 @@ package message
 
 import (
 	"UE-non3GPP/internal/nas/context"
+	utils "UE-non3GPP/pkg/utils"
 	"encoding/hex"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"github.com/free5gc/nas"
 	"github.com/free5gc/nas/nasMessage"
 	"github.com/free5gc/nas/nasType"
 	"github.com/free5gc/nas/security"
+	log "github.com/sirupsen/logrus"
 	"net"
 )
 
@@ -59,7 +60,7 @@ func BuildAuthenticationResponse(paramAutn []uint8, eapMsg string) []byte {
 func BuildRegistrationRequest(ue *context.UeNas) []byte {
 
 	// get mcc and mcc
-	resu := getMccAndMncInOctets(ue.NasSecurity.Mcc, ue.NasSecurity.Mnc)
+	resu := utils.getMccAndMncInOctets(ue.NasSecurity.Mcc, ue.NasSecurity.Mnc)
 	log.Info("Mcc and Mnc In Octets: % x", resu)
 
 	// get msin
@@ -113,7 +114,7 @@ func BuildPduEstablishmentRequest(ue *context.UeNas) []byte {
 
 }
 
-func getMccAndMncInOctets(mcc, mnc string) []byte {
+/*func getMccAndMncInOctets(mcc, mnc string) []byte {
 
 	// reverse mcc and mnc
 	mcc = reverse(mcc)
@@ -138,7 +139,7 @@ func getMccAndMncInOctets(mcc, mnc string) []byte {
 	}
 
 	return resu
-}
+}*/
 
 func reverse(s string) string {
 	// reverse string.
