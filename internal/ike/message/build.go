@@ -3,6 +3,7 @@ package message
 import (
 	"encoding/binary"
 	config "UE-non3GPP/config"
+	utils "UE-non3GPP/pkg/utils"
 	log "github.com/sirupsen/logrus"
 	"net"
 )
@@ -240,7 +241,8 @@ func BuildEAP5GANParameters() []byte {
 
 	// Build GUAMI
 	cfg := config.GetConfig()
-	log.Info("Mcc in config file ", cfg.Ue.Hplmn.Mcc)
+	resu := utils.GetMccAndMncInOctets(cfg.Ue.Hplmn.Mcc, cfg.Ue.Hplmn.Mnc)
+	log.Info("Mcc and Mnc In Octets: %x\r", resu)
 
 	log.Info("Build GUAMI - Init ")
 	anParameter := make([]byte, 2)
