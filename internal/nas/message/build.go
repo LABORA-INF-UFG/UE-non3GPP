@@ -113,7 +113,9 @@ func BuildPduEstablishmentRequest(ue *context.UeNas) []byte {
 
 }
 
-/*func getMccAndMncInOctets(mcc, mnc string) []byte {
+/*
+
+func getMccAndMncInOctets(mcc, mnc string) []byte {
 
 	// reverse mcc and mnc
 	mcc = reverse(mcc)
