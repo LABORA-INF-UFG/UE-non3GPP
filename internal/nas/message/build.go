@@ -65,11 +65,15 @@ func BuildRegistrationRequest(ue *context.UeNas) []byte {
 	// get msin
 	suciV1, suciV2, suciV3, suciV4, suciV5 := utils.EncodeUeSuci(ue.NasSecurity.Msin)
 
-	log.Info("suciV1: % x", suciV1)
-	log.Info("suciV2: % x", suciV2)
-	log.Info("suciV3: % x", suciV3)
-	log.Info("suciV4: % x", suciV4)
-	log.Info("suciV5: % x", suciV5)
+	//fmt.Printf("codedAMFServedGUAMI: %d\n", codedAMFServedGUAMI)
+	//fmt.Printf("codedAMFServedGUAMI: %v\n", codedAMFServedGUAMI)
+	//fmt.Printf("codedAMFServedGUAMI: %x\n", codedAMFServedGUAMI)
+
+	log.Info("suciV1: %d\n", suciV1)
+	log.Info("suciV2: %d\n", suciV2)
+	log.Info("suciV3: %d\n", suciV3)
+	log.Info("suciV4: %d\n", suciV4)
+	log.Info("suciV5: %d\n", suciV5)
 
 	var suci nasType.MobileIdentity5GS
 
