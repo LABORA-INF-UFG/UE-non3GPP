@@ -41,7 +41,7 @@ func (utils *Utils) GetInterfaceName(IPAddress string) (interfaceName string, er
 	return "", fmt.Errorf("Cannot find interface name")
 }
 
-func getMccAndMncInOctets(mcc, mnc string) []byte {
+func GetMccAndMncInOctets(mcc, mnc string) []byte {
 
 	// reverse mcc and mnc
 	mcc = reverse(mcc)

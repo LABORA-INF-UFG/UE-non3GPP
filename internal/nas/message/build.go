@@ -60,7 +60,7 @@ func BuildAuthenticationResponse(paramAutn []uint8, eapMsg string) []byte {
 func BuildRegistrationRequest(ue *context.UeNas) []byte {
 
 	// get mcc and mcc
-	resu := utils.getMccAndMncInOctets(ue.NasSecurity.Mcc, ue.NasSecurity.Mnc)
+	resu := utils.GetMccAndMncInOctets(ue.NasSecurity.Mcc, ue.NasSecurity.Mnc)
 	log.Info("Mcc and Mnc In Octets: % x", resu)
 
 	// get msin
