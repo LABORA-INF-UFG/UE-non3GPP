@@ -113,35 +113,6 @@ func BuildPduEstablishmentRequest(ue *context.UeNas) []byte {
 
 }
 
-func reverse(s string) string {
-	// reverse string.
-	var aux string
-	for _, valor := range s {
-		aux = string(valor) + aux
-	}
-	return aux
-
-}
-
-/*func encodeUeSuci(msin string) (uint8, uint8, uint8, uint8, uint8) {
-
-	// reverse imsi string.
-	aux := reverse(msin)
-
-	// calculate decimal value.
-	suci, error := hex.DecodeString(aux)
-	if error != nil {
-		return 0, 0, 0, 0, 0
-	}
-
-	// return decimal value
-	if len(msin) == 8 {
-		return uint8(suci[0]), uint8(suci[1]), uint8(suci[2]), uint8(suci[3]), 0
-	} else {
-		return uint8(suci[0]), uint8(suci[1]), uint8(suci[2]), uint8(suci[3]), uint8(suci[4])
-	}
-}*/
-
 func getUESecurityCapability(cipheringAlg, integrityAlg uint8) (UESecurityCapability *nasType.UESecurityCapability) {
 	UESecurityCapability = &nasType.UESecurityCapability{
 		Iei:    nasMessage.RegistrationRequestUESecurityCapabilityType,
