@@ -2,6 +2,7 @@ package message
 
 import (
 	"encoding/binary"
+	config "UE-non3GPP/config"
 	log "github.com/sirupsen/logrus"
 	"net"
 )
@@ -238,6 +239,9 @@ func BuildEAP5GANParameters() []byte {
 	// anParameter = AN-parameter Type | AN-parameter Length | Value part of IE
 
 	// Build GUAMI
+	cfg := config.GetConfig()
+	log.Info("Mcc in config file ", cfg.Ue.Hplmn.Mcc)
+
 	log.Info("Build GUAMI - Init ")
 	anParameter := make([]byte, 2)
 	guami := make([]byte, 6)
