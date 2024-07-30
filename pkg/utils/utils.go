@@ -44,8 +44,8 @@ func (utils *Utils) GetInterfaceName(IPAddress string) (interfaceName string, er
 func GetMccAndMncInOctets(mcc, mnc string) []byte {
 
 	// reverse mcc and mnc
-	mcc = reverse(mcc)
-	mnc = reverse(mnc)
+	mcc = ReverseStr(mcc)
+	mnc = ReverseStr(mnc)
 
 	// include mcc and mnc in octets
 	oct5 := mcc[1:3]
@@ -68,11 +68,30 @@ func GetMccAndMncInOctets(mcc, mnc string) []byte {
 	return resu
 }
 
-func reverse(s string) string {
+func ReverseStr(s string) string {
 	// reverse string.
 	var aux string
 	for _, valor := range s {
 		aux = string(valor) + aux
 	}
 	return aux
+}
+
+func EncodeUeSuci(msin string) (uint8, uint8, uint8, uint8, uint8) {
+
+	// reverse imsi string.
+	aux := ReverseStr(msin)
+
+	// calculate decimal value.
+	suci, error := hex.DecodeString(aux)
+	if error != nil {
+		return 0, 0, 0, 0, 0
+	}
+
+	// return decimal value
+	if len(msin) == 8 {
+		return uint8(suci[0]), uint8(suci[1]), uint8(suci[2]), uint8(suci[3]), 0
+	} else {
+		return uint8(suci[0]), uint8(suci[1]), uint8(suci[2]), uint8(suci[3]), uint8(suci[4])
+	}
 }
