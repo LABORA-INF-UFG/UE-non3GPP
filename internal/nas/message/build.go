@@ -4,6 +4,7 @@ import (
 	"UE-non3GPP/internal/nas/context"
 	"encoding/hex"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/free5gc/nas"
 	"github.com/free5gc/nas/nasMessage"
 	"github.com/free5gc/nas/nasType"
@@ -59,6 +60,7 @@ func BuildRegistrationRequest(ue *context.UeNas) []byte {
 
 	// get mcc and mcc
 	resu := getMccAndMncInOctets(ue.NasSecurity.Mcc, ue.NasSecurity.Mnc)
+	log.Info("Mcc and Mnc In Octets: % x", resu)
 
 	// get msin
 	suciV1, suciV2, suciV3, suciV4, suciV5 := encodeUeSuci(ue.NasSecurity.Msin)
