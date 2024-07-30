@@ -61,13 +61,9 @@ func BuildRegistrationRequest(ue *context.UeNas) []byte {
 	// get mcc and mcc
 	resu := utils.GetMccAndMncInOctets(ue.NasSecurity.Mcc, ue.NasSecurity.Mnc)
 	log.Info("Mcc and Mnc In Octets: % x", resu)
-	log.Info("Mcc and Mnc resu[0]: % x", resu[0])
-	log.Info("Mcc and Mnc resu[1]: % x", resu[1])
-	log.Info("Mcc and Mnc resu[2]: % x", resu[2])
 
 	// get msin
 	suciV1, suciV2, suciV3, suciV4, suciV5 := utils.EncodeUeSuci(ue.NasSecurity.Msin)
-	log.Info("suciV1: % x", suciV1)
 
 	var suci nasType.MobileIdentity5GS
 
@@ -116,6 +112,62 @@ func BuildPduEstablishmentRequest(ue *context.UeNas) []byte {
 	return ulNasPduRequestMessageWithSecurityHeader
 
 }
+
+/*func getMccAndMncInOctets(mcc, mnc string) []byte {
+
+	// reverse mcc and mnc
+	mcc = reverse(mcc)
+	mnc = reverse(mnc)
+
+	// include mcc and mnc in octets
+	oct5 := mcc[1:3]
+	var oct6 string
+	var oct7 string
+	if len(mnc) == 2 {
+		oct6 = "f" + string(mcc[0])
+		oct7 = mnc
+	} else {
+		oct6 = string(mnc[0]) + string(mcc[0])
+		oct7 = mnc[1:3]
+	}
+
+	// changed for bytes.
+	resu, err := hex.DecodeString(oct5 + oct6 + oct7)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return resu
+}
+
+func reverse(s string) string {
+	// reverse string.
+	var aux string
+	for _, valor := range s {
+		aux = string(valor) + aux
+	}
+	return aux
+
+}
+
+func encodeUeSuci(msin string) (uint8, uint8, uint8, uint8, uint8) {
+
+	// reverse imsi string.
+	aux := reverse(msin)
+
+	// calculate decimal value.
+	suci, error := hex.DecodeString(aux)
+	if error != nil {
+		return 0, 0, 0, 0, 0
+	}
+
+	// return decimal value
+	if len(msin) == 8 {
+		return uint8(suci[0]), uint8(suci[1]), uint8(suci[2]), uint8(suci[3]), 0
+	} else {
+		return uint8(suci[0]), uint8(suci[1]), uint8(suci[2]), uint8(suci[3]), uint8(suci[4])
+	}
+}*/
 
 func getUESecurityCapability(cipheringAlg, integrityAlg uint8) (UESecurityCapability *nasType.UESecurityCapability) {
 	UESecurityCapability = &nasType.UESecurityCapability{
