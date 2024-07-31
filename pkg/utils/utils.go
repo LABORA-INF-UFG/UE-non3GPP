@@ -77,6 +77,10 @@ func ReverseStr(s string) string {
 	return aux
 }
 
+func ConcatenateZeros(str string, zeros int) string {
+	return fmt.Sprintf("%0*s", zeros+len(str), str)
+}
+
 func EncodeUeSuci(msin string) (uint8, uint8, uint8, uint8, uint8) {
 
 	// reverse imsi string.
