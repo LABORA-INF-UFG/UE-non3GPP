@@ -79,9 +79,9 @@ func ReverseStr(s string) string {
 	return aux
 }
 
-func ConvertToHexByte(value string) byte {
+func ConvertToHexByte(str string) byte {
 	// Convertendo a string hexadecimal para um valor inteiro
-	value, err := strconv.ParseUint(value, 16, 8)
+	value, err := strconv.ParseUint(str, 16, 8)
 	if err != nil {
 		log.Fatal(err)
 	}
