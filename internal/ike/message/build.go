@@ -242,7 +242,7 @@ func BuildEAP5GANParameters() []byte {
 	// Build GUAMI
 	cfg := config.GetConfig()
 	resu := utils.GetMccAndMncInOctets(cfg.Ue.Hplmn.Mcc, cfg.Ue.Hplmn.Mnc)
-		
+
 	vlZeroGuami := utils.ConvertToHexByte(utils.ParseHexadecimal(resu[0]))
 	vlUmGuami := utils.ConvertToHexByte(utils.ParseHexadecimal(resu[1]))
 	vlDoisGuami := utils.ConvertToHexByte(utils.ParseHexadecimal(resu[2]))
@@ -288,13 +288,19 @@ func BuildEAP5GANParameters() []byte {
 
 	anParameters = append(anParameters, anParameter...)
 
+	// Valida tamanho do campo
+	err := ValidateLenStringField("Snssai - SD", cfg.Ue.Snssai.Sd, 6)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// Build NSSAI
 	anParameter = make([]byte, 2)
 	var nssai []byte
 	// s-nssai = s-nssai length(1 byte) | SST(1 byte) | SD(3 bytes)
 	snssai := make([]byte, 5)
 	snssai[0] = 4
-	snssai[1] = 1
+	snssai[1] = byte(cfg.Ue.Snssai.Sst)
 	snssai[2] = 0x01
 	snssai[3] = 0x02
 	snssai[4] = 0x03
@@ -302,14 +308,14 @@ func BuildEAP5GANParameters() []byte {
 
 	/* ao que parece é possível passar mais de um slice p/ utilização */
 	/*
-	snssai = make([]byte, 5)
-	snssai[0] = 4
-	snssai[1] = 1
-	snssai[2] = 0x11
-	snssai[3] = 0x22
-	snssai[4] = 0x33
-	nssai = append(nssai, snssai...)
-*/
+		snssai = make([]byte, 5)
+		snssai[0] = 4
+		snssai[1] = 1
+		snssai[2] = 0x11
+		snssai[3] = 0x22
+		snssai[4] = 0x33
+		nssai = append(nssai, snssai...)
+	*/
 	anParameter[0] = ANParametersTypeRequestedNSSAI
 	anParameter[1] = byte(len(nssai))
 	anParameter = append(anParameter, nssai...)

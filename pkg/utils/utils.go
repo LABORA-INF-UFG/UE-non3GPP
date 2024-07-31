@@ -65,7 +65,7 @@ func GetMccAndMncInOctets(mcc, mnc string) []byte {
 	// changed for bytes.
 	resu, err := hex.DecodeString(oct5 + oct6 + oct7)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatal(err)
 	}
 
 	return resu
