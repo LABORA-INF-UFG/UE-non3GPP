@@ -244,8 +244,10 @@ func BuildEAP5GANParameters() []byte {
 	resu := utils.GetMccAndMncInOctets(cfg.Ue.Hplmn.Mcc, cfg.Ue.Hplmn.Mnc)
 
 	anParameter := make([]byte, 2)
-	guami := make([]byte, 6)
 
+	log.Info("Build GUAMI - Init ")
+
+	guami := make([]byte, 6)
 	guami[0] = utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[0])) //0x02
 	guami[1] = utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[1])) //0xf8
 	guami[2] = utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2])) //0x39
