@@ -249,12 +249,13 @@ func BuildEAP5GANParameters() []byte {
 	log.Info("Build GUAMI - Init ")
 	anParameter := make([]byte, 2)
 	guami := make([]byte, 6)
-	guami[0] = utils.ConvertToHexByte("2") //0x02
-	guami[1] = 0xf8
-	guami[2] = 0x39
-	guami[3] = 0xca
-	guami[4] = 0xfe
-	guami[5] = 0x0
+	guami[0] = utils.ConvertToHexByte("2")  //0x02
+	guami[1] = utils.ConvertToHexByte("f8") //0xf8
+	guami[2] = utils.ConvertToHexByte("39") //0x39
+	guami[3] = utils.ConvertToHexByte("ca") //0xca
+	guami[4] = utils.ConvertToHexByte("fe") //0xfe
+	guami[5] = utils.ConvertToHexByte("0")  //0x0
+	
 	anParameter[0] = ANParametersTypeGUAMI
 	anParameter[1] = byte(len(guami))
 	anParameter = append(anParameter, guami...)
