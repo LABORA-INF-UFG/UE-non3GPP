@@ -295,9 +295,8 @@ func BuildEAP5GANParameters() []byte {
 	}
 
 	snssaiSdUm := cfg.Ue.Snssai.Sd[0:2]
-	snssaiSdUm := utils.ConvertToHexByte(cfg.Ue.Snssai.Sd[0:2])
-	snssaiSdDois := utils.ConvertToHexByte(cfg.Ue.Snssai.Sd[2:4])
-	snssaiSdTres := utils.ConvertToHexByte(cfg.Ue.Snssai.Sd[4:6])
+	snssaiSdDois := cfg.Ue.Snssai.Sd[2:4]
+	snssaiSdTres := cfg.Ue.Snssai.Sd[4:6]
 
 	log.Info("snssaiSdUm: ", snssaiSdUm)
 	log.Info("snssaiSdDois: ", snssaiSdDois)
