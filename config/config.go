@@ -2,6 +2,7 @@ package config
 
 import (
 	log "github.com/sirupsen/logrus"
+	yaml "gopkg.in/yaml.v2"
 	"io/ioutil"
 	"path"
 	"path/filepath"
