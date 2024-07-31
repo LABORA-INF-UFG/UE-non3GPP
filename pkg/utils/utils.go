@@ -109,6 +109,15 @@ func ConvertToHexByte(str string) byte {
 	return byte(value)
 }
 
+func IsNumeric(s string) bool {
+	for _, char := range s {
+		if !unicode.IsDigit(char) {
+			return false
+		}
+	}
+	return true
+}
+
 func EncodeUeSuci(msin string) (uint8, uint8, uint8, uint8, uint8) {
 
 	// reverse imsi string.
