@@ -294,14 +294,12 @@ func BuildEAP5GANParameters() []byte {
 		log.Fatal(err)
 	}
 
-	snssaiSdUmorig := cfg.Ue.Snssai.Sd[0:2]
+	snssaiSdUm := cfg.Ue.Snssai.Sd[0:2]
 	snssaiSdUm := utils.ConvertToHexByte(cfg.Ue.Snssai.Sd[0:2])
 	snssaiSdDois := utils.ConvertToHexByte(cfg.Ue.Snssai.Sd[2:4])
 	snssaiSdTres := utils.ConvertToHexByte(cfg.Ue.Snssai.Sd[4:6])
 
 	log.Info("snssaiSdUm: ", snssaiSdUm)
-	log.Info("snssaiSdUmorig: ", snssaiSdUmorig)
-
 	log.Info("snssaiSdDois: ", snssaiSdDois)
 	log.Info("snssaiSdTres: ", snssaiSdTres)
 
@@ -312,7 +310,8 @@ func BuildEAP5GANParameters() []byte {
 	snssai := make([]byte, 5)
 	snssai[0] = 4
 	snssai[1] = byte(cfg.Ue.Snssai.Sst)
-	snssai[2] = 0x01
+
+	snssai[2] = utils.ConvertToHexByte(snssaiSdUm)
 	snssai[3] = 0x02
 	snssai[4] = 0x03
 	nssai = append(nssai, snssai...)
