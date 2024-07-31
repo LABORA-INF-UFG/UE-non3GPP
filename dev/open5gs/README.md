@@ -119,14 +119,24 @@ Antes de inicializar a N3IWF deve-se fazer um tail no log da AMF. Os logs do ope
 tail -f /root/open5gs/install/var/log/open5gs/amf.log
 ```
 
-### Iniciar e habilitar o serviço do Open5GS
+### Iniciar e habilitar um serviço de uma função especifica - Open5GS
 ```
 sudo systemctl start open5gs-udrd
 sudo systemctl enable open5gs-udrd
 ```
 
-### Checar o status do serviço do Open5GS
+### Checar o status do serviço de uma função especifica Open5GS
 ```
 sudo systemctl status open5gs-udrd
+```
+
+### Checar o status do serviço de TADAS as funções de rede - Open5GS
+```
+systemctl status open5gs*
+```
+
+### Reiniciar TODOS os serviço de TADAS as funções de rede - Open5GS
+```
+sudo systemctl restart open5gs*
 ```
 
