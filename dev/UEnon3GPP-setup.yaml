@@ -127,7 +127,10 @@
                       mcc: "{{ MCC }}"
                       mnc: "{{ MNC }}"
                     ranuengapid: 1
-                    amfuengapid: 1
+                    amfid:
+                      region: "ca"
+                      set: "fe"
+                      pointer: "0"
                     authenticationmanagementfield : "{{ AUTH_MN_FIELD }}"
                     localpublicipaddr : "{{ UE_NON3GPP_IP_ADDR }}"
                     localpublicportudpconnection : "{{ UE_NON3GPP_PORT_UDP_CONNECTION }}"
