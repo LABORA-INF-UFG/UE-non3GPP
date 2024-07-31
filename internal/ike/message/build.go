@@ -289,7 +289,7 @@ func BuildEAP5GANParameters() []byte {
 	anParameters = append(anParameters, anParameter...)
 
 	// Valida tamanho do campo
-	err := ValidateLenStringField("Snssai - SD", cfg.Ue.Snssai.Sd, 6)
+	err := utils.ValidateLenStringField("Snssai - SD", cfg.Ue.Snssai.Sd, 6)
 	if err != nil {
 		log.Fatal(err)
 	}
