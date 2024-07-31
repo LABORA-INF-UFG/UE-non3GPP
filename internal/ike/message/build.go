@@ -282,9 +282,10 @@ func BuildEAP5GANParameters() []byte {
 	log.Info("Build PLMN ID - Init ")
 	anParameter = make([]byte, 2)
 	plmnID := make([]byte, 3)
-	plmnID[0] = 0x02
-	plmnID[1] = 0xf8
-	plmnID[2] = 0x39
+	plmnID[0] = vlZeroGuami
+	plmnID[1] = vlUmGuami
+	plmnID[2] = vlDoisGuami
+	
 	anParameter[0] = ANParametersTypeSelectedPLMNID
 	anParameter[1] = byte(len(plmnID))
 	anParameter = append(anParameter, plmnID...)
