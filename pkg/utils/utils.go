@@ -3,7 +3,9 @@ package utils
 import (
 	"encoding/hex"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"net"
+	"strconv"
 	"strings"
 )
 
@@ -77,8 +79,13 @@ func ReverseStr(s string) string {
 	return aux
 }
 
-func ConcatenateZeros(str string, zeros int) string {
-	return fmt.Sprintf("%0*s", zeros+len(str), str)
+func ParseByteSlice(value string) byte {
+	// Convertendo a string hexadecimal para um valor inteiro
+	value, err := strconv.ParseUint(value, 16, 8)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return byte(value)
 }
 
 func EncodeUeSuci(msin string) (uint8, uint8, uint8, uint8, uint8) {

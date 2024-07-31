@@ -249,7 +249,7 @@ func BuildEAP5GANParameters() []byte {
 	log.Info("Build GUAMI - Init ")
 	anParameter := make([]byte, 2)
 	guami := make([]byte, 6)
-	guami[0] = byte(2) //0x02
+	guami[0] = utils.ParseByteSlice("2") //0x02
 	guami[1] = 0xf8
 	guami[2] = 0x39
 	guami[3] = 0xca
