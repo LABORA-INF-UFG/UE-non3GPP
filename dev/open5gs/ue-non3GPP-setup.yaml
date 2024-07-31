@@ -99,8 +99,8 @@
                       mnc: "{{ MNC }}"
                     ranuengapid: 1
                     amfid:
-                      region: "ca"
-                      set: "fe"
+                      region: "202"
+                      set: "254"
                       pointer: "0"
                     authenticationmanagementfield : "{{ AUTH_MN_FIELD }}"
                     localpublicipaddr : "{{ UE_NON3GPP_IP_ADDR }}"
