@@ -103,11 +103,19 @@ func ValidateLenStringField(label string, value string, size uint8) error {
 
 func ConvertToHexByte(str string) byte {
 	// Convertendo a string hexadecimal para um valor inteiro
-	value, err := strconv.ParseUint(str, 16, 8)
-	if err != nil {
-		log.Fatal(err)
+	if (IsNumeric(str)) {
+		value, err := strconv.ParseUint(str, 10, 8)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return byte(value)
+	} else {
+		value, err := strconv.ParseUint(str, 16, 8)
+		if err != nil {
+			log.Fatal(err)
+		}
+		return byte(value)
 	}
-	return byte(value)
 }
 
 func IsNumeric(s string) bool {
