@@ -243,8 +243,6 @@ func BuildEAP5GANParameters() []byte {
 	cfg := config.GetConfig()
 	resu := utils.GetMccAndMncInOctets(cfg.Ue.Hplmn.Mcc, cfg.Ue.Hplmn.Mnc)
 
-	vlZeroGuami := utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[0]))
-	vlUmGuami := utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[1]))
 	vlDoisGuami := utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2]))
 
 	//log.Info("vlZeroGuami ", vlZeroGuami)
@@ -253,9 +251,9 @@ func BuildEAP5GANParameters() []byte {
 
 	anParameter := make([]byte, 2)
 	guami := make([]byte, 6)
-	guami[0] = vlZeroGuami //0x02
-	guami[1] = vlUmGuami   //0xf8
-	guami[2] = vlDoisGuami //0x39
+	guami[0] = utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[0])) //0x02
+	guami[1] = utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[1])) //0xf8
+	guami[2] = vlDoisGuami                                                    //0x39
 
 	guami[3] = utils.ConvertToHexByte(cfg.Ue.AmfId.Region)  //0xca
 	guami[4] = utils.ConvertToHexByte(cfg.Ue.AmfId.Set)     //0xfe
@@ -281,11 +279,9 @@ func BuildEAP5GANParameters() []byte {
 	log.Info("Build PLMN ID - Init ")
 	anParameter = make([]byte, 2)
 	plmnID := make([]byte, 3)
-	plmnID[0] = vlZeroGuami //0x02
-	plmnID[1] = vlUmGuami   //0xf8
+	plmnID[0] = utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[0])) //0x02
+	plmnID[1] = utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[1])) //0xf8
 
-	log.Info("********************************** ")
-	log.Info("vlDoisGuami ", vlDoisGuami)
 	plmnID[2] = 0x39 //vlDoisGuami //0x39
 
 	anParameter[0] = ANParametersTypeSelectedPLMNID
