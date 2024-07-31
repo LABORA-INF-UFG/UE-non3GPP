@@ -7,7 +7,6 @@ import (
 	"runtime"
 
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/yaml.v2"
 )
 
 var Data = getConfig()
@@ -25,8 +24,12 @@ type Config struct {
 			Mcc string `yaml: "mcc"`
 			Mnc string `yaml: "mnc"`
 		} `yaml: "hplmn"`
-		RanUeNgapId                   int64  `yaml: "ranuengapid"`
-		AmfUeNgapId                   int64  `yaml: "amfuengapid"`
+		RanUeNgapId int64 `yaml: "ranuengapid"`
+		AmfId       struct {
+			Region  string `yaml: "region"`
+			Set     string `yaml: "set"`
+			Pointer string `yaml: "pointer"`
+		} `yaml: "amfid"`
 		AuthenticationManagementField string `yaml: "authenticationmanagementfield"`
 		LocalPublicIPAddr             string `yaml: "localpublicipaddr"`
 		LocalPublicPortUDPConnection  string `yaml: "localpublicportudpconnection"`
@@ -40,7 +43,6 @@ type Config struct {
 			Name string `yaml: "name"`
 			Mark uint32 `yaml: "mark"`
 			Mtu  int    `yaml: "mtu"`
-			
 		} `yaml: "ipsecinterface"`
 
 		Snssai struct {

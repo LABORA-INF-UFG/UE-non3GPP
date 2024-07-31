@@ -9,7 +9,10 @@ ue:
     mcc: "208"
     mnc: "93"
   ranuengapid: 1
-  amfuengapid: 1
+  AmfId:
+    Region: "ca"
+    Set: "fe"
+    Pointer: "0"
   authenticationmanagementfield : "8000"
   localpublicipaddr : "137.184.197.13"
   localpublicportudpconnection : "500"
