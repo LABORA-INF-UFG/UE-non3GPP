@@ -280,9 +280,7 @@ func BuildEAP5GANParameters() []byte {
 	plmnID := make([]byte, 3)
 	plmnID[0] = utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[0])) //0x02
 	plmnID[1] = utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[1])) //0xf8
-
 	log.Info(fmt.Sprintf("ultimo - O valor hexadecimal é: 0x%X", utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2]))))
-
 	plmnID[2] = 0x39 //utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2])) //0x39
 
 	anParameter[0] = ANParametersTypeSelectedPLMNID
