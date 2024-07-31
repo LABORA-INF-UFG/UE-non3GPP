@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"net"
@@ -82,6 +83,16 @@ func ReverseStr(s string) string {
 func ParseHexadecimal(num uint8) string {
 	hexStr := fmt.Sprintf("%x", num)
 	return hexStr
+}
+
+func ValidateLenStringField(label string, value string, size uint8) error {
+	if len(value) == 0 {
+		return errors.New(label + " cannot be empty")
+	}
+	if len(value) != int(size) {
+		return errors.New(label + " must have " + strconv.Itoa(int(size)) + " characters")
+	}
+	return nil
 }
 
 func ConvertToHexByte(str string) byte {
