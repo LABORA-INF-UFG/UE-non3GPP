@@ -14,8 +14,8 @@
             OP_VALUE: "763286b5b9ffbdf56e1297d0887b"
             SEQ_NUMBER: "b3f70fc0"
             AUTH_MN_FIELD: "8000"
-            MCC: "999"
-            MNC: "70"
+            MCC: "208"
+            MNC: "93"
             IPSEC_INTERFACE: "ipsec0"
             GRE_TUN_INTERFACE: "gretun0"
             UE_NON3GPP_IP_ADDR: "127.0.0.1"
@@ -100,8 +100,8 @@
                     ranuengapid: 1
                     amfid:
                       region: "202"
-                      set: "254"
-                      pointer: "0"
+                      set: "63"
+                      pointer: "128"
                     authenticationmanagementfield : "{{ AUTH_MN_FIELD }}"
                     localpublicipaddr : "{{ UE_NON3GPP_IP_ADDR }}"
                     localpublicportudpconnection : "{{ UE_NON3GPP_PORT_UDP_CONNECTION }}"

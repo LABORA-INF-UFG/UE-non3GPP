@@ -99,20 +99,21 @@
                           port: 9090
                     guami:
                       - plmn_id:
-                          mcc: 999
-                          mnc: 70
+                          mcc: 208
+                          mnc: 93
                         amf_id:
-                          region: 2
-                          set: 1
+                          region: 202
+                          set: 254
+                          pointer: 0
                     tai:
                       - plmn_id:
-                          mcc: 999
-                          mnc: 70
+                          mcc: 208
+                          mnc: 93
                         tac: 1
                     plmn_support:
                       - plmn_id:
-                          mcc: 999
-                          mnc: 70
+                          mcc: 208
+                          mnc: 93
                         s_nssai:
                           - sst: 1
                             sd: 010203  #customizado a partir da N3IWF
@@ -225,8 +226,8 @@
                   #  o GUAMI
                   #  guami:
                   #    - plmn_id:
-                  #        mcc: 999
-                  #        mnc: 70
+                  #        mcc: 208
+                  #        mnc: 93
                   #      amf_id:
                   #        region: 2
                   #        set: 1
@@ -283,14 +284,14 @@
                   #  o PLMN Support
                   #  plmn_support:
                   #    - plmn_id:
-                  #        mcc: 999
-                  #        mnc: 70
+                  #        mcc: 208
+                  #        mnc: 93
                   #      s_nssai:
                   #        - sst: 1
                   #          sd: 010000
                   #    - plmn_id:
-                  #        mcc: 999
-                  #        mnc: 70
+                  #        mcc: 208
+                  #        mnc: 93
                   #      s_nssai:
                   #        - sst: 1
                   #
@@ -305,8 +306,8 @@
                   #        mcc: 002
                   #        mnc: 02
                   #    - plmn_id:
-                  #        mcc: 999
-                  #        mnc: 70
+                  #        mcc: 208
+                  #        mnc: 93
                   #
                   #  o Relative Capacity
                   #  relative_capacity: 100
@@ -885,7 +886,7 @@
                 content: |
                   db = db.getSiblingDB('open5gs');
                   db.subscribers.insert({
-                    "imsi": "9997000007488",
+                    "imsi": "2089300007488",
                     "auth": {
                       "k": "7488250214c33e723a5dd523fc145fc0",
                       "opc": "7488464c7c52eb6e5036234984ad0bcf",
@@ -894,8 +895,8 @@
                     },
                     "msin": "00007488",
                     "hplmn": {
-                      "mcc": "999",
-                      "mnc": "70"
+                      "mcc": "208",
+                      "mnc": "93"
                     },
                     "ran_ue_ngap_id": 1,
                     "amf_ue_ngap_id": 1,
