@@ -283,7 +283,7 @@ func BuildEAP5GANParameters() []byte {
 	plmnID := make([]byte, 3)
 	plmnID[0] = vlZeroGuami //0x02
 	plmnID[1] = vlUmGuami   //0xf8
-	plmnID[2] = 0x39        //vlDoisGuami //0x39
+	plmnID[2] = vlDoisGuami //0x39
 
 	anParameter[0] = ANParametersTypeSelectedPLMNID
 	anParameter[1] = byte(len(plmnID))
