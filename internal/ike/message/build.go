@@ -251,6 +251,7 @@ func BuildEAP5GANParameters() []byte {
 	guami[1] = utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[1])) //0xf8
 	guami[2] = utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2])) //0x39
 
+	log.Info(fmt.Sprintf("guami[2] - O valor hexadecimal é: 0x%X", guami[2]))
 	log.Info(fmt.Sprintf("1 - O valor hexadecimal é: 0x%X", utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2]))))
 
 	guami[3] = utils.ConvertToHexByte(cfg.Ue.AmfId.Region)  //0xca
