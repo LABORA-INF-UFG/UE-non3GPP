@@ -80,7 +80,12 @@ func ReverseStr(s string) string {
 	return aux
 }
 
-func ParseHexadecimal(num uint8) string {
+func ParseUint8ToHexadecimal(num uint8) string {
+	hexStr := fmt.Sprintf("%x", num)
+	return hexStr
+}
+
+func ParseStringToHexadecimal(num string) string {
 	hexStr := fmt.Sprintf("%x", num)
 	return hexStr
 }

@@ -243,9 +243,9 @@ func BuildEAP5GANParameters() []byte {
 	cfg := config.GetConfig()
 	resu := utils.GetMccAndMncInOctets(cfg.Ue.Hplmn.Mcc, cfg.Ue.Hplmn.Mnc)
 
-	vlZeroGuami := utils.ConvertToHexByte(utils.ParseHexadecimal(resu[0]))
-	vlUmGuami := utils.ConvertToHexByte(utils.ParseHexadecimal(resu[1]))
-	vlDoisGuami := utils.ConvertToHexByte(utils.ParseHexadecimal(resu[2]))
+	vlZeroGuami := utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[0]))
+	vlUmGuami := utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[1]))
+	vlDoisGuami := utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2]))
 
 	log.Info("Build GUAMI - Init ")
 	anParameter := make([]byte, 2)
@@ -294,9 +294,9 @@ func BuildEAP5GANParameters() []byte {
 		log.Fatal(err)
 	}
 
-	snssaiSdUm := cfg.Ue.Snssai.Sd[0:2]
-	snssaiSdDois := cfg.Ue.Snssai.Sd[2:4]
-	snssaiSdTres := cfg.Ue.Snssai.Sd[4:6]
+	snssaiSdUm := utils.ParseStringToHexadecimal(cfg.Ue.Snssai.Sd[0:2])
+	snssaiSdDois := utils.ParseStringToHexadecimal(cfg.Ue.Snssai.Sd[2:4])
+	snssaiSdTres := utils.ParseStringToHexadecimal(cfg.Ue.Snssai.Sd[4:6])
 
 	log.Info("snssaiSdUm: ", snssaiSdUm)
 	log.Info("snssaiSdDois: ", snssaiSdDois)
