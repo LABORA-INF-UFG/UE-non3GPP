@@ -250,13 +250,12 @@ func BuildEAP5GANParameters() []byte {
 	log.Info("vlZeroGuami ", vlZeroGuami)
 	log.Info("vlUmGuami ", vlUmGuami)
 	log.Info("vlDoisGuami ", vlDoisGuami)
-	log.Info("vvvvv-->  %x\r", utils.ConvertToHexByte(vlDoisGuami))
 
 	anParameter := make([]byte, 2)
 	guami := make([]byte, 6)
 	guami[0] = vlZeroGuami //0x02
 	guami[1] = vlUmGuami   //0xf8
-	guami[2] = 0x39        //vlDoisGuami //0x39
+	guami[2] = vlDoisGuami //0x39
 
 	guami[3] = utils.ConvertToHexByte(cfg.Ue.AmfId.Region) //0xca
 	guami[4] = utils.ConvertToHexByte(cfg.Ue.AmfId.Set)    //0xfe
