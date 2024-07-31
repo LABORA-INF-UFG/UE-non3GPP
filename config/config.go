@@ -1,12 +1,11 @@
 package config
 
 import (
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"path"
 	"path/filepath"
 	"runtime"
-
-	log "github.com/sirupsen/logrus"
 )
 
 var Data = getConfig()
