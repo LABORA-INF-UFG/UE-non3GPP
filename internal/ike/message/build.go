@@ -4,7 +4,6 @@ import (
 	config "UE-non3GPP/config"
 	utils "UE-non3GPP/pkg/utils"
 	"encoding/binary"
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"net"
 )
@@ -251,9 +250,6 @@ func BuildEAP5GANParameters() []byte {
 	guami[1] = utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[1])) //0xf8
 	guami[2] = utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2])) //0x39
 
-	log.Info(fmt.Sprintf("string - O valor hexadecimal é: ", utils.ParseUint8ToHexadecimal(resu[2])))
-	log.Info(fmt.Sprintf("1 - O valor hexadecimal é: 0x%X", utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2]))))
-
 	guami[3] = utils.ConvertToHexByte(cfg.Ue.AmfId.Region)  //0xca
 	guami[4] = utils.ConvertToHexByte(cfg.Ue.AmfId.Set)     //0xfe
 	guami[5] = utils.ConvertToHexByte(cfg.Ue.AmfId.Pointer) //0x0
@@ -264,7 +260,6 @@ func BuildEAP5GANParameters() []byte {
 
 	anParameters = append(anParameters, anParameter...)
 
-	log.Info(fmt.Sprintf("2 - O valor hexadecimal é: 0x%X", utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2]))))
 	// Build Establishment Cause
 	anParameter = make([]byte, 2)
 	establishmentCause := make([]byte, 1)
@@ -281,8 +276,8 @@ func BuildEAP5GANParameters() []byte {
 	plmnID := make([]byte, 3)
 	plmnID[0] = utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[0])) //0x02
 	plmnID[1] = utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[1])) //0xf8
-	log.Info(fmt.Sprintf("ultimo - O valor hexadecimal é: 0x%X", utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2]))))
-	plmnID[2] = 0x39 //utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2])) //0x39
+	//log.Info(fmt.Sprintf("ultimo - O valor hexadecimal é: 0x%X", utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2]))))
+	plmnID[2] = resu[2] //utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2])) //0x39
 
 	anParameter[0] = ANParametersTypeSelectedPLMNID
 	anParameter[1] = byte(len(plmnID))
