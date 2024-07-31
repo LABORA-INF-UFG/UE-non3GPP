@@ -79,7 +79,7 @@ func ReverseStr(s string) string {
 	return aux
 }
 
-func ParseByteSlice(value string) byte {
+func ConvertToHexByte(value string) byte {
 	// Convertendo a string hexadecimal para um valor inteiro
 	value, err := strconv.ParseUint(value, 16, 8)
 	if err != nil {
