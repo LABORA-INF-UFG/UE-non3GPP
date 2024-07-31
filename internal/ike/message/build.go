@@ -247,7 +247,7 @@ func BuildEAP5GANParameters() []byte {
 	vlUmGuami := utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[1]))
 	vlDoisGuami := utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2]))
 
-	log.Info("Build GUAMI - Init ")
+	log.Info("Build GUAMI - Init ", vlDoisGuami)
 	anParameter := make([]byte, 2)
 	guami := make([]byte, 6)
 	guami[0] = vlZeroGuami //0x02
@@ -312,15 +312,15 @@ func BuildEAP5GANParameters() []byte {
 	nssai = append(nssai, snssai...)
 
 	/* ao que parece é possível passar mais de um slice p/ utilização */
-
-	snssai = make([]byte, 5)
-	snssai[0] = 4
-	snssai[1] = 1
-	snssai[2] = 0x11
-	snssai[3] = 0x22
-	snssai[4] = 0x33
-	nssai = append(nssai, snssai...)
-
+	/*
+		snssai = make([]byte, 5)
+		snssai[0] = 4
+		snssai[1] = 1
+		snssai[2] = 0x11
+		snssai[3] = 0x22
+		snssai[4] = 0x33
+		nssai = append(nssai, snssai...)
+	*/
 	anParameter[0] = ANParametersTypeRequestedNSSAI
 	anParameter[1] = byte(len(nssai))
 	anParameter = append(anParameter, nssai...)
