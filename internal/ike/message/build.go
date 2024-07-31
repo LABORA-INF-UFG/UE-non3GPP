@@ -250,8 +250,13 @@ func BuildEAP5GANParameters() []byte {
 	pUmGuami := resu[1]
 	vlUmGuami := utils.ParseHexadecimal(pUmGuami)
 
+	pDoisGuami := resu[2]
+	vlDoisGuami := utils.ParseHexadecimal(pDoisGuami)
+
 	log.Info("pZeroGuami - : ", vlZeroGuami)
 	log.Info("pUmGuami - : ", vlUmGuami)
+	log.Info("pDoisGuami - : ", vlDoisGuami)
+	
 	log.Info("Mcc and Mnc In Octets: %x\r", resu)
 
 	log.Info("Build GUAMI - Init ")
