@@ -244,23 +244,19 @@ func BuildEAP5GANParameters() []byte {
 	resu := utils.GetMccAndMncInOctets(cfg.Ue.Hplmn.Mcc, cfg.Ue.Hplmn.Mnc)
 	//concat := utils.ConcatenateZeros()
 
-	pZeroGuami := resu[0]
-	vlZeroGuami := utils.ParseHexadecimal(pZeroGuami)
-
-	pUmGuami := resu[1]
-	vlUmGuami := utils.ParseHexadecimal(pUmGuami)
-
-	pDoisGuami := resu[2]
-	vlDoisGuami := utils.ParseHexadecimal(pDoisGuami)
+	
+	vlZeroGuami := utils.ConvertToHexByte(utils.ParseHexadecimal(resu[0]))
+	vlUmGuami := utils.ConvertToHexByte(utils.ParseHexadecimal(resu[1]))
+	vlDoisGuami := utils.ConvertToHexByte(utils.ParseHexadecimal(resu[2]))
 
 	log.Info("Mcc and Mnc In Octets: %x\r", resu)
 
 	log.Info("Build GUAMI - Init ")
 	anParameter := make([]byte, 2)
 	guami := make([]byte, 6)
-	guami[0] = utils.ConvertToHexByte(vlZeroGuami) //0x02
-	guami[1] = utils.ConvertToHexByte(vlUmGuami)   //0xf8
-	guami[2] = utils.ConvertToHexByte(vlDoisGuami) //0x39
+	guami[0] = vlZeroGuami //0x02
+	guami[1] = vlUmGuami   //0xf8
+	guami[2] = vlDoisGuami //0x39
 
 	guami[3] = utils.ConvertToHexByte(cfg.Ue.AmfId.Region)  //0xca
 	guami[4] = utils.ConvertToHexByte(cfg.Ue.AmfId.Set)     //0xfe
