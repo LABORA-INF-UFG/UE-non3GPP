@@ -242,14 +242,10 @@ func BuildEAP5GANParameters() []byte {
 	// Build GUAMI
 	cfg := config.GetConfig()
 	resu := utils.GetMccAndMncInOctets(cfg.Ue.Hplmn.Mcc, cfg.Ue.Hplmn.Mnc)
-	//concat := utils.ConcatenateZeros()
-
-	
+		
 	vlZeroGuami := utils.ConvertToHexByte(utils.ParseHexadecimal(resu[0]))
 	vlUmGuami := utils.ConvertToHexByte(utils.ParseHexadecimal(resu[1]))
 	vlDoisGuami := utils.ConvertToHexByte(utils.ParseHexadecimal(resu[2]))
-
-	log.Info("Mcc and Mnc In Octets: %x\r", resu)
 
 	log.Info("Build GUAMI - Init ")
 	anParameter := make([]byte, 2)
@@ -285,7 +281,7 @@ func BuildEAP5GANParameters() []byte {
 	plmnID[0] = vlZeroGuami
 	plmnID[1] = vlUmGuami
 	plmnID[2] = vlDoisGuami
-	
+
 	anParameter[0] = ANParametersTypeSelectedPLMNID
 	anParameter[1] = byte(len(plmnID))
 	anParameter = append(anParameter, plmnID...)
@@ -303,6 +299,8 @@ func BuildEAP5GANParameters() []byte {
 	snssai[3] = 0x02
 	snssai[4] = 0x03
 	nssai = append(nssai, snssai...)
+
+	/*
 	snssai = make([]byte, 5)
 	snssai[0] = 4
 	snssai[1] = 1
@@ -310,6 +308,7 @@ func BuildEAP5GANParameters() []byte {
 	snssai[3] = 0x22
 	snssai[4] = 0x33
 	nssai = append(nssai, snssai...)
+*/
 	anParameter[0] = ANParametersTypeRequestedNSSAI
 	anParameter[1] = byte(len(nssai))
 	anParameter = append(anParameter, nssai...)
