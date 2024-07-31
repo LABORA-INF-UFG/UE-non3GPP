@@ -244,10 +244,14 @@ func BuildEAP5GANParameters() []byte {
 	resu := utils.GetMccAndMncInOctets(cfg.Ue.Hplmn.Mcc, cfg.Ue.Hplmn.Mnc)
 	//concat := utils.ConcatenateZeros()
 
-	pZeroGuami := resu[0];
+	pZeroGuami := resu[0]
 	vlZeroGuami := utils.ParseHexadecimal(pZeroGuami)
 
+	pUmGuami := resu[1]
+	vlUmGuami := utils.ParseHexadecimal(pUmGuami)
+
 	log.Info("pZeroGuami - : ", vlZeroGuami)
+	log.Info("pUmGuami - : ", vlUmGuami)
 	log.Info("Mcc and Mnc In Octets: %x\r", resu)
 
 	log.Info("Build GUAMI - Init ")
