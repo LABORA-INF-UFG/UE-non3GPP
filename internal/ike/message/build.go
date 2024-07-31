@@ -294,11 +294,14 @@ func BuildEAP5GANParameters() []byte {
 		log.Fatal(err)
 	}
 
+	snssaiSdUmorig := cfg.Ue.Snssai.Sd[0:2]
 	snssaiSdUm := utils.ParseStringToHexadecimal(cfg.Ue.Snssai.Sd[0:2])
 	snssaiSdDois := utils.ParseStringToHexadecimal(cfg.Ue.Snssai.Sd[2:4])
 	snssaiSdTres := utils.ParseStringToHexadecimal(cfg.Ue.Snssai.Sd[4:6])
 
 	log.Info("snssaiSdUm: ", snssaiSdUm)
+	log.Info("snssaiSdUmorig: ", snssaiSdUmorig)
+
 	log.Info("snssaiSdDois: ", snssaiSdDois)
 	log.Info("snssaiSdTres: ", snssaiSdTres)
 
