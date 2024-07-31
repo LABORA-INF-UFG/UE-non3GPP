@@ -288,7 +288,7 @@ func BuildEAP5GANParameters() []byte {
 
 	anParameters = append(anParameters, anParameter...)
 
-	// Valida tamanho do campo
+	// Length Field Validate
 	err := utils.ValidateLenStringField("Snssai - SD", cfg.Ue.Snssai.Sd, 6)
 	if err != nil {
 		log.Fatal(err)
@@ -297,10 +297,6 @@ func BuildEAP5GANParameters() []byte {
 	snssaiSdUm := cfg.Ue.Snssai.Sd[0:2]
 	snssaiSdDois := cfg.Ue.Snssai.Sd[2:4]
 	snssaiSdTres := cfg.Ue.Snssai.Sd[4:6]
-
-	log.Info("snssaiSdUm: ", snssaiSdUm)
-	log.Info("snssaiSdDois: ", snssaiSdDois)
-	log.Info("snssaiSdTres: ", snssaiSdTres)
 
 	// Build NSSAI
 	anParameter = make([]byte, 2)
@@ -311,8 +307,8 @@ func BuildEAP5GANParameters() []byte {
 	snssai[1] = byte(cfg.Ue.Snssai.Sst)
 
 	snssai[2] = utils.ConvertToHexByte(snssaiSdUm)
-	snssai[3] = 0x02
-	snssai[4] = 0x03
+	snssai[3] = utils.ConvertToHexByte(snssaiSdDois)
+	snssai[4] = utils.ConvertToHexByte(snssaiSdTres)
 	nssai = append(nssai, snssai...)
 
 	/* ao que parece é possível passar mais de um slice p/ utilização */
