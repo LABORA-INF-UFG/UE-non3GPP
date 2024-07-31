@@ -79,6 +79,11 @@ func ReverseStr(s string) string {
 	return aux
 }
 
+func ParseHexadecimal(num uint8) string {
+	hexStr := fmt.Sprintf("%x", num)
+	return hexStr
+}
+
 func ConvertToHexByte(str string) byte {
 	// Convertendo a string hexadecimal para um valor inteiro
 	value, err := strconv.ParseUint(str, 16, 8)
