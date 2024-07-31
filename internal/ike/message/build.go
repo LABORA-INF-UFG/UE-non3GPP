@@ -312,15 +312,15 @@ func BuildEAP5GANParameters() []byte {
 	nssai = append(nssai, snssai...)
 
 	/* ao que parece é possível passar mais de um slice p/ utilização */
-	/*
-		snssai = make([]byte, 5)
-		snssai[0] = 4
-		snssai[1] = 1
-		snssai[2] = 0x11
-		snssai[3] = 0x22
-		snssai[4] = 0x33
-		nssai = append(nssai, snssai...)
-	*/
+
+	snssai = make([]byte, 5)
+	snssai[0] = 4
+	snssai[1] = 1
+	snssai[2] = 0x11
+	snssai[3] = 0x22
+	snssai[4] = 0x33
+	nssai = append(nssai, snssai...)
+
 	anParameter[0] = ANParametersTypeRequestedNSSAI
 	anParameter[1] = byte(len(nssai))
 	anParameter = append(anParameter, nssai...)
