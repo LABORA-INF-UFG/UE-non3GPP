@@ -247,8 +247,8 @@ func BuildEAP5GANParameters() []byte {
 	vlUmGuami := utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[1]))
 	vlDoisGuami := utils.ConvertToHexByte(utils.ParseUint8ToHexadecimal(resu[2]))
 
-	log.Info("vlZeroGuami ", vlZeroGuami)
-	log.Info("vlUmGuami ", vlUmGuami)
+	//log.Info("vlZeroGuami ", vlZeroGuami)
+	//log.Info("vlUmGuami ", vlUmGuami)
 	log.Info("vlDoisGuami ", vlDoisGuami)
 
 	anParameter := make([]byte, 2)
@@ -283,7 +283,10 @@ func BuildEAP5GANParameters() []byte {
 	plmnID := make([]byte, 3)
 	plmnID[0] = vlZeroGuami //0x02
 	plmnID[1] = vlUmGuami   //0xf8
-	plmnID[2] = 0x39        //vlDoisGuami //0x39
+
+	log.Info("********************************** ")
+	log.Info("vlDoisGuami ", vlDoisGuami)
+	plmnID[2] = 0x39 //vlDoisGuami //0x39
 
 	anParameter[0] = ANParametersTypeSelectedPLMNID
 	anParameter[1] = byte(len(plmnID))
