@@ -8,6 +8,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 type Utils struct {
