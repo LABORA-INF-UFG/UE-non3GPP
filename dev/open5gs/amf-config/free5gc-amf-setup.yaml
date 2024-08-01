@@ -24,7 +24,6 @@
             FREE5GC_CHECKOUT_FOLDER_NAME: "free5gc"
             PREDEFINED_IP_ADDRESS: "false"
             NRF_IP_ADDRESS: "127.0.0.10"
-            MASCARA_REDE_DECIMAL: "19"
             NRF_PORT: "7777"
             AMF_NGAP_IP_ADDRESS: "127.0.0.1"
             AMF_IP_ADDRESS: "127.0.0.18"
@@ -41,33 +40,13 @@
                 AMF_NGAP_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
               when: PREDEFINED_IP_ADDRESS == 'false'
 
-            - set_fact:
-                MASCARA_REDE_DECIMAL: "20"
-              when: ansible_default_ipv4.netmask == '255.255.240.0'
-
-            - set_fact:
-                MASCARA_REDE_DECIMAL: "24"
-              when: ansible_default_ipv4.netmask == '255.255.255.0'
-
-            - set_fact:
-                MASCARA_REDE_DECIMAL: "32"
-              when: ansible_default_ipv4.netmask == '255.255.255.255'
-
-            - name: Verify that required internet_network_interface variable are defined
-              fail:
-                msg: "Variable 'internet_network_interface' needs to be set for the role to work"
-              when: internet_network_interface is undefined
-
-            - name: "Ansible | Print a Variables"
-              debug:
-                  msg: "Network Mask: {{ MASCARA_REDE_DECIMAL }}"
 
             - name: Upgrade all apt packages
               apt: upgrade=dist force_apt_get=yes
 
             - name: Install Basic requirements - core
               apt:
-                    name: ['wget', 'git', 'ca-certificates', 'net-tools', 'gcc', 'cmake', 'autoconf', 'build-essential', 'libtool', 'pkg-config', 'libmnl-dev', 'libyaml-dev']
+                    name: ['wget', 'ca-certificates', 'net-tools', 'gcc', 'cmake', 'autoconf', 'build-essential', 'libtool', 'pkg-config', 'libmnl-dev', 'libyaml-dev']
                     state: present
                     update_cache: yes
 
