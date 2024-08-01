@@ -1,0 +1,426 @@
+---
+    -   hosts: 127.0.0.1
+        connection: local
+        become: yes
+        remote_user: root
+        vars:
+            FREE5GC_DIR_INSTALL : "/root/go/src/free5gc"
+            NFS_DIR_CONFIG : "/root/go/src/free5gc/config"
+            UPF_DIR : "/root/go/src/free5gc/NFs/upf"
+            NRF_DIR : "/root/go/src/free5gc/NFs/nrf"
+            UDR_DIR : "/root/go/src/free5gc/NFs/udr"
+            UDM_DIR : "/root/go/src/free5gc/NFs/udm"
+            AUSF_DIR : "/root/go/src/free5gc/NFs/ausf"
+            NSSF_DIR : "/root/go/src/free5gc/NFs/nssf"
+            AMF_DIR : "/root/go/src/free5gc/NFs/amf"
+            PCF_DIR : "/root/go/src/free5gc/NFs/pcf"
+            SMF_DIR : "/root/go/src/free5gc/NFs/smf"
+            N3IWF_DIR : "/root/go/src/free5gc/NFs/n3iwf" 
+            GO_SRC_DIR : "/root/go/src"
+            HOME_DIR: "/root"
+            CLASSLESS_INTER_DOMAIN_ROUTING_IPV4_POOL_OF_UE : "60.60.0.0"
+            FREE5GC_GIT_CHECKOUT_URL_FREEGC_TAG_VERSION: "--recursive -b v3.3.0 -j `nproc` https://github.com/free5gc/free5gc.git"
+            LABORA_UE_NON3GPP_GIT_REPO: "https://github.com/LABORA-INF-UFG/UE-non3GPP.git"
+            FREE5GC_CHECKOUT_FOLDER_NAME: "free5gc"
+            PREDEFINED_IP_ADDRESS: "false"
+            MONGO_URL_CONNECTION: "mongodb://127.0.0.1:27017"
+            NRF_IP_ADDRESS: "127.0.0.10"
+            MASCARA_REDE_DECIMAL: "19"
+            NRF_PORT: "8000"
+            UDR_IP_ADDRESS: "127.0.0.4"
+            UDR_PORT: "8000"
+            UDM_IP_ADDRESS: "127.0.0.3"
+            UDM_PORT: "8000"
+            AUSF_IP_ADDRESS: "127.0.0.9"
+            AUSF_PORT: "8000"
+            NSSF_IP_ADDRESS: "127.0.0.31"
+            NSSF_PORT: "8000"
+            AMF_NGAP_IP_ADDRESS: "127.0.0.1"
+            AMF_IP_ADDRESS: "127.0.0.18"
+            AMF_PORT: "8000"
+            PCF_IP_ADDRESS: "127.0.0.7"
+            PCF_PORT: "8000"
+            SMF_N3_INTERFACE_IP_ADDRESS: "127.0.0.1"
+            SMF_N4_INTERFACE_IP_ADDRESS: "127.0.0.1"
+            SMF_IP_ADDRESS: "127.0.0.2"
+            SMF_PORT: "8000"
+            UPF_IP_ADDRESS: "127.0.0.8"
+            GTPU_UPF_IP_ADDRESS: "127.0.0.8"
+            AMF_SCTP_PORT: "38412"
+            MCC_1: "208"
+            MNC_1: "93"
+            MCC_2: "123"
+            MNC_2: "45"
+            
+        tasks:
+
+            - set_fact:
+                AMF_NGAP_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
+                SMF_N3_INTERFACE_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
+                SMF_N4_INTERFACE_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
+                GTPU_UPF_IP_ADDRESS: "{{ ansible_default_ipv4.address }}"
+              when: PREDEFINED_IP_ADDRESS == 'false'
+
+            - set_fact:
+                MASCARA_REDE_DECIMAL: "20"
+              when: ansible_default_ipv4.netmask == '255.255.240.0'
+
+            - set_fact:
+                MASCARA_REDE_DECIMAL: "24"
+              when: ansible_default_ipv4.netmask == '255.255.255.0'
+
+            - set_fact:
+                MASCARA_REDE_DECIMAL: "32"
+              when: ansible_default_ipv4.netmask == '255.255.255.255'
+
+            - name: Verify that required internet_network_interface variable are defined
+              fail:
+                msg: "Variable 'internet_network_interface' needs to be set for the role to work"
+              when: internet_network_interface is undefined
+
+            - name: "Ansible | Print a Variables"
+              debug:
+                  msg: "Network Mask: {{ MASCARA_REDE_DECIMAL }}"
+
+            - name: Upgrade all apt packages
+              apt: upgrade=dist force_apt_get=yes
+
+            - name: Install Basic requirements - core
+              apt:
+                    name: ['wget', 'git', 'ca-certificates', 'net-tools', 'gcc', 'cmake', 'autoconf', 'build-essential', 'libtool', 'pkg-config', 'libmnl-dev', 'libyaml-dev']
+                    state: present
+                    update_cache: yes
+
+            - name: Remove free5GC dir (if exists)
+              shell:  sudo rm -rf {{ FREE5GC_DIR_INSTALL }}
+              ignore_errors: true
+
+            - name  : Remove Free5gc old dir if exist
+              shell : rm -rf {{ FREE5GC_CHECKOUT_FOLDER_NAME }}
+              args:
+                chdir: "{{ GO_SRC_DIR }}"
+              ignore_errors: true
+
+            - name  : Git Clone by free5gc TAG Version
+              shell : git clone {{ FREE5GC_GIT_CHECKOUT_URL_FREEGC_TAG_VERSION }} {{ FREE5GC_CHECKOUT_FOLDER_NAME }}
+              args:
+                chdir: "{{ GO_SRC_DIR }}"
+
+
+            - name  : Create AMF config dir
+              shell : |
+                mkdir config
+                mkdir cert
+              args:
+                chdir: "{{ AMF_DIR }}"
+
+            - name  : Copy AMF cert's 1/2
+              shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/cert/amf.pem {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/amf/cert/amf.pem
+
+            - name  : Copy AMF cert's 2/2
+              shell: cp {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/cert/amf.key {{ GO_SRC_DIR }}/{{ FREE5GC_CHECKOUT_FOLDER_NAME }}/NFs/amf/cert/amf.key
+              
+            - name  : Build amfcfg.yaml config file
+              copy:
+                dest: "{{ AMF_DIR }}/config/amfcfg.yaml"
+                content: |
+                  info:
+                    version: 1.0.9
+                    description: AMF initial local configuration
+
+                  configuration:
+                    amfName: AMF # the name of this AMF
+                    ngapIpList:  # the IP list of N2 interfaces on this AMF
+                      - {{ AMF_NGAP_IP_ADDRESS }}
+                    ngapPort: {{ AMF_SCTP_PORT }} # the SCTP port listened by NGAP
+                    sbi: # Service-based interface information
+                      scheme: http # the protocol for sbi (http or https)
+                      registerIPv4: {{ AMF_IP_ADDRESS }} # IP used to register to NRF
+                      bindingIPv4: {{ AMF_IP_ADDRESS }}  # IP used to bind the service
+                      port: {{ AMF_PORT }} # port used to bind the service
+                      tls: # the local path of TLS key
+                        pem: cert/amf.pem # AMF TLS Certificate
+                        key: cert/amf.key # AMF TLS Private key
+                    serviceNameList: # the SBI services provided by this AMF, refer to TS 29.518
+                      - namf-comm # Namf_Communication service
+                      - namf-evts # Namf_EventExposure service
+                      - namf-mt   # Namf_MT service
+                      - namf-loc  # Namf_Location service
+                      - namf-oam  # OAM service
+                    servedGuamiList: # Guami (Globally Unique AMF ID) list supported by this AMF
+                      # <GUAMI> = <MCC><MNC><AMF ID>
+                      - plmnId: # Public Land Mobile Network ID, <PLMN ID> = <MCC><MNC>
+                          mcc: {{ MCC_1 }} # Mobile Country Code (3 digits string, digit: 0~9)
+                          mnc: {{ MNC_1 }} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                        amfId: cafe00 # AMF identifier (3 bytes hex string, range: 000000~FFFFFF)
+                    supportTaiList:  # the TAI (Tracking Area Identifier) list supported by this AMF
+                      - plmnId: # Public Land Mobile Network ID, <PLMN ID> = <MCC><MNC>
+                          mcc: {{ MCC_1 }} # Mobile Country Code (3 digits string, digit: 0~9)
+                          mnc: {{ MNC_1 }} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                        tac: 000001 # Tracking Area Code (3 bytes hex string, range: 000000~FFFFFF)
+                    plmnSupportList: # the PLMNs (Public land mobile network) list supported by this AMF
+                      - plmnId: # Public Land Mobile Network ID, <PLMN ID> = <MCC><MNC>
+                          mcc: {{ MCC_1 }} # Mobile Country Code (3 digits string, digit: 0~9)
+                          mnc: {{ MNC_1 }} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                        snssaiList: # the S-NSSAI (Single Network Slice Selection Assistance Information) list supported by this AMF
+                          - sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+                            sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+                          - sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+                            sd: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+                    supportDnnList:  # the DNN (Data Network Name) list supported by this AMF
+                      - internet
+                    nrfUri: http://{{ NRF_IP_ADDRESS }}:{{ NRF_PORT }} # a valid URI of NRF
+                    security:  # NAS security parameters
+                      integrityOrder: # the priority of integrity algorithms
+                        - NIA2
+                        # - NIA0
+                      cipheringOrder: # the priority of ciphering algorithms
+                        - NEA0
+                        - NEA2
+                    networkName:  # the name of this core network
+                      full: free5GC
+                      short: free
+                    ngapIE: # Optional NGAP IEs
+                      mobilityRestrictionList: # Mobility Restriction List IE, refer to TS 38.413
+                        enable: true # append this IE in related message or not
+                      maskedIMEISV: # Masked IMEISV IE, refer to TS 38.413
+                        enable: true # append this IE in related message or not
+                      redirectionVoiceFallback: # Redirection Voice Fallback IE, refer to TS 38.413
+                        enable: false # append this IE in related message or not
+                    nasIE: # Optional NAS IEs
+                      networkFeatureSupport5GS: # 5gs Network Feature Support IE, refer to TS 24.501
+                        enable: true # append this IE in Registration accept or not
+                        length: 1 # IE content length (uinteger, range: 1~3)
+                        imsVoPS: 0 # IMS voice over PS session indicator (uinteger, range: 0~1)
+                        emc: 0 # Emergency service support indicator for 3GPP access (uinteger, range: 0~3)
+                        emf: 0 # Emergency service fallback indicator for 3GPP access (uinteger, range: 0~3)
+                        iwkN26: 0 # Interworking without N26 interface indicator (uinteger, range: 0~1)
+                        mpsi: 0 # MPS indicator (uinteger, range: 0~1)
+                        emcN3: 0 # Emergency service support indicator for Non-3GPP access (uinteger, range: 0~1)
+                        mcsi: 0 # MCS indicator (uinteger, range: 0~1)
+                    t3502Value: 720  # timer value (seconds) at UE side
+                    t3512Value: 3600 # timer value (seconds) at UE side
+                    non3gppDeregTimerValue: 3240 # timer value (seconds) at UE side
+                    # retransmission timer for paging message
+                    t3513:
+                      enable: true     # true or false
+                      expireTime: 6s   # default is 6 seconds
+                      maxRetryTimes: 4 # the max number of retransmission
+                    # retransmission timer for NAS Deregistration Request message
+                    t3522:
+                      enable: true     # true or false
+                      expireTime: 6s   # default is 6 seconds
+                      maxRetryTimes: 4 # the max number of retransmission
+                    # retransmission timer for NAS Registration Accept message
+                    t3550:
+                      enable: true     # true or false
+                      expireTime: 6s   # default is 6 seconds
+                      maxRetryTimes: 4 # the max number of retransmission
+                    # retransmission timer for NAS Configuration Update Command message
+                    t3555:
+                      enable: true     # true or false
+                      expireTime: 6s   # default is 6 seconds
+                      maxRetryTimes: 4 # the max number of retransmission
+                    # retransmission timer for NAS Authentication Request/Security Mode Command message
+                    t3560:
+                      enable: true     # true or false
+                      expireTime: 6s   # default is 6 seconds
+                      maxRetryTimes: 4 # the max number of retransmission
+                    # retransmission timer for NAS Notification message
+                    t3565:
+                      enable: true     # true or false
+                      expireTime: 6s   # default is 6 seconds
+                      maxRetryTimes: 4 # the max number of retransmission
+                    # retransmission timer for NAS Identity Request message
+                    t3570:
+                      enable: true     # true or false
+                      expireTime: 6s   # default is 6 seconds
+                      maxRetryTimes: 4 # the max number of retransmission
+                    locality: area1 # Name of the location where a set of AMF, SMF, PCF and UPFs are located
+                    sctp: # set the sctp server setting <optinal>, once this field is set, please also add maxInputStream, maxOsStream, maxAttempts, maxInitTimeOut
+                      numOstreams: 3 # the maximum out streams of each sctp connection
+                      maxInstreams: 5 # the maximum in streams of each sctp connection
+                      maxAttempts: 2 # the maximum attempts of each sctp connection
+                      maxInitTimeout: 2 # the maximum init timeout of each sctp connection
+                    defaultUECtxReq: false # the default value of UE Context Request to decide when triggering Initial Context Setup procedure
+
+                  logger: # log output setting
+                    enable: true # true or false
+                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    reportCaller: false # enable the caller report or not, value: true or false
+
+            - name  : Remove AMF default config file - (run mode)
+              shell: rm amfcfg.yaml
+              args:
+                chdir: "{{ NFS_DIR_CONFIG }}"
+              
+            - name  : Build amfcfg.yaml default config file - (run mode)
+              copy:
+                dest: "{{ NFS_DIR_CONFIG }}/amfcfg.yaml"
+                content: |
+                  info:
+                    version: 1.0.9
+                    description: AMF initial local configuration
+
+                  configuration:
+                    amfName: AMF # the name of this AMF
+                    ngapIpList:  # the IP list of N2 interfaces on this AMF
+                      - {{ AMF_NGAP_IP_ADDRESS }}
+                    ngapPort: {{ AMF_SCTP_PORT }} # the SCTP port listened by NGAP
+                    sbi: # Service-based interface information
+                      scheme: http # the protocol for sbi (http or https)
+                      registerIPv4: {{ AMF_IP_ADDRESS }} # IP used to register to NRF
+                      bindingIPv4: {{ AMF_IP_ADDRESS }}  # IP used to bind the service
+                      port: {{ AMF_PORT }} # port used to bind the service
+                      tls: # the local path of TLS key
+                        pem: cert/amf.pem # AMF TLS Certificate
+                        key: cert/amf.key # AMF TLS Private key
+                    serviceNameList: # the SBI services provided by this AMF, refer to TS 29.518
+                      - namf-comm # Namf_Communication service
+                      - namf-evts # Namf_EventExposure service
+                      - namf-mt   # Namf_MT service
+                      - namf-loc  # Namf_Location service
+                      - namf-oam  # OAM service
+                    servedGuamiList: # Guami (Globally Unique AMF ID) list supported by this AMF
+                      # <GUAMI> = <MCC><MNC><AMF ID>
+                      - plmnId: # Public Land Mobile Network ID, <PLMN ID> = <MCC><MNC>
+                          mcc: {{ MCC_1 }} # Mobile Country Code (3 digits string, digit: 0~9)
+                          mnc: {{ MNC_1 }} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                        amfId: cafe00 # AMF identifier (3 bytes hex string, range: 000000~FFFFFF)
+                    supportTaiList:  # the TAI (Tracking Area Identifier) list supported by this AMF
+                      - plmnId: # Public Land Mobile Network ID, <PLMN ID> = <MCC><MNC>
+                          mcc: {{ MCC_1 }} # Mobile Country Code (3 digits string, digit: 0~9)
+                          mnc: {{ MNC_1 }} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                        tac: 000001 # Tracking Area Code (3 bytes hex string, range: 000000~FFFFFF)
+                    plmnSupportList: # the PLMNs (Public land mobile network) list supported by this AMF
+                      - plmnId: # Public Land Mobile Network ID, <PLMN ID> = <MCC><MNC>
+                          mcc: {{ MCC_1 }} # Mobile Country Code (3 digits string, digit: 0~9)
+                          mnc: {{ MNC_1 }} # Mobile Network Code (2 or 3 digits string, digit: 0~9)
+                        snssaiList: # the S-NSSAI (Single Network Slice Selection Assistance Information) list supported by this AMF
+                          - sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+                            sd: 010203 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+                          - sst: 1 # Slice/Service Type (uinteger, range: 0~255)
+                            sd: 112233 # Slice Differentiator (3 bytes hex string, range: 000000~FFFFFF)
+                    supportDnnList:  # the DNN (Data Network Name) list supported by this AMF
+                      - internet
+                    nrfUri: http://{{ NRF_IP_ADDRESS }}:{{ NRF_PORT }} # a valid URI of NRF
+                    security:  # NAS security parameters
+                      integrityOrder: # the priority of integrity algorithms
+                        - NIA2
+                        # - NIA0
+                      cipheringOrder: # the priority of ciphering algorithms
+                        - NEA0
+                        - NEA2
+                    networkName:  # the name of this core network
+                      full: free5GC
+                      short: free
+                    ngapIE: # Optional NGAP IEs
+                      mobilityRestrictionList: # Mobility Restriction List IE, refer to TS 38.413
+                        enable: true # append this IE in related message or not
+                      maskedIMEISV: # Masked IMEISV IE, refer to TS 38.413
+                        enable: true # append this IE in related message or not
+                      redirectionVoiceFallback: # Redirection Voice Fallback IE, refer to TS 38.413
+                        enable: false # append this IE in related message or not
+                    nasIE: # Optional NAS IEs
+                      networkFeatureSupport5GS: # 5gs Network Feature Support IE, refer to TS 24.501
+                        enable: true # append this IE in Registration accept or not
+                        length: 1 # IE content length (uinteger, range: 1~3)
+                        imsVoPS: 0 # IMS voice over PS session indicator (uinteger, range: 0~1)
+                        emc: 0 # Emergency service support indicator for 3GPP access (uinteger, range: 0~3)
+                        emf: 0 # Emergency service fallback indicator for 3GPP access (uinteger, range: 0~3)
+                        iwkN26: 0 # Interworking without N26 interface indicator (uinteger, range: 0~1)
+                        mpsi: 0 # MPS indicator (uinteger, range: 0~1)
+                        emcN3: 0 # Emergency service support indicator for Non-3GPP access (uinteger, range: 0~1)
+                        mcsi: 0 # MCS indicator (uinteger, range: 0~1)
+                    t3502Value: 720  # timer value (seconds) at UE side
+                    t3512Value: 3600 # timer value (seconds) at UE side
+                    non3gppDeregTimerValue: 3240 # timer value (seconds) at UE side
+                    # retransmission timer for paging message
+                    t3513:
+                      enable: true     # true or false
+                      expireTime: 6s   # default is 6 seconds
+                      maxRetryTimes: 4 # the max number of retransmission
+                    # retransmission timer for NAS Deregistration Request message
+                    t3522:
+                      enable: true     # true or false
+                      expireTime: 6s   # default is 6 seconds
+                      maxRetryTimes: 4 # the max number of retransmission
+                    # retransmission timer for NAS Registration Accept message
+                    t3550:
+                      enable: true     # true or false
+                      expireTime: 6s   # default is 6 seconds
+                      maxRetryTimes: 4 # the max number of retransmission
+                    # retransmission timer for NAS Configuration Update Command message
+                    t3555:
+                      enable: true     # true or false
+                      expireTime: 6s   # default is 6 seconds
+                      maxRetryTimes: 4 # the max number of retransmission
+                    # retransmission timer for NAS Authentication Request/Security Mode Command message
+                    t3560:
+                      enable: true     # true or false
+                      expireTime: 6s   # default is 6 seconds
+                      maxRetryTimes: 4 # the max number of retransmission
+                    # retransmission timer for NAS Notification message
+                    t3565:
+                      enable: true     # true or false
+                      expireTime: 6s   # default is 6 seconds
+                      maxRetryTimes: 4 # the max number of retransmission
+                    # retransmission timer for NAS Identity Request message
+                    t3570:
+                      enable: true     # true or false
+                      expireTime: 6s   # default is 6 seconds
+                      maxRetryTimes: 4 # the max number of retransmission
+                    locality: area1 # Name of the location where a set of AMF, SMF, PCF and UPFs are located
+                    sctp: # set the sctp server setting <optinal>, once this field is set, please also add maxInputStream, maxOsStream, maxAttempts, maxInitTimeOut
+                      numOstreams: 3 # the maximum out streams of each sctp connection
+                      maxInstreams: 5 # the maximum in streams of each sctp connection
+                      maxAttempts: 2 # the maximum attempts of each sctp connection
+                      maxInitTimeout: 2 # the maximum init timeout of each sctp connection
+                    defaultUECtxReq: false # the default value of UE Context Request to decide when triggering Initial Context Setup procedure
+
+                  logger: # log output setting
+                    enable: true # true or false
+                    level: info # how detailed to output, value: trace, debug, info, warn, error, fatal, panic
+                    reportCaller: false # enable the caller report or not, value: true or false
+
+
+            - name: Remove Unused NFs dir form N3IWF VM
+              shell: |
+                rm -rf {{ AUSF_DIR }}
+                rm -rf {{ NRF_DIR }}
+                rm -rf {{ NSSF_DIR }}
+                rm -rf {{ PCF_DIR }}
+                rm -rf {{ SMF_DIR }}
+                rm -rf {{ UDM_DIR }}
+                rm -rf {{ UDR_DIR }}
+                rm -rf {{ UPF_DIR }}
+                rm -rf {{ N3IWF_DIR }}
+
+            - name: Remove Unused config files form N3IWF VM
+              shell: |
+                rm -rf {{ NFS_DIR_CONFIG }}/multiUPF
+                rm {{ NFS_DIR_CONFIG }}/TLS/ausf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/ausf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/nrf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/nrf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/nssf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/nssf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/pcf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/pcf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/smf.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/smf.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/udm.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/udm.pem
+                rm {{ NFS_DIR_CONFIG }}/TLS/udr.key
+                rm {{ NFS_DIR_CONFIG }}/TLS/udr.pem
+                rm {{ NFS_DIR_CONFIG }}/amfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/ausfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/nrfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/nssfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/pcfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/smfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/udmfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/udrcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/uerouting.yaml
+                rm {{ NFS_DIR_CONFIG }}/upfcfg.yaml
+                rm {{ NFS_DIR_CONFIG }}/webuicfg.yaml            
