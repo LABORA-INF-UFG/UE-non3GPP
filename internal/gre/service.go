@@ -78,12 +78,12 @@ func Run(
 	ueIke.NasContext.SetGRERoute(upRoute)
 
 	if err := netlink.RouteAdd(upRoute); err != nil {
-		log.Warn("Add Route  GRE Tunnel: %+v", err)
+		//log.Warn("Add Route  GRE Tunnel: %+v", err)
 		return
 	}
 }
 
-// Copyright free5GC
+
 func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	n3iwfTunnelAddr, pduAddr net.IP, qoSInfo *context.PDUQoSInfo) (netlink.Link, error) {
 	var (

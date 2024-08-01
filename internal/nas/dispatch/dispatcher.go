@@ -17,7 +17,7 @@ func DispatchNas(message []byte, ue *context.UeNas) ([]byte, error) {
 	// check if message is null.
 	if message == nil {
 		log.Errorf("[UE][NAS] NAS message is nil")
-		// TODO return error
+		
 		// log.Fatal("[UE][NAS] NAS message is nil")
 		return nil, fmt.Errorf("[UE][NAS] NAS message is nil")
 	}
@@ -105,7 +105,7 @@ func DispatchNas(message []byte, ue *context.UeNas) ([]byte, error) {
 		// decode NAS message.
 		err = m.PlainNasDecode(&payload)
 		if err != nil {
-			// TODO return error
+			log.Errorf("[UE][NAS] Decode NAS error: %+v", err)
 			return nil, fmt.Errorf("[UE][NAS] Decode NAS error")
 		}
 
@@ -115,7 +115,7 @@ func DispatchNas(message []byte, ue *context.UeNas) ([]byte, error) {
 		// decode NAS message.
 		err := m.PlainNasDecode(&payload)
 		if err != nil {
-			// TODO return error
+			log.Errorf("[UE][NAS] Decode NAS error: %+v", err)
 			return nil, fmt.Errorf("[UE][NAS] Decode NAS error")
 		}
 	}
