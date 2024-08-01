@@ -24,7 +24,7 @@ func HandleIKESAINIT(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	var integrityAlgorithmTransform, diffieHellmanGroupTransform *message.Transform
 
 	if ikeMsg.Flags != message.ResponseBitCheck {
-		log.Errorf("Error occurs in IKE header: %+v", err)
+		log.Errorf("ikeMsg.Flags not equals message.ResponseBitCheck ")
 		return
 	}
 
@@ -230,13 +230,13 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	var encryptedPayload *message.Encrypted
 
 	if ikeMsg.Flags != message.ResponseBitCheck {
-		log.Errorf("Error occurs in response bit check IKE AUTH: %+v", err)
+		log.Errorf("ikeMsg.Flags not equals to message.ResponseBitCheck")
 		return
 	}
 
 	localSPI := ikeMsg.ResponderSPI
 	if localSPI != ue.N3IWFIKESecurityAssociation.RemoteSPI {
-		log.Errorf("Local SPI not equals to Remote SPI - N3IWF IKE Security Association: %+v", err)
+		log.Errorf("Local SPI not equals to Remote SPI - N3IWF IKE Security Association")
 		return
 	}
 
