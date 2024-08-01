@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net"
 	"time"
-
+	log "github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 )
 
@@ -32,7 +32,8 @@ func Run(
 		false,
 		cfg.Ue.IPSecInterface.Mark,
 		childSecurityAssociation); err != nil {
-		// TODO implements LOG
+			log.Errorf("Error occurs when Apply XFRM Rule: %+v", err)
+			
 		return
 	}
 
