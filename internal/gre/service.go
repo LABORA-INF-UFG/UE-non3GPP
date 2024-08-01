@@ -78,7 +78,7 @@ func Run(
 	ueIke.NasContext.SetGRERoute(upRoute)
 
 	if err := netlink.RouteAdd(upRoute); err != nil {
-		log.Errorf("Error occurs when Add Route  GRE Tunnel: %+v", err)
+		log.Warnf("Add Route  GRE Tunnel: %+v", err)
 		return
 	}
 }
