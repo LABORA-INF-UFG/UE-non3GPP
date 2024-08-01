@@ -122,3 +122,13 @@ The UE configuration parameters are contained in the ```~/go/src/UE-non3GPP/conf
 
 ### Start UE-non3GPP
 The final step is to initialize the UE-non3GPP so that the control and data tunnels are configured through the N3IWF. To do this, access the VM where the UE-non3GPP was installed and go to the ```~/go/src/UE-non3GPP``` directory and run the following command: ```go run cmd/main.go ue```. After configuring some dependencies, the connection with N3IWF will be properly established and two network interfaces will be created, the first of type ```ipsec``` and the second named ```gretun1```. To test the operation, simply run a PING test through the ```gretun1``` interface with the following command: ```ping -I gretun1 8.8.8.8```.
+
+### Delete UE-non3GPP Net Interface
+
+```
+sudo ip link set gretun1 down
+sudo ip link set ipsec0-default down
+
+sudo ip link delete gretun1
+sudo ip link delete ipsec0-default
+```
