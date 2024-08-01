@@ -1,12 +1,12 @@
 
 [open5gs]
-206.189.225.125 
+157.230.54.x 
 
 [n3iwf]
-147.182.181.42 open5gs_ip_address=206.189.225.125
+159.223.134.55 open5gs_ip_address=157.230.54.133
 
 [labora-UE-non3GPP]
-165.22.14.205 n3iwf_ike_ip_address=147.182.181.42 msin=7488
+159.223.142.21 n3iwf_ike_ip_address=159.223.134.55 msin=7488
 
 
 
