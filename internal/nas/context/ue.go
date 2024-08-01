@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"regexp"
 	"time"
-
+	log "github.com/sirupsen/logrus"
 	"github.com/free5gc/nas/nasType"
 	"github.com/free5gc/nas/security"
 	"github.com/free5gc/openapi/models"
@@ -373,7 +373,7 @@ func (ue *UeNas) DeriveKn3iwf() []byte {
 		P1,
 		L1)
 	if err != nil {
-		// TODO handler error
+		log.Errorf("Error occurs when Get KDF Value: %+v", err)
 		return nil
 	}
 	return Kn3iwf

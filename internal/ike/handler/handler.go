@@ -24,7 +24,7 @@ func HandleIKESAINIT(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	var integrityAlgorithmTransform, diffieHellmanGroupTransform *message.Transform
 
 	if ikeMsg.Flags != message.ResponseBitCheck {
-		// TODO handle errors in ike header
+		log.Errorf("Error occurs in IKE header: %+v", err)
 		return
 	}
 
@@ -138,7 +138,7 @@ func HandleIKESAINIT(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	}
 
 	if err := context.GenerateKeyForIKESA(ikeSecurityAssociation); err != nil {
-		// TODO handle errors
+		log.Errorf("Error occurs in Generate Key for IKE-SA: %+v", err)
 		return
 	}
 
@@ -194,20 +194,20 @@ func HandleIKESAINIT(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 
 	if err := context.EncryptProcedure(ue.N3IWFIKESecurityAssociation, ikePayload,
 		responseIKEMessage); err != nil {
-		// TODO handle errors
+		log.Errorf("Error occurs in IKE Encrypt Procedure - N3IWF IKE Security Association: %+v", err)
 		return
 	}
 
 	// Send to N3IWF
 	ikeMessageData, err := responseIKEMessage.Encode()
 	if err != nil {
-		// TODO handle errors
+		log.Errorf("Error occurs in response IKE message: %+v", err)
 		return
 	}
 	udp := ue.GetUdpConn()
 	_, err = udp.Write(ikeMessageData)
 	if err != nil {
-		// TODO handle errors
+		log.Errorf("Error occurs in Write IKE  Data Message with N3IWF UDP Connection: %+v", err)
 		return
 	}
 
@@ -230,13 +230,13 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 	var encryptedPayload *message.Encrypted
 
 	if ikeMsg.Flags != message.ResponseBitCheck {
-		// TODO handle errors in IKE header
+		log.Errorf("Error occurs in response bit check IKE AUTH: %+v", err)
 		return
 	}
 
 	localSPI := ikeMsg.ResponderSPI
 	if localSPI != ue.N3IWFIKESecurityAssociation.RemoteSPI {
-		// TODO handle errors in IKE header
+		log.Errorf("Local SPI not equals to Remote SPI - N3IWF IKE Security Association: %+v", err)
 		return
 	}
 
@@ -249,10 +249,9 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		}
 	}
 
-	decryptedIKEPayload, err := context.DecryptProcedure(ue.N3IWFIKESecurityAssociation,
-		ikeMsg, encryptedPayload)
+	decryptedIKEPayload, err := context.DecryptProcedure(ue.N3IWFIKESecurityAssociation, ikeMsg, encryptedPayload)
 	if err != nil {
-		// TODO handle errors in IKE header
+		log.Errorf("Error occurs in Decrypt Procedure - N3IWF IKE Security Association: %+v", err)
 		return
 	}
 
