@@ -58,7 +58,9 @@ func Run(
 		n3iwfIpUp,
 		ueIke.NasContext.PduSession.PDUAdress,
 		QosInfo); err != nil {
-		// TODO implements LOG
+
+			log.Errorf("Error occurs when Setup GRE Tunnel: %+v", err)
+		
 		return
 	}
 
@@ -76,7 +78,7 @@ func Run(
 	ueIke.NasContext.SetGRERoute(upRoute)
 
 	if err := netlink.RouteAdd(upRoute); err != nil {
-		// TODO implements LOG
+		log.Errorf("Error occurs when Add Route  GRE Tunnel: %+v", err)
 		return
 	}
 }
@@ -97,7 +99,7 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	}
 
 	if parent, err = netlink.LinkByName(parentIfaceName); err != nil {
-		// TODO implements LOG
+		log.Errorf("Error occurs when Link by Name  GRE Tunnel: %+v", err)
 		return nil, err
 	}
 
@@ -118,14 +120,14 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	}
 
 	if err := netlink.LinkAdd(newGRETunnel); err != nil {
-		// TODO implements LOG
+		log.Errorf("Error occurs when Add Link new  GRE Tunnel: %+v", err)
 		return nil, err
 	}
 
 	// Get link info
 	linkGRE, err := netlink.LinkByName(greIfaceName)
 	if err != nil {
-		// TODO implements LOG
+		log.Errorf("No link named %s", greIfaceName)
 		return nil, fmt.Errorf("No link named %s", greIfaceName)
 	}
 
@@ -137,13 +139,13 @@ func setupGreTunnel(greIfaceName, parentIfaceName string, ueTunnelAddr,
 	}
 
 	if err := netlink.AddrAdd(linkGRE, linkGREAddr); err != nil {
-		// TODO implements LOG
+		log.Errorf("Error occurs when Addr Add Link new  GRE Tunnel: %+v", err)
 		return nil, err
 	}
 
 	// Set GRE interface up
 	if err := netlink.LinkSetUp(linkGRE); err != nil {
-		// TODO implements LOG
+		log.Errorf("Error occurs when Link SetUp in Link GRE: %+v", err)
 		return nil, err
 	}
 
