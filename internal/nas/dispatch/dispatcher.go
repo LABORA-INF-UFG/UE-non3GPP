@@ -4,6 +4,7 @@ import (
 	"UE-non3GPP/internal/nas/context"
 	"UE-non3GPP/internal/nas/handler"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"github.com/free5gc/nas"
 	"github.com/free5gc/nas/security"
 	"reflect"

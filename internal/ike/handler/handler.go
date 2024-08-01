@@ -319,7 +319,6 @@ func HandleIKEAUTH(ue *context.UeIke, ikeMsg *message.IKEMessage) {
 		eapVendorTypeData[0] = message.EAP5GType5GNAS
 
 		// AN Parameters
-		// TODO Hardcode snssai, mcc, mnc and guami information
 		anParameters := message.BuildEAP5GANParameters()
 		anParametersLength := make([]byte, 2)
 		binary.BigEndian.PutUint16(anParametersLength, uint16(len(anParameters)))
