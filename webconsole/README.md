@@ -20,6 +20,9 @@ Collects network interface throughput information over a time interval. It has t
 <<ue-non3gpp-server-ip>>:<<ue-non3gpp-server-port>>/ue/interface/:interface/throughput/monitor/:interval
 ```
 
+### WiFi Metrics Monitor
+http://<ip-ue-api>:<port>/ue/interface/<wifi-interface-name>/wifi/metrics/<interval>
+
 ### Network Interface Status Monitor
 Provides information about momentary traffic on a network interface over a period of time. . It has two mandatory path parameters: (i) **:interface** which must be replaced with the name of the network interface to be monitored (__gretun1__ for data plane or __ipsec0-default__ for control plane); : (ii) **:interval** which must be replaced by an integer value that represents the number of seconds in which you want to perform the collection, for example, when passing the integer 10, the values will be collected every 1 second for 10 seconds. For every second will be calculated: BytesRecv, BytesSent, PacketsRecv and PacketsSent
 ```
