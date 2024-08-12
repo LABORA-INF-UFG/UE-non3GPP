@@ -8,9 +8,84 @@ import (
 	"github.com/shirou/gopsutil/net"
 	log "github.com/sirupsen/logrus"
 	"net/http"
+	"os/exec"
+	"regexp"
 	"strconv"
 	"time"
 )
+
+func NewWiFiMetricstHandler(router *gin.Engine) {
+	routesNetwork := router.Group("ue")
+	routesNetwork.GET("/interface/:interface/wifi/metrics/:interval", GetWiFiMetrics)
+}
+
+func GetWiFiMetrics(ctx *gin.Context) {
+	net_name := ctx.Param("interface")
+	interval := ctx.Param("interval")
+
+	num, err := strconv.Atoi(interval)
+	if err != nil {
+		log.Errorf("[UE][WiFi][Metrics]  %v", err)
+		errorResponse := api.ErrorResponse{
+			Code:    http.StatusBadRequest,
+			Message: fmt.Sprintf("Intervall invalid: %v", err),
+		}
+		ctx.JSON(http.StatusBadRequest, errorResponse)
+		return
+	}
+
+	var wifiMetrics []api.WifiMetrics
+	for i := 0; i < num; i++ {
+
+		cmd := exec.Command("iwconfig", net_name)
+		output, err := cmd.Output()
+		if err != nil {
+			log.Errorf("[UE][WiFi][Metrics]  %v", err)
+			errorResponse := api.ErrorResponse{
+				Code:    http.StatusBadRequest,
+				Message: fmt.Sprintf("Failed to execute command: %v", err),
+			}
+			ctx.JSON(http.StatusBadRequest, errorResponse)
+			return
+		}
+		outStr := string(output)
+
+		metrics := api.WifiMetrics{
+			TimeStamp:   time.Now(),
+			ESSID:       extractValue(outStr, `ESSID:"([^"]+)"`),
+			Mode:        extractValue(outStr, `Mode:([^\s]+)`),
+			Frequency:   extractValue(outStr, `Frequency:([^\s]+)`),
+			AccessPoint: extractValue(outStr, `Access Point: ([^\s]+)`),
+			BitRate:     extractValue(outStr, `Bit Rate=([^\s]+)`),
+			TxPower:     extractValue(outStr, `Tx-Power=([^\s]+)`),
+			LinkQuality: extractValue(outStr, `Link Quality=([^\s]+/[^\s]+)`),
+			SignalLevel: extractValue(outStr, `Signal level=([^\s]+)`),
+			NoiseLevel:  extractValue(outStr, `Noise level=([^\s]+)`),
+		}
+		wifiMetrics = append(wifiMetrics, metrics)
+		time.Sleep(1 * time.Second)
+	}
+
+	if wifiMetrics == nil {
+		log.Errorf("[UE][WiFi][Metrics] WiFi NetWork Interface not found")
+		errorResponse := api.ErrorResponse{
+			Code:    http.StatusBadRequest,
+			Message: fmt.Sprintf("WiFi NetWork Interface not found"),
+		}
+		ctx.JSON(http.StatusBadRequest, errorResponse)
+		return
+	}
+	ctx.JSON(http.StatusOK, wifiMetrics)
+}
+
+func extractValue(output, regex string) string {
+	re := regexp.MustCompile(regex)
+	matches := re.FindStringSubmatch(output)
+	if len(matches) > 1 {
+		return matches[1]
+	}
+	return ""
+}
 
 func NewNetworkStatustHandler(router *gin.Engine) {
 	routesNetwork := router.Group("ue")

@@ -50,6 +50,7 @@ func main() {
 			controllers.NewUEConnectionInfo(routerUe)
 			controllers.NewNetworkThroughputHandler(routerUe)
 			controllers.NewNetworkStatustHandler(routerUe)
+			controllers.NewWiFiMetricstHandler(routerUe)
 
 			log.Info("[UE][METRICS][HTTP] Metrics Context Created")
 			SetServer(cfg.MetricInfo.Httport, cfg.MetricInfo.HttpAddress, routerUe)
