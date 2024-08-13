@@ -5,7 +5,7 @@ import { Injectable } from '@angular/core';
 })
 export class ApiConfigService {
 
-  private readonly API = 'http://206.189.197.240:5001';
+  private readonly API = 'http://137.184.208.188:5001';
 
   UE_INFO = `${this.API}/ue/info`;
   UE_INTERFACE = `${this.API}/ue/interface`;
