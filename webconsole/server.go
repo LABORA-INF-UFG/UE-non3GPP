@@ -51,8 +51,19 @@ func main() {
 			controllers.NewNetworkThroughputHandler(routerUe)
 			controllers.NewNetworkStatustHandler(routerUe)
 			controllers.NewWiFiMetricstHandler(routerUe)
+			//controllers.NewPacketStatusHandler(routerUe)
 
 			log.Info("[UE][METRICS][HTTP] Metrics Context Created")
+			log.Info("---------------------------------------------")
+			log.Info("End-Points")
+			log.Info(" ")
+			//log.Info("/interface/:interface/packet/status/:interval")
+			log.Info("/interface/:interface/wifi/metrics/:interval")
+			log.Info("/interface/:interface/network/status/:interval")
+			log.Info("/interface/:interface/throughput/monitor/:interval")
+			log.Info("/info")
+			log.Info("---------------------------------------------")
+
 			SetServer(cfg.MetricInfo.Httport, cfg.MetricInfo.HttpAddress, routerUe)
 			return nil
 		},
