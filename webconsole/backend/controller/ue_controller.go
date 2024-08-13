@@ -41,6 +41,7 @@ func GetWiFiMetrics(ctx *gin.Context) {
 		output, err := cmd.Output()
 		if err != nil {
 			log.Errorf("[UE][WiFi][Metrics]  %v", err)
+			fmt.Printf("Saída: %s\n", output)
 			errorResponse := api.ErrorResponse{
 				Code:    http.StatusBadRequest,
 				Message: fmt.Sprintf("Failed to execute command: %v", err),
