@@ -27,6 +27,12 @@
             - set_fact:
                 UE_NON3GPP_IP_ADDR: "{{ ansible_default_ipv4.address }}"
 
+            - name: Install Basic requirements - core
+              apt:
+                    name: ['wireless-tools', 'wget', 'traceroute', 'net-tools']
+                    state: present
+                    update_cache: yes
+
             - name: Remove NodeJS Old version
               shell :  |
                     sudo apt-get purge --auto-remove nodejs -y
