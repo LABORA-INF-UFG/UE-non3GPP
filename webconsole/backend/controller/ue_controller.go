@@ -171,7 +171,6 @@ func GetNetworkThroughput(ctx *gin.Context) {
 		var prevStat, currentStat *net.IOCountersStat
 		for _, stat := range prevNetStat {
 			if stat.Name == net_name {
-
 				prevStat = &stat
 				break
 			}
@@ -179,7 +178,6 @@ func GetNetworkThroughput(ctx *gin.Context) {
 
 		for _, stat := range currentNetStat {
 			if stat.Name == net_name {
-
 				currentStat = &stat
 				break
 			}
@@ -192,21 +190,21 @@ func GetNetworkThroughput(ctx *gin.Context) {
 			//leakDto.ThroughputIn = inputThroughput
 			//leakDto.ThroughputOut = outputThroughput
 
-			//fmt.Println("IN: " + strconv.FormatUint(leakDto.ThroughputIn, 10))
-			//fmt.Println("Out: " + strconv.FormatUint(leakDto.ThroughputOut, 10))
+			//fmt.Println("IN: " + strconv.FormatUint(inputThroughput, 10))
+			//fmt.Println("Out: " + strconv.FormatUint(outputThroughput, 10))
+
+			//fmt.Println(reflect.TypeOf(outputThroughput))
 
 			// Convertendo bytes para megabytes
-			inputThroughputMB := float64(inputThroughput) / 1048576.0
-			outputThroughputMB := float64(outputThroughput) / 1048576.0
+			//inputThroughputMB := float64(inputThroughput) / 1048576.0
+			//outputThroughputMB := float64(outputThroughput) / 1048576.0
 
-			// Armazenando os valores convertidos em MB
-			leakDto.ThroughputIn = inputThroughputMB
-			leakDto.ThroughputOut = outputThroughputMB
+			//inputThroughputMB := float64(inputThroughput)
+			//outputThroughputMB := float64(outputThroughput)
 
-			//fmt.Printf("IN: %.2f MB\n", inputThroughputMB)
-			//fmt.Printf("Out: %.2f MB\n", outputThroughputMB)
+			leakDto.ThroughputIn = inputThroughput
+			leakDto.ThroughputOut = outputThroughput
 		}
-
 		lsThroughput = append(lsThroughput, leakDto)
 	}
 	ctx.JSON(http.StatusOK, lsThroughput)

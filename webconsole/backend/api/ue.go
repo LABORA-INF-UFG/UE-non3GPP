@@ -36,8 +36,8 @@ type StatusValue struct {
 }
 
 type Throughput struct {
-	ThroughputIn  float64 `json:"throughputIn"`
-	ThroughputOut float64 `json:"throughputOut"`
+	ThroughputIn  uint64 `json:"throughputIn"`
+	ThroughputOut uint64 `json:"throughputOut"`
 }
 
 /*type PacketStats struct {

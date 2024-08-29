@@ -34,7 +34,7 @@ func main() {
 		Commands: []*cli.Command{
 			{
 				Name:    "ue",
-				Aliases: []string{"ue"},
+				Aliases: []string{"non3GPPAccess"},
 				Usage:   "Non-3GPP UE-Connection",
 				Action: func(c *cli.Context) error {
 					name := "Non 3GPP UE attached with configuration"

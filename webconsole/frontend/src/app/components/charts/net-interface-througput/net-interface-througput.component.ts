@@ -60,14 +60,14 @@ export class NetInterfaceThrougputComponent {
       x: {
         title: {
           display: true,
-          text: 'Time / Secounds',
+          text: 'Time',
         },
       },
       y: {
         position: 'left',
         title: {
           display: true,
-          text: 'MB',
+          text: 'Mbps',
         },
       },
       y1: {

@@ -14,7 +14,7 @@ ue:
     set: "fe"
     pointer: "0"
   authenticationmanagementfield : "8000"
-  localpublicipaddr : "137.184.208.188"
+  localpublicipaddr : "142.93.127.159"
   localpublicportudpconnection : "500"
   greinterface:
     name : "gretun"
@@ -30,7 +30,7 @@ ue:
   dnnstring: "internet"
 
 n3iwfinfo:
-  ikebindaddress: "134.209.209.133" # IP address of Nwu interface (IKE) on N3IWF
+  ikebindaddress: "147.182.140.187" # IP address of Nwu interface (IKE) on N3IWF
   ikebindport: "500"
   ipsecifaceprotocol: "udp"
 
