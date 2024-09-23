@@ -67,7 +67,7 @@ export class NetInterfaceThrougputComponent {
         position: 'left',
         title: {
           display: true,
-          text: 'Mbps',
+          text: 'MBps',
         },
       },
       y1: {
@@ -110,8 +110,9 @@ export class NetInterfaceThrougputComponent {
   updateNetworkThroughput(values:NetworkThrougput[]):void{
     values.forEach((status, i) => {
 
-      this.lineChartThrouput.datasets[0].data.push(status.throughputIn);
-      this.lineChartThrouput.datasets[1].data.push(status.throughputOut);
+      /* converte par MBps */
+      this.lineChartThrouput.datasets[0].data.push(((status.throughputIn / 8) / 1024) / 1024);
+      this.lineChartThrouput.datasets[1].data.push(((status.throughputOut / 8) / 1024) / 1024);
       this.lineChartThrouput?.labels?.push(
         `${this.lineChartThrouput.labels.length + 1}`
       );

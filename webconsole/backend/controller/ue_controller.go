@@ -202,8 +202,9 @@ func GetNetworkThroughput(ctx *gin.Context) {
 			//inputThroughputMB := float64(inputThroughput)
 			//outputThroughputMB := float64(outputThroughput)
 
-			leakDto.ThroughputIn = inputThroughput
-			leakDto.ThroughputOut = outputThroughput
+			// Convertendo Bytes para b
+			leakDto.ThroughputIn = inputThroughput * 8
+			leakDto.ThroughputOut = outputThroughput * 8
 		}
 		lsThroughput = append(lsThroughput, leakDto)
 	}
