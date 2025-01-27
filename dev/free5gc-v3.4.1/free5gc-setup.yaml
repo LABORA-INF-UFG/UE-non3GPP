@@ -22,7 +22,7 @@
             GO_SRC_DIR : "/root/go/src"
             HOME_DIR: "/root"
             CLASSLESS_INTER_DOMAIN_ROUTING_IPV4_POOL_OF_UE : "60.60.0.0"
-            FREE5GC_GIT_CHECKOUT_URL_FREEGC_TAG_VERSION: "--recursive -b v3.3.0 -j `nproc` https://github.com/free5gc/free5gc.git"
+            FREE5GC_GIT_CHECKOUT_URL_FREEGC_TAG_VERSION: "--recursive -b v3.1.1 -j `nproc` https://github.com/free5gc/free5gc.git"
             LABORA_UE_NON3GPP_GIT_REPO: "https://github.com/LABORA-INF-UFG/UE-non3GPP.git"
             FREE5GC_CHECKOUT_FOLDER_NAME: "free5gc"
             PREDEFINED_IP_ADDRESS: "false"
